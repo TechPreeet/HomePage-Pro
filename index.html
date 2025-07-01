@@ -1149,10 +1149,13 @@ let recognitionWasAborted = false;
         searchInput.value = finalTranscript + interimTranscript;
       };
       recognition.onerror = (event) => {
-        alert("Voice recognition error: " + event.error);
-        searchInput.placeholder = "Search the web...";
-        micIcon.style.color = "";
-      };
+  if (event.error !== "aborted") {
+    alert("Voice recognition error: " + event.error);
+  }
+  searchInput.placeholder = "Search the web...";
+  micIcon.style.color = "";
+};
+
       recognition.onend = () => {
   recognition._isStarted = false;
   searchInput.placeholder = "Search the web...";
