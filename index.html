@@ -561,7 +561,6 @@
         autocapitalize="off"
         onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
       />
-      <i id="lensIcon" class="material-icons" onclick="startLensSearch()" title="Google Lens Search">photo_camera</i>
       <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
         xmlns="http://www.w3.org/2000/svg"
         height="24" width="24" fill="currentColor">
@@ -600,7 +599,6 @@
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
     <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
     <input type="file" id="importInput" accept="application/json">
-    <input type="file" id="lensInput" accept="image/*" capture="environment">
   </div>
 
   <script>
@@ -1110,31 +1108,6 @@
       }
     });
 
-    function handleLensUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const form = document.createElement("form");
-      form.method = "POST";
-      form.action = "https://lens.google.com/upload";
-      form.enctype = "multipart/form-data";
-      form.target = "_self";
-      const input = document.createElement("input");
-      input.type = "file";
-      input.name = "encoded_image";
-      input.files = event.target.files;
-      form.appendChild(input);
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-      event.target.value = "";
-    }
-
-    function startLensSearch() {
-      document.getElementById('lensInput').click();
-    }
-
-    document.getElementById("lensInput").addEventListener("change", handleLensUpload);
-
     function searchGoogle() {
       const input = document.getElementById("searchInput").value;
       if (input.trim()) {
@@ -1143,6 +1116,7 @@
     }
 
     let recognition = null;
+let recognitionWasAborted = false;
 
     function startVoiceSearch() {
       if (!('webkitSpeechRecognition' in window)) {
@@ -1158,6 +1132,7 @@
       const micIcon = document.getElementById("micIcon");
       let finalTranscript = "";
       recognition.onstart = () => {
+        recognition._isStarted = true;
         searchInput.placeholder = "Listening...";
         micIcon.style.color = "red";
       };
@@ -1179,15 +1154,30 @@
         micIcon.style.color = "";
       };
       recognition.onend = () => {
-        searchInput.placeholder = "Search the web...";
-        micIcon.style.color = "";
-        if (searchInput.value.trim()) {
-          searchGoogle();
-        }
-      };
+  recognition._isStarted = false;
+  searchInput.placeholder = "Search the web...";
+  micIcon.style.color = "";
+
+  if (!recognitionWasAborted && searchInput.value.trim()) {
+    searchGoogle();
+  }
+
+  // Reset the abort flag for next time
+  recognitionWasAborted = false;
+};
+
       finalTranscript = "";
       recognition.start();
     }
+   document.addEventListener("click", function (event) {
+  if (recognition && recognition._isStarted) {
+    recognitionWasAborted = true; // mark that we aborted it
+    recognition.abort();
+    cleanupVoiceSearch();
+  }
+}, true);
+
+
 
     function cancelVoiceSearch() {
       if (recognition) {
