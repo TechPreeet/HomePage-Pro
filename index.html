@@ -322,6 +322,10 @@
       font-size: 15px;
       width: 110px;
     }
+    .hide-labels .tile div:not(.menu):not(.menu-options):not(.pin-indicator) {
+  display: none;
+}
+
 
     .tile .menu {
       position: absolute;
@@ -353,27 +357,45 @@
     }
 
     .tile .menu-options {
-      display: none;
-      position: absolute;
-      top: 25px;
-      right: 0;
-      background: rgba(0,0,0,0.85);
-      color: white;
-      padding: 5px;
-      border-radius: 5px;
-      z-index: 12;
-      min-width: 80px;
-    }
+  display: none;
+  position: absolute;
+  bottom: 18px;
+  right: 0;
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 1px 0;
+  border-radius: 4px;
+  z-index: 9999;
+  min-width: 65px;
+  font-size: 10px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  line-height: 1.2;
+}
 
-    .tile .menu-options div {
-      padding: 5px 10px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
+.tile .menu-options div {
+  padding: 3px 5px;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 10px;
+  line-height: 1.2;
+}
 
-    .tile .menu-options div:hover {
-      background: #444;
-    }
+.tile .menu-options div:hover {
+  background: #444;
+}
+
+    .tile {
+  position: relative;
+  overflow: visible !important;
+}
+.bookmarks-container {
+  position: relative;
+  overflow: visible !important;
+  z-index: 1;
+}
+
 
     #toolbarBtn {
       background: rgba(30, 30, 30, 0.85);
@@ -540,6 +562,27 @@
       background-position: center;
       z-index: 1;
     }
+#clock .seconds {
+  font-size: inherit;    /* same size */
+  opacity: 0.6;          /* dimmed */
+}
+
+#clock .ampm {
+  font-size: 0.35em;
+  vertical-align: super;
+  opacity: 0.6;
+  margin-left: 6px;
+}
+
+    #greeting {
+  opacity: 0;
+  transition: opacity 2.7s ease;
+}
+
+#greeting.visible {
+  opacity: 1;
+}
+
   </style>
 </head>
 <body>
@@ -548,6 +591,9 @@
     <div class="clock-wrapper">
       <div class="clock" id="clock"></div>
       <div class="date" id="date"></div>
+      <div id="weatherContainer" style="font-size: 18px; margin-top: 10px; display: none;"></div>
+      <div id="greeting" style="font-size: 20px; margin-top: 10px; text-align: center; display: none; max-width: 100%; word-wrap: break-word;"></div>
+
     </div>
 
     <div class="search-bar">
@@ -593,10 +639,14 @@
     <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
     <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()">🕒 Toggle Clock Format</div>
     <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()">⏱️ Toggle Clock Seconds</div>
+    <div class="toolbar-option" onclick="toggleWeather()">🌦️ Toggle Weather Widget</div>
     <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()">🌀 Toggle Icon Style</div>
-    <div class="toolbar-option">Resize Tiles</div>
+    <div class="toolbar-option" onclick="toggleLabels()">🔤 Toggle Bookmark Labels</div>
+    <div class="toolbar-option">Resize Bookmark Tiles</div>
     <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" onchange="setTileSize(this.value)">
     <div class="toolbar-option" aria-label="Add Bookmark" onclick="addBookmark(); console.log('Add Bookmark clicked');">📝 Add Bookmark</div>
+    <div class="toolbar-option" onclick="toggleGreeting()">👤 Toggle Greeting</div>
+    <div class="toolbar-option" onclick="askUserName()">✏️ Change Name</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
     <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
     <input type="file" id="importInput" accept="application/json">
@@ -756,18 +806,36 @@
       }
     }
 
-    function updateClock() {
-      const now = new Date();
-      const timeOptions = {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: showSeconds ? '2-digit' : undefined,
-        hour12: !is24Hour
-      };
-      const timeParts = now.toLocaleTimeString([], timeOptions).split(' ');
-      document.getElementById("clock").innerHTML = `${timeParts[0]}<span class="ampm">${timeParts[1] || ''}</span>`;
-      document.getElementById("date").textContent = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-    }
+function updateClock() {
+  const now = new Date();
+  let hours = now.getHours();
+  let minutes = now.getMinutes().toString().padStart(2, '0');
+  let seconds = now.getSeconds().toString().padStart(2, '0');
+  let ampm = '';
+
+  if (!is24Hour) {
+    ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+  }
+
+  const hourStr = is24Hour ? hours.toString().padStart(2, '0') : hours.toString();
+
+  let timeHTML = `${hourStr}:${minutes}`;
+  if (showSeconds) {
+    timeHTML += `:<span class="seconds">${seconds}</span>`;
+  }
+
+  timeHTML += ampm ? `<span class="ampm">${ampm}</span>` : '';
+
+  document.getElementById("clock").innerHTML = timeHTML;
+
+  document.getElementById("date").textContent = now.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+}
 
     let is24Hour = localStorage.getItem("clockFormat") !== "12";
     let showSeconds = localStorage.getItem("showSeconds") === "true";
@@ -783,6 +851,127 @@
       localStorage.setItem("showSeconds", showSeconds);
       updateClock();
     }
+    function toggleWeather() {
+  const current = localStorage.getItem("showWeather") === "true";
+  localStorage.setItem("showWeather", !current);
+  applyWeatherToggle(!current);
+}
+function applyWeatherToggle(enabled) {
+  const container = document.getElementById("weatherContainer");
+  if (enabled) {
+    container.style.display = "block";
+    fetchWeather();
+  } else {
+    container.style.display = "none";
+  }
+}
+function fetchWeather() {
+  if (!navigator.geolocation) {
+    displayWeatherFallback();
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const { latitude, longitude } = position.coords;
+
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+      const response = await fetch(url);
+      const data = await response.json();
+      const weather = data.current_weather;
+
+      const temp = Math.round(weather.temperature);
+      const icon = getWeatherEmoji(weather.weathercode);
+      const wind = Math.round(weather.windspeed);
+const text = `${icon} ${temp}°C | Wind: ${wind} km/h`;
+      document.getElementById("weatherContainer").textContent = text;
+    } catch (err) {
+      console.error("Weather fetch error:", err);
+      document.getElementById("weatherContainer").textContent = "Could not load weather.";
+    }
+  }, displayWeatherFallback);
+}
+function displayWeatherFallback() {
+  document.getElementById("weatherContainer").textContent = "Weather data not available.";
+}
+function getWeatherEmoji(code) {
+  const map = {
+    0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+    45: "🌫️", 48: "🌫️",
+    51: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️",
+    71: "❄️", 73: "❄️", 75: "❄️",
+    80: "🌧️", 81: "🌧️", 82: "🌧️",
+    95: "⛈️", 96: "⛈️", 99: "⛈️"
+  };
+  return map[code] || "🌡️";
+}
+
+function toggleGreeting() {
+  const current = localStorage.getItem("showGreeting") === "true";
+  localStorage.setItem("showGreeting", !current);
+  applyGreetingToggle(!current);
+}
+
+function applyGreetingToggle(enabled) {
+  const greeting = document.getElementById("greeting");
+
+  if (enabled) {
+    let name = localStorage.getItem("profileName");
+    if (!name) {
+      askUserName();
+      return; // Greeting will be re-applied after name is set
+    }
+
+    greeting.textContent = generateFriendlyGreeting(name);
+    greeting.style.display = "block";
+    greeting.classList.remove("visible"); // reset first
+
+    // Force browser to apply initial hidden state
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        greeting.classList.add("visible");
+      });
+    });
+
+  } else {
+    greeting.classList.remove("visible");
+    greeting.style.display = "none";
+  }
+}
+
+function askUserName() {
+  const name = prompt("What’s your name?");
+  if (name) {
+    localStorage.setItem("profileName", name);
+    const greeting = document.getElementById("greeting");
+    if (localStorage.getItem("showGreeting") === "true") {
+      greeting.textContent = generateFriendlyGreeting(name);
+      greeting.style.display = "block";
+    }
+  }
+}
+
+function generateFriendlyGreeting(name) {
+  const hour = new Date().getHours();
+  let message = "";
+
+  if (hour >= 5 && hour < 12) {
+    message = `🌞 Good morning, ${name}! Have a bright start.`;
+  } else if (hour >= 12 && hour < 17) {
+    message = `☕ Good afternoon, ${name}! Keep up the great work.`;
+  } else if (hour >= 17 && hour < 21) {
+    message = `🌇 Good evening, ${name}! Hope you're winding down nicely.`;
+  } else {
+    message = `🌙 Good night, ${name}! Time to recharge.`;
+  }
+
+  return message;
+}
+function toggleLabels() {
+  const hiding = document.body.classList.toggle("hide-labels");
+  localStorage.setItem("hideLabels", hiding);
+}
+
 
     function createBookmarkElement(bookmark, index) {
       const a = document.createElement("a");
@@ -810,7 +999,7 @@
       menu.textContent = "⋮";
       const options = document.createElement("div");
       options.className = "menu-options";
-      ["Edit", "Delete"].forEach(action => {
+["Edit", "Delete"].forEach(action => {
         const opt = document.createElement("div");
         opt.textContent = action;
         opt.onclick = (e) => {
@@ -841,7 +1030,11 @@
               const newURL = urlInput.value.trim();
               const newIcon = iconInput.value.trim();
               if (!newName || !newURL) return;
-              bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
+bookmarks[index] = {
+  name: newName,
+  url: newURL,
+  icon: newIcon,
+};
               localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
               closeModal();
               location.reload();
@@ -854,7 +1047,8 @@
                 modal.removeEventListener("click", handler);
               }
             }, { once: true });
-          }
+          }         
+
           options.style.display = "none";
         };
         options.appendChild(opt);
@@ -876,12 +1070,15 @@
 
     function loadBookmarks() {
       bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-      const grid = document.getElementById("bookmarkGrid");
-      grid.innerHTML = '';
-      bookmarks.forEach((b, i) => {
-        const el = createBookmarkElement(b, i);
-        grid.appendChild(el);
-      });
+const grid = document.getElementById("bookmarkGrid");
+grid.innerHTML = '';
+
+bookmarks.forEach((b, i) => {
+  const el = createBookmarkElement(b, i);
+  grid.appendChild(el);
+});
+
+
       const savedSize = localStorage.getItem("tileSize") || 90;
       const slider = document.getElementById('tileSizeSlider');
       slider.value = savedSize;
@@ -950,7 +1147,7 @@
         alert("Please enter both a name and URL.");
         return;
       }
-      bookmarks.push({ url, name, icon });
+bookmarks.push({ url, name, icon });
       localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
       closeModal();
       location.reload();
@@ -1313,6 +1510,16 @@ let recognitionWasAborted = false;
       enableDragAndDrop();
       const savedIconStyle = localStorage.getItem("iconStyle") || "round";
 applyIconStyle(savedIconStyle);
+
+const weatherEnabled = localStorage.getItem("showWeather") === "true";
+applyWeatherToggle(weatherEnabled);
+
+const greetingEnabled = localStorage.getItem("showGreeting") === "true";
+applyGreetingToggle(greetingEnabled);
+
+if (localStorage.getItem("hideLabels") === "true") {
+  document.body.classList.add("hide-labels");
+}
 
     };
 
