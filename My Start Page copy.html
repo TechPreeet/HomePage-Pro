@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Start Page</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+    :root {
+      --accent-color: #007bff;
+      --bg-color: white;
+      --text-color: #000000;
+      --grid-gap: 20px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .tile.dragging {
+      opacity: 0.5;
+      transform: scale(0.95);
+      transition: transform 0.1s ease, opacity 0.1s ease;
+      z-index: 10;
+    }
+
+    .tile:not(.add-tile):hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.4));
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .tile:not(.add-tile):active {
+        transform: scale(1.1);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.4));
+      }
+    }
+
+    body.glass-mode .clock-wrapper {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    body.glass-mode .tile,
+    body.glass-mode .search-bar {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    body.glass-mode .clock-wrapper:hover,
+    body.glass-mode .tile:hover,
+    body.glass-mode .search-bar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    body.dark-mode.glass-mode .clock-wrapper,
+    body.dark-mode.glass-mode .tile,
+    body.dark-mode.glass-mode .search-bar {
+      background: rgba(30, 30, 30, 0.3);
+      border-color: rgba(100, 100, 100, 0.3);
+      color: var(--text-color);
+    }
+
+    body.glass-mode:not(.dark-mode) .clock-wrapper,
+    body.glass-mode:not(.dark-mode) .tile,
+    body.glass-mode:not(.dark-mode) .search-bar {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--text-color);
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .clock-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 20vh;
+      margin-top: 50px;
+      margin-bottom: 25px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 16px;
+      z-index: 1;
+    }
+
+    .clock {
+      font-size: 64px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .ampm {
+      font-size: 24px;
+      vertical-align: super;
+      margin-left: 5px;
+    }
+
+    .date {
+      font-size: 24px;
+      opacity: 1;
+      font-weight: 400;
+      margin-top: 8px;
+    }
+
+    .search-bar {
+      width: 90%;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .search-bar:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-size: 16px;
+      outline: none;
+    }
+
+    .search-bar svg, .search-bar .material-icons {
+      margin-left: 10px;
+      cursor: pointer;
+      color: var(--text-color);
+      transition: color 0.3s ease;
+    }
+
+    .search-bar svg:hover, .search-bar .material-icons:hover {
+      color: #007bff;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--grid-gap, 20px);
+      justify-content: center;
+      padding-bottom: 100px;
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+      overflow-y: auto;
+      height: auto;
+      margin-top: 20px;
+      min-height: 0;
+    }
+
+    .tile {
+      width: 90px;
+      text-align: center;
+      color: var(--text-color);
+      text-decoration: none;
+      font-size: 13px;
+      position: relative;
+      margin-left: 6px;
+      margin-right: 6px;
+      box-sizing: border-box;
+      z-index: 1;
+      word-break: break-word;
+      max-height: 120px;
+      overflow: hidden;
+      border-radius: 16px;
+    }
+
+    .tile img {
+      width: 80%;
+      height: 80%;
+      border-radius: 50%;
+    }
+
+    .tile.xsmall img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .tile.xsmall {
+      font-size: 9px;
+      width: 50px;
+    }
+
+    .tile.img {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      background: #ccc;
+    }
+
+    @media (max-width: 600px) {
+      .tile img {
+        width: 60px;
+        height: 60px;
+      }
+
+      .tile {
+        width: 70px;
+        font-size: 11px;
+      }
+
+      .tile.xsmall img {
+        width: 30px;
+        height: 30px;
+      }
+
+      .tile.xsmall {
+        width: 40px;
+      }
+
+      .clock {
+        font-size: 36px;
+      }
+
+      .ampm {
+        font-size: 18px;
+      }
+
+      .grid {
+        justify-content: center;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .tile img {
+        width: 100px;
+        height: 100px;
+      }
+
+      .tile {
+        width: 110px;
+        font-size: 14px;
+      }
+
+      .tile.xsmall img {
+        width: 50px;
+        height: 50px;
+      }
+
+      .tile.xsmall {
+        width: 60px;
+        margin: 2px 0;
+      }
+
+      .tile.small img {
+        width: 50px;
+        height: 50px;
+      }
+
+      .tile.small {
+        font-size: 11px;
+        width: 60px;
+        margin: 4px 0;
+      }
+
+      :root {
+        --grid-gap: 10px;
+      }
+    }
+
+    .tile.small img {
+      width: 50px;
+      height: 50px;
+    }
+
+    .tile.small {
+      font-size: 11px;
+      width: 60px;
+    }
+
+    .tile.medium img {
+      width: 80px;
+      height: 80px;
+    }
+
+    .tile.medium {
+      font-size: 13px;
+      width: 90px;
+    }
+
+    .tile.large img {
+      width: 100px;
+      height: 100px;
+    }
+
+    .tile.large {
+      font-size: 15px;
+      width: 110px;
+    }
+
+    .tile .menu {
+      position: absolute;
+      top: 0;
+      right: 0;
+      cursor: pointer;
+      font-weight: bold;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border-radius: 5px;
+      padding: 2px 6px;
+      z-index: 11;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .tile .menu {
+        display: none;
+      }
+
+      .tile:hover .menu {
+        display: block;
+      }
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .tile .menu {
+        display: block !important;
+      }
+    }
+
+    .tile .menu-options {
+      display: none;
+      position: absolute;
+      top: 25px;
+      right: 0;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 5px;
+      border-radius: 5px;
+      z-index: 12;
+      min-width: 80px;
+    }
+
+    .tile .menu-options div {
+      padding: 5px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tile .menu-options div:hover {
+      background: #444;
+    }
+    .tile {
+  position: relative;
+}
+
+    #toolbarBtn {
+      background: rgba(30, 30, 30, 0.85);
+      color: white;
+      backdrop-filter: blur(10px);
+      transition: background 0.3s ease, color 0.3s ease;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    #toolbarPanel {
+      display: none;
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 250px;
+      max-height: 50vh;
+      overflow-y: auto;
+      background: rgba(30, 30, 30, 0.7);
+      backdrop-filter: blur(15px);
+      color: white;
+      border-radius: 10px;
+      padding: 15px;
+      z-index: 101;
+      transition: background 0.3s ease, color 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .toolbar-option {
+      margin: 10px 0;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .toolbar-option:hover {
+      background: #007bff;
+    }
+
+    #tileSizeSlider {
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    #bgInput, #importInput, #videoInput, #lensInput {
+      display: none;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.3s ease;
+      opacity: 0;
+    }
+
+    .modal:not(.hidden) {
+      opacity: 1;
+    }
+
+    .modal-content {
+      background: rgba(30, 30, 30, 0.85);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.3s ease;
+      transform: scale(0.9);
+    }
+
+    .modal:not(.hidden) .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-content input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      width: 80%;
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 5px;
+    }
+
+    .modal-content button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      cursor: pointer;
+      width: 80%;
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 5px;
+    }
+
+    .modal-content button:hover {
+      background: #007bff;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    ::-webkit-media-controls-panel,
+    ::cue,
+    ::-webkit-speech {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    .material-icons {
+      font-family: 'Material Icons';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+
+    #videoBg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    body.video-active #videoBg {
+      z-index: 0;
+    }
+
+    body.bg-image-active {
+      background-size: cover;
+      background-position: center;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+  <video id="videoBg" autoplay muted loop playsinline class="hidden"></video>
+  <div class="container">
+    <div class="clock-wrapper">
+      <div class="clock" id="clock"></div>
+      <div class="date" id="date"></div>
+      <div id="weatherContainer" style="font-size: 18px; margin-top: 10px; display: none;"></div>
+    </div>
+
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search the web..."
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
+        autocapitalize="off"
+        onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
+      />
+      <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
+        xmlns="http://www.w3.org/2000/svg"
+        height="24" width="24" fill="currentColor">
+        <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
+      </svg>
+    </div>
+    <div class="grid" id="bookmarkGrid"></div>
+  </div>
+
+  <div id="bookmarkModal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="modalTitle">Add Bookmark</h3>
+      <input type="text" id="bookmarkName" placeholder="Name">
+      <input type="text" id="bookmarkUrl" placeholder="URL">
+      <input type="text" id="bookmarkIcon" placeholder="Icon URL (optional)">
+      <button onclick="submitBookmark()">Add</button>
+      <button id="cancelBtn" onclick="closeModal(); console.log('Cancel clicked');">Cancel</button>
+    </div>
+  </div>
+
+  <div id="toolbarBtn" onclick="toggleToolbar()">⚙️</div>
+
+  <div id="toolbarPanel">
+    <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()">🖼️ Change Background</div>
+    <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()">🎥 Set Video Background</div>
+    <div class="toolbar-option" aria-label="Set Video URL" onclick="promptVideoUrl()">🌐 Set Video URL</div>
+    <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg">
+    <input type="file" id="bgInput" accept="image/*" />
+    <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()">🧊 Toggle Glass Mode</div>    
+    <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
+    <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()">🕒 Toggle Clock Format</div>
+    <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()">⏱️ Toggle Clock Seconds</div>
+    <div class="toolbar-option" onclick="toggleWeather()">🌦️ Toggle Weather Widget</div>
+    <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()">🌀 Toggle Icon Style</div>
+    <div class="toolbar-option">Resize Tiles</div>
+    <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" onchange="setTileSize(this.value)">
+    <div class="toolbar-option" aria-label="Add Bookmark" onclick="addBookmark(); console.log('Add Bookmark clicked');">📝 Add Bookmark</div>
+    <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
+    <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
+    <input type="file" id="importInput" accept="application/json">
+  </div>
+
+  <script>
+    let bookmarks = [];
+    let glassMode = false;
+
+    // IndexedDB setup
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("videoBackgroundDB", 2);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains("videos")) {
+            db.createObjectStore("videos", { keyPath: "id" });
+          }
+        };
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(new Error(`IndexedDB open error: ${event.target.error}`));
+      });
+    }
+
+    async function storeVideo(file) {
+      try {
+        // Validate file size (limit to 100 MB)
+        if (file.size > 100 * 1024 * 1024) {
+          throw new Error("Video file exceeds 100 MB limit.");
+        }
+        const db = await openDB();
+        const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB chunks
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+        // Clear existing video data
+        const clearTransaction = db.transaction(["videos"], "readwrite");
+        const clearStore = clearTransaction.objectStore("videos");
+        for (let i = 0; i < 100; i++) {
+          clearStore.delete(`backgroundVideo_${i}`);
+        }
+        await new Promise((resolve, reject) => {
+          clearTransaction.oncomplete = resolve;
+          clearTransaction.onerror = () => reject(new Error(`Failed to clear old video: ${clearTransaction.error}`));
+        });
+
+        // Store video in chunks with separate transactions
+        for (let i = 0; i < totalChunks; i++) {
+          const start = i * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunk = file.slice(start, end);
+          const chunkData = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error(`FileReader error for chunk ${i}: ${reader.error}`));
+            reader.readAsArrayBuffer(chunk);
+          });
+
+          const transaction = db.transaction(["videos"], "readwrite");
+          const store = transaction.objectStore("videos");
+          await new Promise((resolve, reject) => {
+            const putRequest = store.put({
+              id: `backgroundVideo_${i}`,
+              data: chunkData,
+              mimeType: file.type,
+              chunkIndex: i,
+              totalChunks: totalChunks
+            });
+            putRequest.onsuccess = resolve;
+            putRequest.onerror = () => reject(new Error(`IndexedDB put error for chunk ${i}: ${putRequest.error}`));
+          });
+        }
+
+        console.log("Video stored successfully in IndexedDB");
+        return;
+      } catch (error) {
+        console.error("IndexedDB store error:", error.message, error.stack);
+        alert(`Failed to store video: ${error.message}. It will play this session but won't persist after refresh.`);
+        throw error;
+      }
+    }
+
+    async function getVideo() {
+      try {
+        const db = await openDB();
+        const transaction = db.transaction(["videos"], "readonly");
+        const store = transaction.objectStore("videos");
+        const chunks = [];
+        let mimeType = "video/mp4";
+        let totalChunks = 0;
+
+        // Retrieve all chunks
+        for (let i = 0; i < 100; i++) {
+          const request = await new Promise((resolve, reject) => {
+            const req = store.get(`backgroundVideo_${i}`);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(new Error(`IndexedDB get error for chunk ${i}: ${req.error}`));
+          });
+          if (!request) break;
+          chunks.push(request.data);
+          mimeType = request.mimeType || mimeType;
+          totalChunks = request.totalChunks || 1;
+        }
+
+        if (chunks.length === 0) {
+          console.warn("No video data found in IndexedDB");
+          return null;
+        }
+
+        // Combine chunks
+        const combinedData = new Blob(chunks, { type: mimeType });
+        console.log("Video retrieved from IndexedDB:", chunks.length, "chunks");
+        return { data: combinedData, mimeType };
+      } catch (error) {
+        console.error("IndexedDB get error:", error.message, error.stack);
+        return null;
+      }
+    }
+
+    async function promptVideoUrl() {
+      const url = prompt("Enter video URL (e.g., from GitHub, .mp4, .webm, or .ogg):");
+      if (url && (url.endsWith(".mp4") || url.endsWith(".webm") || url.endsWith(".ogg"))) {
+        const videoBg = document.getElementById("videoBg");
+        try {
+          // Test URL accessibility
+          const response = await fetch(url, { method: "HEAD" });
+          if (!response.ok) throw new Error(`Failed to access video URL: ${response.statusText}`);
+          videoBg.src = url;
+          videoBg.load();
+          videoBg.play().catch(error => console.error("Video play error:", error));
+          videoBg.classList.remove("hidden");
+          document.body.classList.add("video-active");
+          document.body.classList.remove("bg-image-active");
+          localStorage.setItem("videoUrl", url);
+          localStorage.setItem("hasVideo", "true");
+          localStorage.removeItem("bgImage");
+          // Clear IndexedDB
+          try {
+            const db = await openDB();
+            const transaction = db.transaction(["videos"], "readwrite");
+            const store = transaction.objectStore("videos");
+            for (let i = 0; i < 100; i++) {
+              store.delete(`backgroundVideo_${i}`);
+            }
+            await new Promise((resolve, reject) => {
+              transaction.oncomplete = resolve;
+              transaction.onerror = () => reject(new Error(`Failed to clear IndexedDB: ${transaction.error}`));
+            });
+          } catch (error) {
+            console.error("Error clearing IndexedDB:", error);
+          }
+        } catch (error) {
+          console.error("Video URL error:", error.message, error.stack);
+          alert(`Failed to load video from URL: ${error.message}`);
+        }
+      } else {
+        alert("Please enter a valid video URL (.mp4, .webm, or .ogg).");
+      }
+    }
+
+    function updateClock() {
+      const now = new Date();
+      const timeOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: showSeconds ? '2-digit' : undefined,
+        hour12: !is24Hour
+      };
+      const timeParts = now.toLocaleTimeString([], timeOptions).split(' ');
+      document.getElementById("clock").innerHTML = `${timeParts[0]}<span class="ampm">${timeParts[1] || ''}</span>`;
+      document.getElementById("date").textContent = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    let is24Hour = localStorage.getItem("clockFormat") !== "12";
+    let showSeconds = localStorage.getItem("showSeconds") === "true";
+
+    function toggleClockFormat() {
+      is24Hour = !is24Hour;
+      localStorage.setItem("clockFormat", is24Hour ? "24" : "12");
+      updateClock();
+    }
+
+    function toggleClockSeconds() {
+      showSeconds = !showSeconds;
+      localStorage.setItem("showSeconds", showSeconds);
+      updateClock();
+    }
+    function toggleWeather() {
+  const current = localStorage.getItem("showWeather") === "true";
+  localStorage.setItem("showWeather", !current);
+  applyWeatherToggle(!current);
+}
+function applyWeatherToggle(enabled) {
+  const container = document.getElementById("weatherContainer");
+  if (enabled) {
+    container.style.display = "block";
+    fetchWeather();
+  } else {
+    container.style.display = "none";
+  }
+}
+function fetchWeather() {
+async function fetchWeather() {
+  if (!navigator.geolocation) {
+    displayWeatherFallback();
+    return;
+  }
+
+  console.log("Getting geolocation...");
+
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const { latitude, longitude } = position.coords;
+    console.log("Coordinates:", latitude, longitude);
+
+    try {
+      // Step 1: Get city name using reverse geocoding
+      const geoURL = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=en`;
+      const geoResponse = await fetch(geoURL);
+      const geoData = await geoResponse.json();
+      console.log("Geocoding response:", geoData);
+
+      const city = geoData?.results?.[0]?.name || "Your Location";
+      console.log("City detected:", city);
+
+      // Step 2: Get weather data
+      const weatherURL = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+      const weatherResponse = await fetch(weatherURL);
+      const weatherData = await weatherResponse.json();
+      const weather = weatherData.current_weather;
+
+      console.log("Weather response:", weather);
+
+      const temp = Math.round(weather.temperature);
+      const icon = getWeatherEmoji(weather.weathercode);
+      const text = `📍 ${city} – ${temp}°C ${icon}`;
+      document.getElementById("weatherContainer").textContent = text;
+    } catch (err) {
+      console.error("Weather fetch error:", err);
+      document.getElementById("weatherContainer").textContent = "Could not load weather.";
+    }
+  }, displayWeatherFallback);
+}
+}
+function displayWeatherFallback() {
+  document.getElementById("weatherContainer").textContent = "Weather data not available.";
+}
+function getWeatherEmoji(code) {
+  const map = {
+    0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+    45: "🌫️", 48: "🌫️",
+    51: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️",
+    71: "❄️", 73: "❄️", 75: "❄️",
+    80: "🌧️", 81: "🌧️", 82: "🌧️",
+    95: "⛈️", 96: "⛈️", 99: "⛈️"
+  };
+  return map[code] || "🌡️";
+}
+
+    function createBookmarkElement(bookmark, index) {
+      const a = document.createElement("a");
+      a.href = bookmark.url;
+      a.className = "tile";
+      a.draggable = true;
+      a.dataset.index = index;
+      a.tabIndex = 0;
+      a.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") window.location.href = bookmark.url;
+      });
+      const img = document.createElement("img");
+      try {
+        img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
+      } catch (e) {
+        console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
+        img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
+      }
+      img.draggable = false;
+      const name = document.createElement("div");
+      name.textContent = bookmark.name;
+      name.draggable = false;
+      const menu = document.createElement("div");
+      menu.className = "menu";
+      menu.textContent = "⋮";
+      const options = document.createElement("div");
+      options.className = "menu-options";
+["Edit", "Delete"].forEach(action => {
+        const opt = document.createElement("div");
+        opt.textContent = action;
+        opt.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (action === "Delete") {
+            bookmarks.splice(index, 1);
+            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+            location.reload();
+          } else if (action === "Edit") {
+            const modal = document.getElementById("bookmarkModal");
+            const nameInput = document.getElementById("bookmarkName");
+            const urlInput = document.getElementById("bookmarkUrl");
+            const iconInput = document.getElementById("bookmarkIcon");
+            const modalTitle = document.getElementById("modalTitle");
+            modalTitle.textContent = "Edit Bookmark";
+            nameInput.value = bookmark.name;
+            urlInput.value = bookmark.url;
+            iconInput.value = bookmark.icon || "";
+            modal.classList.remove("hidden");
+            const submitBtn = modal.querySelector("button:first-of-type");
+            const originalSubmit = submitBtn.onclick;
+            submitBtn.textContent = "Save";
+            submitBtn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const newName = nameInput.value.trim();
+              const newURL = urlInput.value.trim();
+              const newIcon = iconInput.value.trim();
+              if (!newName || !newURL) return;
+bookmarks[index] = {
+  name: newName,
+  url: newURL,
+  icon: newIcon,
+};
+              localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+              closeModal();
+              location.reload();
+            };
+            modal.addEventListener("click", function handler(e) {
+              if (e.target === modal) {
+                submitBtn.textContent = "Add";
+                submitBtn.onclick = originalSubmit;
+                modalTitle.textContent = "Add Bookmark";
+                modal.removeEventListener("click", handler);
+              }
+            }, { once: true });
+          }         
+
+          options.style.display = "none";
+        };
+        options.appendChild(opt);
+      });
+      menu.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.querySelectorAll(".menu-options").forEach(m => {
+          if (m !== options) m.style.display = "none";
+        });
+        options.style.display = options.style.display === "block" ? "none" : "block";
+      };
+      a.appendChild(menu);
+      a.appendChild(options);
+      a.appendChild(img);
+      a.appendChild(name);
+      return a;
+    }
+
+    function loadBookmarks() {
+      bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+const grid = document.getElementById("bookmarkGrid");
+grid.innerHTML = '';
+
+bookmarks.forEach((b, i) => {
+  const el = createBookmarkElement(b, i);
+  grid.appendChild(el);
+});
+
+
+      const savedSize = localStorage.getItem("tileSize") || 90;
+      const slider = document.getElementById('tileSizeSlider');
+      slider.value = savedSize;
+      setTileSize(savedSize);
+      applyGlassMode();
+    }
+
+    function enableDragAndDrop() {
+      const grid = document.getElementById("bookmarkGrid");
+      let dragSrcIndex = null;
+
+      grid.addEventListener("dragstart", (e) => {
+        const tile = e.target.closest(".tile:not(.add-tile)");
+        if (!tile) return;
+        dragSrcIndex = Number(tile.dataset.index);
+        tile.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", dragSrcIndex);
+      });
+
+      grid.addEventListener("dragend", (e) => {
+        const tile = e.target.closest(".tile:not(.add-tile)");
+        if (!tile) return;
+        tile.classList.remove("dragging");
+      });
+
+      grid.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
+
+      grid.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const targetTile = e.target.closest(".tile:not(.add-tile)");
+        if (!targetTile || targetTile.dataset.index === undefined) return;
+        const dropIndex = Number(targetTile.dataset.index);
+        if (dragSrcIndex === dropIndex) return;
+        const moved = bookmarks.splice(dragSrcIndex, 1)[0];
+        bookmarks.splice(dropIndex, 0, moved);
+        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        location.reload();
+      });
+    }
+
+    function addBookmark() {
+      console.log('Entering addBookmark');
+      const modal = document.getElementById("bookmarkModal");
+      if (modal) {
+        console.log('Modal found, removing hidden class');
+        modal.classList.remove("hidden");
+        modal.style.opacity = '1';
+        modal.style.zIndex = '2000';
+        modal.style.display = 'flex';
+        document.getElementById("modalTitle").textContent = "Add Bookmark";
+        document.getElementById("bookmarkModal").querySelector("button:first-of-type").textContent = "Add";
+        console.log('Modal state after update:', modal.className, modal.style.opacity, modal.style.display);
+      } else {
+        console.error('Modal element not found');
+      }
+      event.stopPropagation();
+    }
+
+    function submitBookmark() {
+      const name = document.getElementById("bookmarkName").value.trim();
+      const url = document.getElementById("bookmarkUrl").value.trim();
+      const icon = document.getElementById("bookmarkIcon").value.trim();
+      if (!url || !name) {
+        alert("Please enter both a name and URL.");
+        return;
+      }
+bookmarks.push({ url, name, icon });
+      localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+      closeModal();
+      location.reload();
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("bookmarkModal");
+      if (modal) {
+        console.log('Closing modal');
+        modal.classList.add("hidden");
+        modal.style.display = 'none';
+        document.getElementById("bookmarkName").value = "";
+        document.getElementById("bookmarkUrl").value = "";
+        document.getElementById("bookmarkIcon").value = "";
+        document.getElementById("modalTitle").textContent = "Add Bookmark";
+        const submitBtn = modal.querySelector("button:first-of-type");
+        submitBtn.textContent = "Add";
+        submitBtn.onclick = submitBookmark;
+      }
+    }
+
+    document.getElementById("bookmarkModal").addEventListener("click", function(event) {
+      console.log('Modal clicked, target:', event.target);
+      if (event.target === this || event.target.id === "cancelBtn") {
+        closeModal();
+      }
+    });
+
+document.getElementById("bookmarkIcon").addEventListener("paste", async function (e) {
+  const clipboardItems = e.clipboardData.items;
+  for (let i = 0; i < clipboardItems.length; i++) {
+    const item = clipboardItems[i];
+    if (item.type.indexOf("image") !== -1) {
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        document.getElementById("bookmarkIcon").value = event.target.result; // base64 image data
+      };
+      reader.readAsDataURL(blob);
+      e.preventDefault();
+      break;
+    }
+  }
+});
+
+    function toggleToolbar() {
+      const panel = document.getElementById("toolbarPanel");
+      panel.style.display = panel.style.display === "block" ? "none" : "block";
+    }
+
+    function toggleDarkMode() {
+      const isDark = localStorage.getItem("dark-mode") === "true";
+      const newDark = !isDark;
+      localStorage.setItem("dark-mode", newDark);
+      applyDarkMode(newDark);
+    }
+
+    function applyDarkMode(enabled) {
+      if (enabled) {
+        document.body.classList.add("dark-mode");
+        document.documentElement.style.setProperty("--bg-color", "#121212");
+        document.documentElement.style.setProperty("--text-color", "#ffffff");
+      } else {
+        document.body.classList.remove("dark-mode");
+        document.documentElement.style.setProperty("--bg-color", "white");
+        document.documentElement.style.setProperty("--text-color", "#000000");
+      }
+    }
+
+    function applyGlassMode() {
+      const body = document.body;
+      const clockWrapper = document.querySelector(".clock-wrapper");
+      const searchBar = document.querySelector(".search-bar");
+      const tiles = document.querySelectorAll(".tile:not(.add-tile)");
+      if (glassMode) {
+        body.classList.add("glass-mode");
+        clockWrapper.classList.add("glass-clock");
+        searchBar.classList.add("glass-tile");
+        tiles.forEach(tile => tile.classList.add("glass-tile"));
+      } else {
+        body.classList.remove("glass-mode");
+        clockWrapper.classList.remove("glass-clock");
+        searchBar.classList.remove("glass-tile");
+        tiles.forEach(tile => tile.classList.remove("glass-tile"));
+      }
+    }
+
+    function toggleGlassMode() {
+      glassMode = !glassMode;
+      localStorage.setItem("glassMode", glassMode);
+      applyGlassMode();
+    }
+    function toggleIconStyle() {
+  const current = localStorage.getItem("iconStyle") || "round";
+  const newStyle = current === "round" ? "squircle" : "round";
+  localStorage.setItem("iconStyle", newStyle);
+  applyIconStyle(newStyle);
+}
+function applyIconStyle(style) {
+  const allIcons = document.querySelectorAll(".tile img");
+  allIcons.forEach(img => {
+    if (style === "squircle") {
+      img.style.borderRadius = "20%";
+    } else {
+      img.style.borderRadius = "50%";
+    }
+  });
+}
+
+
+    function setTileSize(size) {
+      const tiles = document.querySelectorAll(".tile");
+      const grid = document.getElementById('bookmarkGrid');
+      const slider = document.getElementById('tileSizeSlider');
+      let width = parseInt(size);
+      tiles.forEach(tile => {
+        tile.style.width = `${width}px`;
+        tile.style.fontSize = `${Math.max(9, Math.min(15, width / 10))}px`;
+        const img = tile.querySelector("img");
+        if (img) {
+          img.style.width = `${width * 0.8}px`;
+          img.style.height = `${width * 0.8}px`;
+        }
+      });
+      grid.classList.remove('tile-xsmall', 'tile-small', 'tile-medium', 'tile-large');
+      slider.value = width;
+      localStorage.setItem("tileSize", width);
+    }
+
+    document.getElementById("importInput").addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data)) {
+            localStorage.setItem("bookmarks", JSON.stringify(data));
+            location.reload();
+          } else {
+            alert("Invalid bookmark file format. Please upload a valid JSON file.");
+          }
+        } catch (error) {
+          console.error("Import error:", error);
+          alert("Failed to import bookmarks: " + error.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById("videoInput").addEventListener("change", async function (event) {
+      const file = event.target.files[0];
+      if (file && (file.type === "video/mp4" || file.type === "video/webm" || file.type === "video/ogg")) {
+        const videoBg = document.getElementById("videoBg");
+        const blobUrl = URL.createObjectURL(file);
+        videoBg.src = blobUrl;
+        videoBg.load();
+        videoBg.play().catch(error => console.error("Video play error:", error));
+        videoBg.classList.remove("hidden");
+        document.body.classList.add("video-active");
+        document.body.classList.remove("bg-image-active");
+        try {
+          await storeVideo(file);
+          localStorage.setItem("hasVideo", "true");
+          localStorage.removeItem("videoUrl");
+          localStorage.removeItem("bgImage");
+          console.log("Video storage completed");
+        } catch (error) {
+          console.error("Failed to store video:", error.message, error.stack);
+        }
+      } else {
+        alert("Please select a valid video file (MP4, WebM, or OGG).");
+      }
+    });
+
+    document.getElementById("bgInput").addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const videoBg = document.getElementById("videoBg");
+          videoBg.classList.add("hidden");
+          document.body.classList.remove("video-active");
+          document.body.style.backgroundImage = `url('${e.target.result}')`;
+          document.body.classList.add("bg-image-active");
+          localStorage.setItem("bgImage", e.target.result);
+          localStorage.removeItem("hasVideo");
+          localStorage.removeItem("videoUrl");
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function searchGoogle() {
+      const input = document.getElementById("searchInput").value;
+      if (input.trim()) {
+        window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(input);
+      }
+    }
+
+    let recognition = null;
+let recognitionWasAborted = false;
+
+    function startVoiceSearch() {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Voice search is not supported. Please type your query.");
+        document.getElementById("searchInput").focus();
+        return;
+      }
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      const searchInput = document.getElementById("searchInput");
+      const micIcon = document.getElementById("micIcon");
+      let finalTranscript = "";
+      recognition.onstart = () => {
+        recognition._isStarted = true;
+        searchInput.placeholder = "Listening...";
+        micIcon.style.color = "red";
+      };
+      recognition.onresult = (event) => {
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        searchInput.value = finalTranscript + interimTranscript;
+      };
+      recognition.onerror = (event) => {
+  if (event.error !== "aborted") {
+    alert("Voice recognition error: " + event.error);
+  }
+  searchInput.placeholder = "Search the web...";
+  micIcon.style.color = "";
+};
+
+      recognition.onend = () => {
+  recognition._isStarted = false;
+  searchInput.placeholder = "Search the web...";
+  micIcon.style.color = "";
+
+  if (!recognitionWasAborted && searchInput.value.trim()) {
+    searchGoogle();
+  }
+
+  // Reset the abort flag for next time
+  recognitionWasAborted = false;
+};
+
+      finalTranscript = "";
+      recognition.start();
+    }
+   document.addEventListener("click", function (event) {
+  if (recognition && recognition._isStarted) {
+    recognitionWasAborted = true; // mark that we aborted it
+    recognition.abort();
+    cleanupVoiceSearch();
+  }
+}, true);
+
+
+
+    function cancelVoiceSearch() {
+      if (recognition) {
+        recognition.abort();
+        cleanupVoiceSearch();
+      }
+    }
+
+    function cleanupVoiceSearch() {
+      const micBtn = document.getElementById("micIcon");
+      const searchInput = document.getElementById("searchInput");
+      if (micBtn) micBtn.style.color = "";
+      if (searchInput) searchInput.placeholder = "Search the web...";
+    }
+
+    function exportBookmarks() {
+      try {
+        const bookmarksData = localStorage.getItem("bookmarks");
+        if (!bookmarksData || bookmarksData === "[]") {
+          alert("No bookmarks to export.");
+          return;
+        }
+        const blob = new Blob([bookmarksData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "bookmarks.json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Export error:", error);
+        alert("Failed to export bookmarks: " + error.message);
+      }
+    }
+
+    window.onload = async function() {
+      updateClock();
+      setInterval(updateClock, 1000);
+      glassMode = localStorage.getItem("glassMode") === "true";
+      applyGlassMode();
+      const savedSize = localStorage.getItem("tileSize") || 90;
+      const slider = document.getElementById('tileSizeSlider');
+      slider.value = savedSize;
+      setTileSize(savedSize);
+      const bg = localStorage.getItem("bgImage");
+      if (bg) {
+        document.body.style.backgroundImage = `url('${bg}')`;
+        document.body.classList.add("bg-image-active");
+      }
+      if (localStorage.getItem("hasVideo") === "true") {
+        const videoUrl = localStorage.getItem("videoUrl");
+        const videoBg = document.getElementById("videoBg");
+        if (videoUrl) {
+          try {
+            const response = await fetch(videoUrl, { method: "HEAD" });
+            if (response.ok) {
+              videoBg.src = videoUrl;
+              videoBg.classList.remove("hidden");
+              document.body.classList.add("video-active");
+              videoBg.load();
+              videoBg.play().catch(error => console.error("Video play error on load:", error));
+            } else {
+              console.warn("Video URL inaccessible:", videoUrl);
+              localStorage.removeItem("videoUrl");
+              localStorage.removeItem("hasVideo");
+            }
+          } catch (error) {
+            console.error("Failed to load video URL on startup:", error.message, error.stack);
+            localStorage.removeItem("videoUrl");
+            localStorage.removeItem("hasVideo");
+          }
+        } else {
+          try {
+            const videoData = await getVideo();
+            if (videoData && videoData.data) {
+              videoBg.src = URL.createObjectURL(videoData.data);
+              videoBg.classList.remove("hidden");
+              document.body.classList.add("video-active");
+              videoBg.load();
+              videoBg.play().catch(error => console.error("Video play error on load:", error));
+            } else {
+              console.warn("No video data found in IndexedDB");
+              localStorage.removeItem("hasVideo");
+            }
+          } catch (error) {
+            console.error("Failed to load video on startup:", error.message, error.stack);
+            localStorage.removeItem("hasVideo");
+          }
+        }
+      }
+      applyDarkMode(localStorage.getItem("dark-mode") === "true");
+      loadBookmarks();
+      enableDragAndDrop();
+      const savedIconStyle = localStorage.getItem("iconStyle") || "round";
+applyIconStyle(savedIconStyle);
+
+const weatherEnabled = localStorage.getItem("showWeather") === "true";
+applyWeatherToggle(weatherEnabled);
+
+
+    };
+
+    document.getElementById("searchInput").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        const query = this.value.trim();
+        if (query) {
+          window.location.href = "https://www.google.com/search?q=" + encodeURIComponent(query);
+        }
+      }
+    });
+
+    document.addEventListener("click", function (event) {
+      const toolbar = document.getElementById("toolbarPanel");
+      const button = document.getElementById("toolbarBtn");
+      const modal = document.getElementById("bookmarkModal");
+      if (!toolbar.contains(event.target) && !button.contains(event.target)) {
+        toolbar.style.display = "none";
+      }
+      if (modal && !modal.contains(event.target) && !modal.classList.contains("hidden")) {
+        console.log('Click outside modal detected');
+        closeModal();
+      }
+      document.querySelectorAll(".menu-options").forEach(m => {
+        m.style.display = "none";
+      });
+    });
+  </script>
+</body>
+</html>
