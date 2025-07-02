@@ -593,6 +593,7 @@
     <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
     <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()">🕒 Toggle Clock Format</div>
     <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()">⏱️ Toggle Clock Seconds</div>
+    <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()">🌀 Toggle Icon Style</div>
     <div class="toolbar-option">Resize Tiles</div>
     <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" onchange="setTileSize(this.value)">
     <div class="toolbar-option" aria-label="Add Bookmark" onclick="addBookmark(); console.log('Add Bookmark clicked');">📝 Add Bookmark</div>
@@ -978,6 +979,23 @@
       }
     });
 
+document.getElementById("bookmarkIcon").addEventListener("paste", async function (e) {
+  const clipboardItems = e.clipboardData.items;
+  for (let i = 0; i < clipboardItems.length; i++) {
+    const item = clipboardItems[i];
+    if (item.type.indexOf("image") !== -1) {
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        document.getElementById("bookmarkIcon").value = event.target.result; // base64 image data
+      };
+      reader.readAsDataURL(blob);
+      e.preventDefault();
+      break;
+    }
+  }
+});
+
     function toggleToolbar() {
       const panel = document.getElementById("toolbarPanel");
       panel.style.display = panel.style.display === "block" ? "none" : "block";
@@ -1025,6 +1043,23 @@
       localStorage.setItem("glassMode", glassMode);
       applyGlassMode();
     }
+    function toggleIconStyle() {
+  const current = localStorage.getItem("iconStyle") || "round";
+  const newStyle = current === "round" ? "squircle" : "round";
+  localStorage.setItem("iconStyle", newStyle);
+  applyIconStyle(newStyle);
+}
+function applyIconStyle(style) {
+  const allIcons = document.querySelectorAll(".tile img");
+  allIcons.forEach(img => {
+    if (style === "squircle") {
+      img.style.borderRadius = "20%";
+    } else {
+      img.style.borderRadius = "50%";
+    }
+  });
+}
+
 
     function setTileSize(size) {
       const tiles = document.querySelectorAll(".tile");
@@ -1276,6 +1311,9 @@ let recognitionWasAborted = false;
       applyDarkMode(localStorage.getItem("dark-mode") === "true");
       loadBookmarks();
       enableDragAndDrop();
+      const savedIconStyle = localStorage.getItem("iconStyle") || "round";
+applyIconStyle(savedIconStyle);
+
     };
 
     document.getElementById("searchInput").addEventListener("keydown", function(event) {
