@@ -72,10 +72,43 @@
     body.glass-mode:not(.dark-mode) .clock-wrapper,
     body.glass-mode:not(.dark-mode) .tile,
     body.glass-mode:not(.dark-mode) .search-bar {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.007);
       border-color: rgba(255, 255, 255, 0.15);
       color: var(--text-color);
     }
+    
+   body.minimalist {
+  background: linear-gradient(135deg, rgba(100, 100, 100, 0.4), rgba(60, 60, 60, 0.4)) !important;
+  background-color: #2a2a2a !important; /* fallback for older browsers */
+  background-image: none !important;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+body.minimalist .clock-wrapper {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  pointer-events: none;
+}
+
+
+body.minimalist #clock,
+body.minimalist #date,
+body.minimalist #weatherContainer,
+body.minimalist #greeting {
+  display: none !important;
+}
+
+body.minimalist #backgroundVideo {
+  display: none !important;
+}
+
+body.minimalist * {
+  animation: none !important;
+  transition: none !important;
+}
+
 
     html, body {
       height: 100%;
@@ -104,7 +137,7 @@
       margin-top: 50px;
       margin-bottom: 25px;
       padding: 20px;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.143);
       border-radius: 16px;
       z-index: 1;
     }
@@ -322,7 +355,7 @@
       font-size: 15px;
       width: 110px;
     }
-    .hide-labels .tile div:not(.menu):not(.menu-options):not(.pin-indicator) {
+    .hide-labels .bookmark-label {
   display: none;
 }
 
@@ -583,6 +616,19 @@
   opacity: 1;
 }
 
+@keyframes spinOnce {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#micIcon.animate-mic {
+  animation: spinOnce 1s ease;
+}
+
+
+
+
+
   </style>
 </head>
 <body>
@@ -607,6 +653,11 @@
         autocapitalize="off"
         onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
       />
+      <div id="searchWrapper" style="position: relative; display: inline-block;">
+  <input id="searchInput" type="text" placeholder="" />
+  <div id="animatedPlaceholder" aria-hidden="true"></div>
+</div>
+
       <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
         xmlns="http://www.w3.org/2000/svg"
         height="24" width="24" fill="currentColor">
@@ -630,6 +681,7 @@
   <div id="toolbarBtn" onclick="toggleToolbar()">⚙️</div>
 
   <div id="toolbarPanel">
+    <div class="toolbar-option" aria-label="Add Bookmark" onclick="addBookmark(); console.log('Add Bookmark clicked');">📝 Add Bookmark</div>
     <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()">🖼️ Change Background</div>
     <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()">🎥 Set Video Background</div>
     <div class="toolbar-option" aria-label="Set Video URL" onclick="promptVideoUrl()">🌐 Set Video URL</div>
@@ -644,11 +696,12 @@
     <div class="toolbar-option" onclick="toggleLabels()">🔤 Toggle Bookmark Labels</div>
     <div class="toolbar-option">Resize Bookmark Tiles</div>
     <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" onchange="setTileSize(this.value)">
-    <div class="toolbar-option" aria-label="Add Bookmark" onclick="addBookmark(); console.log('Add Bookmark clicked');">📝 Add Bookmark</div>
     <div class="toolbar-option" onclick="toggleGreeting()">👤 Toggle Greeting</div>
     <div class="toolbar-option" onclick="askUserName()">✏️ Change Name</div>
+    <div class="toolbar-option" onclick="toggleMinimalistMode()">🧘 Minimalist Mode</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
     <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
+    <div class="toolbar-option" onclick="resetAllSettings()">🗑️ Reset All Settings</div>
     <input type="file" id="importInput" accept="application/json">
   </div>
 
@@ -906,6 +959,11 @@ function getWeatherEmoji(code) {
   return map[code] || "🌡️";
 }
 
+function toggleMinimalistMode() {
+  const isMinimal = document.body.classList.toggle("minimalist");
+  localStorage.setItem("minimalistMode", isMinimal);
+}
+
 function toggleGreeting() {
   const current = localStorage.getItem("showGreeting") === "true";
   localStorage.setItem("showGreeting", !current);
@@ -971,6 +1029,32 @@ function toggleLabels() {
   const hiding = document.body.classList.toggle("hide-labels");
   localStorage.setItem("hideLabels", hiding);
 }
+function animatePlaceholderText() {
+  const input = document.getElementById("searchInput");
+  const text = "Search the web...";
+  input.placeholder = ""; // Start empty
+
+  let index = 0;
+  const speed = 60; // Speed in ms per character
+
+  function typeNext() {
+    if (index <= text.length) {
+      input.placeholder = text.slice(0, index++);
+      setTimeout(typeNext, speed);
+    }
+  }
+
+  typeNext();
+}
+
+function resetAllSettings() {
+  const confirmReset = confirm("Are you sure you want to reset everything?\nThis will remove all bookmarks and settings.");
+  if (confirmReset) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
 
 
     function createBookmarkElement(bookmark, index) {
@@ -991,9 +1075,10 @@ function toggleLabels() {
         img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
       }
       img.draggable = false;
-      const name = document.createElement("div");
-      name.textContent = bookmark.name;
-      name.draggable = false;
+const name = document.createElement("div");
+name.className = "bookmark-label";
+name.textContent = bookmark.name;
+name.draggable = false;
       const menu = document.createElement("div");
       menu.className = "menu";
       menu.textContent = "⋮";
@@ -1257,7 +1342,6 @@ function applyIconStyle(style) {
   });
 }
 
-
     function setTileSize(size) {
       const tiles = document.querySelectorAll(".tile");
       const grid = document.getElementById('bookmarkGrid');
@@ -1517,9 +1601,24 @@ applyWeatherToggle(weatherEnabled);
 const greetingEnabled = localStorage.getItem("showGreeting") === "true";
 applyGreetingToggle(greetingEnabled);
 
+// Animate placeholder
+  animatePlaceholderText();
+
+  // Animate mic
+  const mic = document.getElementById("micIcon");
+  mic.classList.add("animate-mic");
+  setTimeout(() => mic.classList.remove("animate-mic"), 1000);
+
+
+
 if (localStorage.getItem("hideLabels") === "true") {
   document.body.classList.add("hide-labels");
 }
+
+if (localStorage.getItem("minimalistMode") === "true") {
+  document.body.classList.add("minimalist");
+}
+
 
     };
 
