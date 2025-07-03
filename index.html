@@ -635,29 +635,110 @@ body.minimalist * {
 #micIcon.animate-mic {
   animation: spinOnce 1s ease;
 }
+.about-box {
+  background: #fff8e7;
+  border: 2px dashed #a58e6f;
+  padding: 30px;
+  border-radius: 16px 12px 18px 10px; /* imperfect corners */
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 8px 8px 18px rgba(0,0,0,0.25);
+  font-family: 'Georgia', serif;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #3a2c1c;
+  position: relative;
+  animation: fadeIn 0.4s ease;
+  transform: rotate(-0.4deg); /* adds paper tilt */
+}
 
 
+.about-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQC..."); /* shortened for display */
+  opacity: 0.05;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
 
 
+.about-box h2 {
+  font-size: 24px;
+  margin-bottom: 16px;
+  font-weight: 700;
+}
+
+.about-box p {
+  font-size: 18px;
+  margin: 12px 0;
+  z-index: 1;
+  position: relative;
+}
+
+.about-box strong {
+  font-weight: 600;
+}
+
+.about-box em {
+  font-style: italic;
+  color: #6a4c2b;
+}
+
+.cta-link {
+  font-size: 20px;
+  font-weight: bold;
+  display: inline-block;
+  margin-top: 6px;
+  color: #2b1d0f;
+  text-decoration: none;
+}
+
+.cta-link:hover {
+  text-decoration: underline;
+}
+
+.about-box .close-icon {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  font-size: 22px;
+  color: #3a2c1c;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 
   </style>
 </head>
 <body>
 
   <div id="aboutModal" class="modal hidden">
-  <div class="modal-content">
+  <div class="about-box">
     <span class="close-icon" onclick="closeAboutModal()">✖</span>
     <h2>🧾 About This Start Page</h2>
-    <p>🚀 Built by <strong>TechPreeet</strong></p>
-    <p>A minimal, customizable start page designed for focus, speed, and style.</p>
-    <p>💖 If you enjoy using it, consider supporting the project:</p>
-    <p><a href="https://buymeacoffee.com/techpreeet" target="_blank">☕ Buy Me a Coffee</a></p>
-    <p>🛠️ Open-source on GitHub:<br>
-      <a href="https://github.com/TechPreeet" target="_blank">https://github.com/TechPreeet</a>
+    <p>🚀 <strong>Built by TechPreeet</strong> — <em>HomePage-Pro</em></p>
+    <p>🛠️ <strong>Open-source on GitHub:</strong><br>
+      <a href="https://github.com/TechPreeet/HomePage-Pro" target="_blank" class="cta-link">github.com/TechPreeet/HomePage-Pro</a>
     </p>
-    <p>🌐 Made with HTML, CSS, JS – no frameworks, no trackers.</p>
+    <p>💖 <strong>If you enjoy using it, consider supporting the project:</strong></p>
+    <p><a href="https://buymeacoffee.com/techpreeet" target="_blank" class="cta-link">☕ Buy Me a Coffee</a></p>
+    <p>🌐 <strong>Made with HTML, CSS, JS – no frameworks, no trackers.</strong></p>
+    <p style="margin-top: 20px; font-style: italic; font-size: 17px;">❤️ Made with love, caffeine, and late-night debugging.</p>
   </div>
 </div>
+
 
   <video id="videoBg" autoplay muted loop playsinline class="hidden"></video>
   <div class="container">
@@ -680,6 +761,7 @@ body.minimalist * {
         autocapitalize="off"
         onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
       />
+
       <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
         xmlns="http://www.w3.org/2000/svg"
         height="24" width="24" fill="currentColor">
@@ -882,9 +964,15 @@ body.minimalist * {
       }
     }
     function openAboutModal() {
+  closeSettingsPanel(); // Close the menu
   document.getElementById("aboutModal").classList.remove("hidden");
   document.getElementById("aboutModal").classList.add("show");
 }
+function closeSettingsPanel() {
+  const panel = document.getElementById("settingsPanel");
+  if (panel) panel.classList.add("hidden");
+}
+
 
 function closeAboutModal() {
   const modal = document.getElementById("aboutModal");
