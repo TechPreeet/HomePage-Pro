@@ -100,9 +100,10 @@ body.minimalist #greeting {
   display: none !important;
 }
 
-body.minimalist #backgroundVideo {
+body.minimalist #videoBg {
   display: none !important;
 }
+
 
 body.minimalist * {
   animation: none !important;
@@ -137,7 +138,8 @@ body.minimalist * {
       margin-top: 50px;
       margin-bottom: 25px;
       padding: 20px;
-      background: rgba(255, 255, 255, 0.143);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
       border-radius: 16px;
       z-index: 1;
     }
@@ -553,6 +555,15 @@ body.minimalist * {
     .modal.hidden {
       display: none;
     }
+    /* Close X icon */
+.close-icon {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  font-size: 20px;
+  color: var(--text-color);
+  cursor: pointer;
+}
 
     ::-webkit-media-controls-panel,
     ::cue,
@@ -632,6 +643,22 @@ body.minimalist * {
   </style>
 </head>
 <body>
+
+  <div id="aboutModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close-icon" onclick="closeAboutModal()">✖</span>
+    <h2>🧾 About This Start Page</h2>
+    <p>🚀 Built by <strong>TechPreeet</strong></p>
+    <p>A minimal, customizable start page designed for focus, speed, and style.</p>
+    <p>💖 If you enjoy using it, consider supporting the project:</p>
+    <p><a href="https://buymeacoffee.com/techpreeet" target="_blank">☕ Buy Me a Coffee</a></p>
+    <p>🛠️ Open-source on GitHub:<br>
+      <a href="https://github.com/TechPreeet" target="_blank">https://github.com/TechPreeet</a>
+    </p>
+    <p>🌐 Made with HTML, CSS, JS – no frameworks, no trackers.</p>
+  </div>
+</div>
+
   <video id="videoBg" autoplay muted loop playsinline class="hidden"></video>
   <div class="container">
     <div class="clock-wrapper">
@@ -702,6 +729,7 @@ body.minimalist * {
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
     <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
     <div class="toolbar-option" onclick="resetAllSettings()">🗑️ Reset All Settings</div>
+    <div class="toolbar-option" onclick="openAboutModal()">🧾 About This Page</div>
     <input type="file" id="importInput" accept="application/json">
   </div>
 
@@ -858,6 +886,28 @@ body.minimalist * {
         alert("Please enter a valid video URL (.mp4, .webm, or .ogg).");
       }
     }
+    function openAboutModal() {
+  document.getElementById("aboutModal").classList.remove("hidden");
+  document.getElementById("aboutModal").classList.add("show");
+}
+
+function closeAboutModal() {
+  const modal = document.getElementById("aboutModal");
+  modal.classList.remove("show");
+  modal.classList.add("hidden");
+}
+
+// Close when clicking outside
+document.getElementById("aboutModal").addEventListener("click", function(e) {
+  if (e.target === this) closeAboutModal();
+});
+
+// Close on ESC key
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Escape") {
+    closeAboutModal();
+  }
+});
 
 function updateClock() {
   const now = new Date();
