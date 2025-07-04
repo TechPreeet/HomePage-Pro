@@ -129,20 +129,29 @@ body.minimalist * {
       padding-bottom: 100px;
     }
 
-    .clock-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 20vh;
-      margin-top: 50px;
-      margin-bottom: 25px;
-      padding: 20px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      z-index: 1;
-    }
+  .clock-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  margin: 50px auto 25px auto;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  z-index: 1;
+  min-height: 20vh;
+  width: 90%;
+  max-width: 480px; /* limit width on desktop */
+  box-sizing: border-box;
+}
+@media (max-width: 500px) {
+  .clock-wrapper {
+    padding: 16px;
+    max-width: 95%;
+  }
+}
+
 
     .clock {
       font-size: 64px;
@@ -178,6 +187,14 @@ body.minimalist * {
       border: 1px solid rgba(255, 255, 255, 0.2);
       transition: box-shadow 0.3s ease;
     }
+.search-bar {
+  color: var(--icon-color, #555); /* Default icon color */
+  position: relative;
+}
+
+body.dark-mode .search-bar {
+  color: var(--icon-color-dark, #ddd);
+}
 
     .search-bar:hover {
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
@@ -425,6 +442,21 @@ body.minimalist * {
   position: relative;
   overflow: visible !important;
 }
+/* Optional - fallback global classes if you ever want to switch away from JS borderRadius styling */
+.tile img.round {
+  border-radius: 50%;
+}
+
+.tile img.squircle {
+  border-radius: 20%;
+}
+
+.tile img.rounded-rect {
+  border-radius: 12px; /* Samsung One UI style */
+  border-radius: 30% 30% 28% 28%;
+}
+
+
 .bookmarks-container {
   position: relative;
   overflow: visible !important;
@@ -639,9 +671,11 @@ body.minimalist * {
   background: #fff8e7;
   border: 2px dashed #a58e6f;
   padding: 30px;
-  border-radius: 16px 12px 18px 10px; /* imperfect corners */
-  max-width: 500px;
+  border-radius: 16px 12px 18px 10px;
+  max-width: 90vw;
   width: 90%;
+  max-height: 90vh; /* important to avoid vertical overflow */
+  overflow-y: auto;  /* allows scrolling if content is too tall */
   box-shadow: 8px 8px 18px rgba(0,0,0,0.25);
   font-family: 'Georgia', serif;
   font-size: 18px;
@@ -649,8 +683,20 @@ body.minimalist * {
   color: #3a2c1c;
   position: relative;
   animation: fadeIn 0.4s ease;
-  transform: rotate(-0.4deg); /* adds paper tilt */
+  transform: rotate(-0.4deg);
+  box-sizing: border-box;
 }
+
+/* Optional: make it centered if inside a modal-like container */
+.about-box-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px; /* space around on small screens */
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
 
 
 .about-box::before {
@@ -752,21 +798,30 @@ body.minimalist * {
 
     <div class="search-bar">
       <input
-        type="text"
-        id="searchInput"
-        placeholder="Search the web..."
-        autocomplete="off"
-        spellcheck="false"
-        autocorrect="off"
-        autocapitalize="off"
-        onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
-      />
+  type="text"
+  id="searchInput"
+  placeholder="Search the web..."
+  autocomplete="off"
+  spellcheck="false"
+  autocorrect="off"
+  autocapitalize="off"
+  oninput="handleSearchInput()"
+  onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
+/>
 
       <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
         xmlns="http://www.w3.org/2000/svg"
         height="24" width="24" fill="currentColor">
         <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
       </svg>
+
+      <!-- Clear icon -->
+  <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
+    xmlns="http://www.w3.org/2000/svg"
+    height="24" width="24" fill="currentColor"
+    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
+    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+  </svg>
     </div>
     <div class="grid" id="bookmarkGrid"></div>
   </div>
@@ -789,7 +844,7 @@ body.minimalist * {
     <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()">🖼️ Change Background</div>
     <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()">🎥 Set Video Background</div>
     <div class="toolbar-option" aria-label="Set Video URL" onclick="promptVideoUrl()">🌐 Set Video URL</div>
-    <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg">
+    <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mov,.hevc">
     <input type="file" id="bgInput" accept="image/*" />
     <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()">🧊 Toggle Glass Mode</div>    
     <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
@@ -813,6 +868,14 @@ body.minimalist * {
   <script>
     let bookmarks = [];
     let glassMode = false;
+
+
+function clearSearch() {
+  const input = document.getElementById("searchInput");
+  input.value = "";
+  handleSearchInput();
+  input.focus();
+}
 
     // IndexedDB setup
     function openDB() {
@@ -1093,9 +1156,19 @@ function getWeatherEmoji(code) {
 }
 
 function toggleMinimalistMode() {
-  const isMinimal = document.body.classList.toggle("minimalist");
+  const body = document.body;
+  const isMinimal = body.classList.toggle("minimalist");
   localStorage.setItem("minimalistMode", isMinimal);
+
+  if (isMinimal) {
+    // If minimalist is ON, remove glass-mode class if present
+    if (body.classList.contains("glass-mode")) {
+      body.classList.remove("glass-mode");
+      localStorage.setItem("glassMode", false); // if you track glass mode in localStorage
+    }
+  }
 }
+
 
 function toggleGreeting() {
   const current = localStorage.getItem("showGreeting") === "true";
@@ -1188,7 +1261,19 @@ function resetAllSettings() {
   }
 }
 
+function handleSearchInput() {
+  const input = document.getElementById("searchInput");
+  const micIcon = document.getElementById("micIcon");
+  const clearIcon = document.getElementById("clearIcon");
 
+  if (input.value.trim() !== "") {
+    micIcon.style.display = "none";
+    clearIcon.style.display = "block";
+  } else {
+    micIcon.style.display = "block";
+    clearIcon.style.display = "none";
+  }
+}
 
     function createBookmarkElement(bookmark, index) {
       const a = document.createElement("a");
@@ -1459,21 +1544,30 @@ document.getElementById("bookmarkIcon").addEventListener("paste", async function
       applyGlassMode();
     }
     function toggleIconStyle() {
+  const styles = ["round", "squircle", "rounded-rect"];
   const current = localStorage.getItem("iconStyle") || "round";
-  const newStyle = current === "round" ? "squircle" : "round";
+  const currentIndex = styles.indexOf(current);
+  const nextIndex = (currentIndex + 1) % styles.length;
+  const newStyle = styles[nextIndex];
   localStorage.setItem("iconStyle", newStyle);
   applyIconStyle(newStyle);
 }
+
 function applyIconStyle(style) {
   const allIcons = document.querySelectorAll(".tile img");
   allIcons.forEach(img => {
     if (style === "squircle") {
       img.style.borderRadius = "20%";
+    } else if (style === "rounded-rect") {
+      // Enhanced Samsung-style shape (One UI 7-ish)
+      img.style.borderRadius = "30% 30% 28% 28%"; // top-left, top-right, bottom-right, bottom-left
     } else {
-      img.style.borderRadius = "50%";
+      img.style.borderRadius = "50%"; // round
     }
   });
 }
+
+
 
     function setTileSize(size) {
       const tiles = document.querySelectorAll(".tile");
@@ -1516,7 +1610,7 @@ function applyIconStyle(style) {
 
     document.getElementById("videoInput").addEventListener("change", async function (event) {
       const file = event.target.files[0];
-      if (file && (file.type === "video/mp4" || file.type === "video/webm" || file.type === "video/ogg")) {
+      if (file && file.type.startsWith("video/")) {
         const videoBg = document.getElementById("videoBg");
         const blobUrl = URL.createObjectURL(file);
         videoBg.src = blobUrl;
@@ -1534,9 +1628,7 @@ function applyIconStyle(style) {
         } catch (error) {
           console.error("Failed to store video:", error.message, error.stack);
         }
-      } else {
-        alert("Please select a valid video file (MP4, WebM, or OGG).");
-      }
+      } 
     });
 
     document.getElementById("bgInput").addEventListener("change", function(event) {
