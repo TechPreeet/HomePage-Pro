@@ -31,6 +31,11 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
+    .tile:not(.add-tile):hover .bookmark-label {
+      transform: scale(1.05);
+      transition: transform 0.2s ease;
+    }
+
     @media (hover: none) and (pointer: coarse) {
       .tile:not(.add-tile):active {
         transform: scale(1.1);
@@ -76,40 +81,38 @@
       border-color: rgba(255, 255, 255, 0.15);
       color: var(--text-color);
     }
-    
-   body.minimalist {
-  background: linear-gradient(135deg, rgba(100, 100, 100, 0.4), rgba(60, 60, 60, 0.4)) !important;
-  background-color: #2a2a2a !important; /* fallback for older browsers */
-  background-image: none !important;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-body.minimalist .clock-wrapper {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-  pointer-events: none;
-}
 
+    body.minimalist {
+      background: linear-gradient(135deg, rgba(100, 100, 100, 0.4), rgba(60, 60, 60, 0.4)) !important;
+      background-color: #2a2a2a !important;
+      background-image: none !important;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
 
-body.minimalist #clock,
-body.minimalist #date,
-body.minimalist #weatherContainer,
-body.minimalist #greeting {
-  display: none !important;
-}
+    body.minimalist .clock-wrapper {
+      background: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+      pointer-events: none;
+    }
 
-body.minimalist #videoBg {
-  display: none !important;
-}
+    body.minimalist #clock,
+    body.minimalist #date,
+    body.minimalist #weatherContainer,
+    body.minimalist #greeting {
+      display: none !important;
+    }
 
+    body.minimalist #videoBg {
+      display: none !important;
+    }
 
-body.minimalist * {
-  animation: none !important;
-  transition: none !important;
-}
-
+    body.minimalist * {
+      animation: none !important;
+      transition: none !important;
+    }
 
     html, body {
       height: 100%;
@@ -129,29 +132,29 @@ body.minimalist * {
       padding-bottom: 100px;
     }
 
-  .clock-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  margin: 50px auto 25px auto;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  z-index: 1;
-  min-height: 20vh;
-  width: 90%;
-  max-width: 480px; /* limit width on desktop */
-  box-sizing: border-box;
-}
-@media (max-width: 500px) {
-  .clock-wrapper {
-    padding: 16px;
-    max-width: 95%;
-  }
-}
+    .clock-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 50px auto 25px auto;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      z-index: 1;
+      min-height: 20vh;
+      width: 90%;
+      max-width: 480px;
+      box-sizing: border-box;
+    }
 
+    @media (max-width: 500px) {
+      .clock-wrapper {
+        padding: 16px;
+        max-width: 95%;
+      }
+    }
 
     .clock {
       font-size: 64px;
@@ -187,14 +190,15 @@ body.minimalist * {
       border: 1px solid rgba(255, 255, 255, 0.2);
       transition: box-shadow 0.3s ease;
     }
-.search-bar {
-  color: var(--icon-color, #555); /* Default icon color */
-  position: relative;
-}
 
-body.dark-mode .search-bar {
-  color: var(--icon-color-dark, #ddd);
-}
+    .search-bar {
+      color: var(--icon-color, #555);
+      position: relative;
+    }
+
+    body.dark-mode .search-bar {
+      color: var(--icon-color-dark, #ddd);
+    }
 
     .search-bar:hover {
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
@@ -374,10 +378,17 @@ body.dark-mode .search-bar {
       font-size: 15px;
       width: 110px;
     }
-    .hide-labels .bookmark-label {
-  display: none;
-}
 
+    .hide-labels .bookmark-label {
+      display: none;
+    }
+
+    .bookmark-label {
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      padding: 4px 0;
+    }
 
     .tile .menu {
       position: absolute;
@@ -409,60 +420,57 @@ body.dark-mode .search-bar {
     }
 
     .tile .menu-options {
-  display: none;
-  position: absolute;
-  bottom: 18px;
-  right: 0;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 1px 0;
-  border-radius: 4px;
-  z-index: 9999;
-  min-width: 65px;
-  font-size: 10px;
-  white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  line-height: 1.2;
-}
+      display: none;
+      position: absolute;
+      bottom: 18px;
+      right: 0;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 1px 0;
+      border-radius: 4px;
+      z-index: 9999;
+      min-width: 65px;
+      font-size: 10px;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      line-height: 1.2;
+    }
 
-.tile .menu-options div {
-  padding: 3px 5px;
-  cursor: pointer;
-  width: 100%;
-  box-sizing: border-box;
-  font-size: 10px;
-  line-height: 1.2;
-}
+    .tile .menu-options div {
+      padding: 3px 5px;
+      cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 10px;
+      line-height: 1.2;
+    }
 
-.tile .menu-options div:hover {
-  background: #444;
-}
+    .tile .menu-options div:hover {
+      background: #444;
+    }
 
     .tile {
-  position: relative;
-  overflow: visible !important;
-}
-/* Optional - fallback global classes if you ever want to switch away from JS borderRadius styling */
-.tile img.round {
-  border-radius: 50%;
-}
+      position: relative;
+      overflow: visible !important;
+    }
 
-.tile img.squircle {
-  border-radius: 20%;
-}
+    .tile img.round {
+      border-radius: 50%;
+    }
 
-.tile img.rounded-rect {
-  border-radius: 12px; /* Samsung One UI style */
-  border-radius: 30% 30% 28% 28%;
-}
+    .tile img.squircle {
+      border-radius: 20%;
+    }
 
+    .tile img.rounded-rect {
+      border-radius: 30% 30% 28% 28%;
+    }
 
-.bookmarks-container {
-  position: relative;
-  overflow: visible !important;
-  z-index: 1;
-}
-
+    .bookmarks-container {
+      position: relative;
+      overflow: visible !important;
+      z-index: 1;
+    }
 
     #toolbarBtn {
       background: rgba(30, 30, 30, 0.85);
@@ -492,29 +500,77 @@ body.dark-mode .search-bar {
       width: 250px;
       max-height: 50vh;
       overflow-y: auto;
-      background: rgba(30, 30, 30, 0.7);
+      background: rgba(30, 30, 30, 0.8);
       backdrop-filter: blur(15px);
       color: white;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 15px;
       z-index: 101;
-      transition: background 0.3s ease, color 0.3s ease;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+      transition: background 0.2s ease, transform 0.2s ease;
     }
 
     .toolbar-option {
       margin: 10px 0;
+      padding: 10px;
       cursor: pointer;
       white-space: nowrap;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s ease, transform 0.2s ease;
+      border-radius: 8px;
     }
 
     .toolbar-option:hover {
-      background: #007bff;
+      background: var(--accent-color);
+      transform: scale(1.02);
     }
 
     #tileSizeSlider {
-      width: 100%;
+      width: 90%;
+      margin: 5px 0;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) 50%, #ffffff 50%, #ffffff 100%);
+      outline: none;
+      transition: background 0.2s ease;
+    }
+
+    #tileSizeSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #tileSizeSlider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    #tileSizeSlider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #tileSizeSlider::-moz-range-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    #tileSizeSliderContainer {
       margin: 10px 0;
+      padding: 0 10px;
     }
 
     #bgInput, #importInput, #videoInput, #lensInput {
@@ -587,36 +643,145 @@ body.dark-mode .search-bar {
     .modal.hidden {
       display: none;
     }
-    /* Close X icon */
-.close-icon {
-  position: absolute;
-  top: 10px;
-  right: 16px;
-  font-size: 20px;
-  color: var(--text-color);
-  cursor: pointer;
-}
 
-    ::-webkit-media-controls-panel,
-    ::cue,
-    ::-webkit-speech {
-      display: none !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
+    .alert-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+      transition: opacity 0.3s ease;
+      opacity: 0;
     }
 
-    .material-icons {
-      font-family: 'Material Icons';
-      font-weight: normal;
-      font-style: normal;
+    .alert-modal:not(.hidden) {
+      opacity: 1;
+    }
+
+    .alert-content {
+      background: rgba(30, 30, 30, 0.9);
+      backdrop-filter: blur(12px);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: transform 0.3s ease;
+      transform: scale(0.9);
+    }
+
+    .alert-modal:not(.hidden) .alert-content {
+      transform: scale(1);
+    }
+
+    .alert-content p {
+      font-size: 16px;
+      margin: 0 0 20px 0;
+      line-height: 1.5;
+    }
+
+    .alert-content button {
+      background: var(--accent-color);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .alert-content button:hover {
+      background: #0056b3;
+      transform: scale(1.05);
+    }
+
+    .close-icon {
+      position: absolute;
+      top: 10px;
+      right: 16px;
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .about-box {
+      background: rgba(30, 30, 30, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 16px;
+      max-width: 90vw;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      line-height: 1.6;
+      color: white;
+      position: relative;
+      animation: fadeIn 0.4s ease;
+      box-sizing: border-box;
+    }
+
+    .about-box h2 {
       font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .about-box p {
+      font-size: 18px;
+      margin: 12px 0;
+      z-index: 1;
+      position: relative;
+    }
+
+    .about-box strong {
+      font-weight: 600;
+    }
+
+    .about-box em {
+      font-style: italic;
+      color: #cccccc;
+    }
+
+    .cta-link {
+      font-size: 18px;
+      font-weight: bold;
       display: inline-block;
-      line-height: 1;
-      text-transform: none;
-      letter-spacing: normal;
-      word-wrap: normal;
-      white-space: nowrap;
-      direction: ltr;
+      margin-top: 6px;
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    .cta-link:hover {
+      text-decoration: underline;
+    }
+
+    .about-box .close-icon {
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+      from {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     #videoBg {
@@ -638,153 +803,60 @@ body.dark-mode .search-bar {
       background-position: center;
       z-index: 1;
     }
-#clock .seconds {
-  font-size: inherit;    /* same size */
-  opacity: 0.6;          /* dimmed */
-}
 
-#clock .ampm {
-  font-size: 0.35em;
-  vertical-align: super;
-  opacity: 0.6;
-  margin-left: 6px;
-}
+    #clock .seconds {
+      font-size: inherit;
+      opacity: 0.6;
+    }
+
+    #clock .ampm {
+      font-size: 0.35em;
+      vertical-align: super;
+      opacity: 0.6;
+      margin-left: 6px;
+    }
 
     #greeting {
-  opacity: 0;
-  transition: opacity 2.7s ease;
-}
+      opacity: 0;
+      transition: opacity 2.7s ease;
+    }
 
-#greeting.visible {
-  opacity: 1;
-}
+    #greeting.visible {
+      opacity: 1;
+    }
 
-@keyframes spinOnce {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+    @keyframes spinOnce {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-#micIcon.animate-mic {
-  animation: spinOnce 1s ease;
-}
-.about-box {
-  background: #fff8e7;
-  border: 2px dashed #a58e6f;
-  padding: 30px;
-  border-radius: 16px 12px 18px 10px;
-  max-width: 90vw;
-  width: 90%;
-  max-height: 90vh; /* important to avoid vertical overflow */
-  overflow-y: auto;  /* allows scrolling if content is too tall */
-  box-shadow: 8px 8px 18px rgba(0,0,0,0.25);
-  font-family: 'Georgia', serif;
-  font-size: 18px;
-  line-height: 1.6;
-  color: #3a2c1c;
-  position: relative;
-  animation: fadeIn 0.4s ease;
-  transform: rotate(-0.4deg);
-  box-sizing: border-box;
-}
-
-/* Optional: make it centered if inside a modal-like container */
-.about-box-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px; /* space around on small screens */
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
-
-
-.about-box::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQC..."); /* shortened for display */
-  opacity: 0.05;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: inherit;
-}
-
-
-.about-box h2 {
-  font-size: 24px;
-  margin-bottom: 16px;
-  font-weight: 700;
-}
-
-.about-box p {
-  font-size: 18px;
-  margin: 12px 0;
-  z-index: 1;
-  position: relative;
-}
-
-.about-box strong {
-  font-weight: 600;
-}
-
-.about-box em {
-  font-style: italic;
-  color: #6a4c2b;
-}
-
-.cta-link {
-  font-size: 20px;
-  font-weight: bold;
-  display: inline-block;
-  margin-top: 6px;
-  color: #2b1d0f;
-  text-decoration: none;
-}
-
-.cta-link:hover {
-  text-decoration: underline;
-}
-
-.about-box .close-icon {
-  position: absolute;
-  top: 10px;
-  right: 16px;
-  font-size: 22px;
-  color: #3a2c1c;
-  cursor: pointer;
-}
-
-@keyframes fadeIn {
-  from {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
+    #micIcon.animate-mic {
+      animation: spinOnce 1s ease;
+    }
   </style>
 </head>
 <body>
-
   <div id="aboutModal" class="modal hidden">
-  <div class="about-box">
-    <span class="close-icon" onclick="closeAboutModal()">✖</span>
-    <h2>🧾 About This Start Page</h2>
-    <p>🚀 <strong>Built by TechPreeet</strong> — <em>HomePage-Pro</em></p>
-    <p>🛠️ <strong>Open-source on GitHub:</strong><br>
-      <a href="https://github.com/TechPreeet/HomePage-Pro" target="_blank" class="cta-link">github.com/TechPreeet/HomePage-Pro</a>
-    </p>
-    <p>💖 <strong>If you enjoy using it, consider supporting the project:</strong></p>
-    <p><a href="https://buymeacoffee.com/techpreeet" target="_blank" class="cta-link">☕ Buy Me a Coffee</a></p>
-    <p>🌐 <strong>Made with HTML, CSS, JS – no frameworks, no trackers.</strong></p>
-    <p style="margin-top: 20px; font-style: italic; font-size: 17px;">❤️ Made with love, caffeine, and late-night debugging.</p>
+    <div class="about-box">
+      <span class="close-icon" onclick="closeAboutModal()">✖</span>
+      <h2>🧾 About This Start Page</h2>
+      <p>🚀 <strong>Built by TechPreeet</strong> — <em>HomePage-Pro</em></p>
+      <p>🛠️ <strong>Open-source on GitHub:</strong><br>
+        <a href="https://github.com/TechPreeet/HomePage-Pro" target="_blank" class="cta-link">github.com/TechPreeet/HomePage-Pro</a>
+      </p>
+      <p>💖 <strong>If you enjoy using it, consider supporting the project:</strong></p>
+      <p><a href="https://buymeacoffee.com/techpreeet" target="_blank" class="cta-link">☕ Buy Me a Coffee</a></p>
+      <p>🌐 <strong>Made with HTML, CSS, JS – no frameworks, no trackers.</strong></p>
+      <p style="margin-top: 20px; font-style: italic; font-size: 17px;">❤️ Made with love, caffeine, and late-night debugging.</p>
+    </div>
   </div>
-</div>
 
+  <div id="alertModal" class="alert-modal hidden">
+    <div class="alert-content">
+      <p id="alertMessage"></p>
+      <button onclick="closeAlertModal()">OK</button>
+    </div>
+  </div>
 
   <video id="videoBg" autoplay muted loop playsinline class="hidden"></video>
   <div class="container">
@@ -793,71 +865,71 @@ body.dark-mode .search-bar {
       <div class="date" id="date"></div>
       <div id="weatherContainer" style="font-size: 18px; margin-top: 10px; display: none;"></div>
       <div id="greeting" style="font-size: 20px; margin-top: 10px; text-align: center; display: none; max-width: 100%; word-wrap: break-word;"></div>
-
     </div>
 
     <div class="search-bar">
       <input
-  type="text"
-  id="searchInput"
-  placeholder="Search the web..."
-  autocomplete="off"
-  spellcheck="false"
-  autocorrect="off"
-  autocapitalize="off"
-  oninput="handleSearchInput()"
-  onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
-/>
-
+        type="text"
+        id="searchInput"
+        placeholder="Search the web..."
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
+        autocapitalize="off"
+        oninput="handleSearchInput()"
+        onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
+      />
       <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
         xmlns="http://www.w3.org/2000/svg"
         height="24" width="24" fill="currentColor">
         <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
       </svg>
-
-      <!-- Clear icon -->
-  <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
-    xmlns="http://www.w3.org/2000/svg"
-    height="24" width="24" fill="currentColor"
-    style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
-    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-  </svg>
+      <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
+        xmlns="http://www.w3.org/2000/svg"
+        height="24" width="24" fill="currentColor"
+        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+      </svg>
     </div>
     <div class="grid" id="bookmarkGrid"></div>
   </div>
 
   <div id="bookmarkModal" class="modal hidden">
     <div class="modal-content">
+      <span class="close-icon" onclick="closeModal()">✖</span>
       <h3 id="modalTitle">Add Bookmark</h3>
       <input type="text" id="bookmarkName" placeholder="Name">
       <input type="text" id="bookmarkUrl" placeholder="URL">
       <input type="text" id="bookmarkIcon" placeholder="Icon URL (optional)">
       <button onclick="submitBookmark()">Add</button>
-      <button id="cancelBtn" onclick="closeModal(); console.log('Cancel clicked');">Cancel</button>
+      <button id="cancelBtn" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 
   <div id="toolbarBtn" onclick="toggleToolbar()">⚙️</div>
 
   <div id="toolbarPanel">
-    <div class="toolbar-option" aria-label="Add Bookmark" onclick="addBookmark(); console.log('Add Bookmark clicked');">📝 Add Bookmark</div>
+    <div class="toolbar-option" id="addBookmarkBtn" aria-label="Add Bookmark" onclick="addBookmark()">📝 Add Bookmark</div>
     <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()">🖼️ Change Background</div>
     <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()">🎥 Set Video Background</div>
     <div class="toolbar-option" aria-label="Set Video URL" onclick="promptVideoUrl()">🌐 Set Video URL</div>
     <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mov,.hevc">
     <input type="file" id="bgInput" accept="image/*" />
-    <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()">🧊 Toggle Glass Mode</div>    
+    <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()">🧊 Toggle Glass Mode</div>
     <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
     <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()">🕒 Toggle Clock Format</div>
     <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()">⏱️ Toggle Clock Seconds</div>
     <div class="toolbar-option" onclick="toggleWeather()">🌦️ Toggle Weather Widget</div>
     <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()">🌀 Toggle Icon Style</div>
     <div class="toolbar-option" onclick="toggleLabels()">🔤 Toggle Bookmark Labels</div>
-    <div class="toolbar-option">Resize Bookmark Tiles</div>
-    <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" onchange="setTileSize(this.value)">
+    <div class="toolbar-option" id="tileSizeLabel">Resize Bookmark Tiles</div>
+    <div id="tileSizeSliderContainer">
+      <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
+    </div>
     <div class="toolbar-option" onclick="toggleGreeting()">👤 Toggle Greeting</div>
     <div class="toolbar-option" onclick="askUserName()">✏️ Change Name</div>
     <div class="toolbar-option" onclick="toggleMinimalistMode()">🧘 Minimalist Mode</div>
+    <div class="toolbar-option" id="newTabLinksOption" onclick="toggleNewTabLinks()">🔗 Open Links in New Tab</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
     <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
     <div class="toolbar-option" onclick="resetAllSettings()">🗑️ Reset All Settings</div>
@@ -868,16 +940,43 @@ body.dark-mode .search-bar {
   <script>
     let bookmarks = [];
     let glassMode = false;
+    let newTabLinks = localStorage.getItem("newTabLinks") === "true";
 
+    function showAlert(message) {
+      const modal = document.getElementById("alertModal");
+      const messageElement = document.getElementById("alertMessage");
+      messageElement.textContent = message;
+      modal.classList.remove("hidden");
+      modal.style.display = "flex";
+    }
 
-function clearSearch() {
-  const input = document.getElementById("searchInput");
-  input.value = "";
-  handleSearchInput();
-  input.focus();
-}
+    function closeAlertModal() {
+      const modal = document.getElementById("alertModal");
+      modal.classList.add("hidden");
+      modal.style.display = "none";
+    }
 
-    // IndexedDB setup
+    document.getElementById("alertModal").addEventListener("click", function(event) {
+      if (event.target === this) {
+        closeAlertModal();
+      }
+    });
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        closeAlertModal();
+        closeAboutModal();
+        closeModal();
+      }
+    });
+
+    function clearSearch() {
+      const input = document.getElementById("searchInput");
+      input.value = "";
+      handleSearchInput();
+      input.focus();
+    }
+
     function openDB() {
       return new Promise((resolve, reject) => {
         const request = indexedDB.open("videoBackgroundDB", 2);
@@ -894,15 +993,12 @@ function clearSearch() {
 
     async function storeVideo(file) {
       try {
-        // Validate file size (limit to 100 MB)
         if (file.size > 100 * 1024 * 1024) {
           throw new Error("Video file exceeds 100 MB limit.");
         }
         const db = await openDB();
-        const CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB chunks
+        const CHUNK_SIZE = 10 * 1024 * 1024;
         const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-
-        // Clear existing video data
         const clearTransaction = db.transaction(["videos"], "readwrite");
         const clearStore = clearTransaction.objectStore("videos");
         for (let i = 0; i < 100; i++) {
@@ -913,7 +1009,6 @@ function clearSearch() {
           clearTransaction.onerror = () => reject(new Error(`Failed to clear old video: ${clearTransaction.error}`));
         });
 
-        // Store video in chunks with separate transactions
         for (let i = 0; i < totalChunks; i++) {
           const start = i * CHUNK_SIZE;
           const end = Math.min(start + CHUNK_SIZE, file.size);
@@ -924,7 +1019,6 @@ function clearSearch() {
             reader.onerror = () => reject(new Error(`FileReader error for chunk ${i}: ${reader.error}`));
             reader.readAsArrayBuffer(chunk);
           });
-
           const transaction = db.transaction(["videos"], "readwrite");
           const store = transaction.objectStore("videos");
           await new Promise((resolve, reject) => {
@@ -939,12 +1033,10 @@ function clearSearch() {
             putRequest.onerror = () => reject(new Error(`IndexedDB put error for chunk ${i}: ${putRequest.error}`));
           });
         }
-
-        console.log("Video stored successfully in IndexedDB");
         return;
       } catch (error) {
         console.error("IndexedDB store error:", error.message, error.stack);
-        alert(`Failed to store video: ${error.message}. It will play this session but won't persist after refresh.`);
+        showAlert(`Failed to store video: ${error.message}. It will play this session but won't persist after refresh.`);
         throw error;
       }
     }
@@ -957,8 +1049,6 @@ function clearSearch() {
         const chunks = [];
         let mimeType = "video/mp4";
         let totalChunks = 0;
-
-        // Retrieve all chunks
         for (let i = 0; i < 100; i++) {
           const request = await new Promise((resolve, reject) => {
             const req = store.get(`backgroundVideo_${i}`);
@@ -970,15 +1060,11 @@ function clearSearch() {
           mimeType = request.mimeType || mimeType;
           totalChunks = request.totalChunks || 1;
         }
-
         if (chunks.length === 0) {
           console.warn("No video data found in IndexedDB");
           return null;
         }
-
-        // Combine chunks
         const combinedData = new Blob(chunks, { type: mimeType });
-        console.log("Video retrieved from IndexedDB:", chunks.length, "chunks");
         return { data: combinedData, mimeType };
       } catch (error) {
         console.error("IndexedDB get error:", error.message, error.stack);
@@ -991,7 +1077,6 @@ function clearSearch() {
       if (url && (url.endsWith(".mp4") || url.endsWith(".webm") || url.endsWith(".ogg"))) {
         const videoBg = document.getElementById("videoBg");
         try {
-          // Test URL accessibility
           const response = await fetch(url, { method: "HEAD" });
           if (!response.ok) throw new Error(`Failed to access video URL: ${response.statusText}`);
           videoBg.src = url;
@@ -1003,7 +1088,6 @@ function clearSearch() {
           localStorage.setItem("videoUrl", url);
           localStorage.setItem("hasVideo", "true");
           localStorage.removeItem("bgImage");
-          // Clear IndexedDB
           try {
             const db = await openDB();
             const transaction = db.transaction(["videos"], "readwrite");
@@ -1020,71 +1104,51 @@ function clearSearch() {
           }
         } catch (error) {
           console.error("Video URL error:", error.message, error.stack);
-          alert(`Failed to load video from URL: ${error.message}`);
+          showAlert(`Failed to load video from URL: ${error.message}`);
         }
       } else {
-        alert("Please enter a valid video URL (.mp4, .webm, or .ogg).");
+        showAlert("Please enter a valid video URL (.mp4, .webm, or .ogg).");
       }
     }
+
     function openAboutModal() {
-  closeSettingsPanel(); // Close the menu
-  document.getElementById("aboutModal").classList.remove("hidden");
-  document.getElementById("aboutModal").classList.add("show");
-}
-function closeSettingsPanel() {
-  const panel = document.getElementById("settingsPanel");
-  if (panel) panel.classList.add("hidden");
-}
+      toggleToolbar();
+      document.getElementById("aboutModal").classList.remove("hidden");
+    }
 
+    function closeAboutModal() {
+      const modal = document.getElementById("aboutModal");
+      modal.classList.add("hidden");
+    }
 
-function closeAboutModal() {
-  const modal = document.getElementById("aboutModal");
-  modal.classList.remove("show");
-  modal.classList.add("hidden");
-}
+    document.getElementById("aboutModal").addEventListener("click", function(e) {
+      if (e.target === this) closeAboutModal();
+    });
 
-// Close when clicking outside
-document.getElementById("aboutModal").addEventListener("click", function(e) {
-  if (e.target === this) closeAboutModal();
-});
-
-// Close on ESC key
-document.addEventListener("keydown", function(e) {
-  if (e.key === "Escape") {
-    closeAboutModal();
-  }
-});
-
-function updateClock() {
-  const now = new Date();
-  let hours = now.getHours();
-  let minutes = now.getMinutes().toString().padStart(2, '0');
-  let seconds = now.getSeconds().toString().padStart(2, '0');
-  let ampm = '';
-
-  if (!is24Hour) {
-    ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
-  }
-
-  const hourStr = is24Hour ? hours.toString().padStart(2, '0') : hours.toString();
-
-  let timeHTML = `${hourStr}:${minutes}`;
-  if (showSeconds) {
-    timeHTML += `:<span class="seconds">${seconds}</span>`;
-  }
-
-  timeHTML += ampm ? `<span class="ampm">${ampm}</span>` : '';
-
-  document.getElementById("clock").innerHTML = timeHTML;
-
-  document.getElementById("date").textContent = now.toLocaleDateString(undefined, {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
-}
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes().toString().padStart(2, '0');
+      let seconds = now.getSeconds().toString().padStart(2, '0');
+      let ampm = '';
+      if (!is24Hour) {
+        ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+      }
+      const hourStr = is24Hour ? hours.toString().padStart(2, '0') : hours.toString();
+      let timeHTML = `${hourStr}:${minutes}`;
+      if (showSeconds) {
+        timeHTML += `:<span class="seconds">${seconds}</span>`;
+      }
+      timeHTML += ampm ? `<span class="ampm">${ampm}</span>` : '';
+      document.getElementById("clock").innerHTML = timeHTML;
+      document.getElementById("date").textContent = now.toLocaleDateString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
 
     let is24Hour = localStorage.getItem("clockFormat") !== "12";
     let showSeconds = localStorage.getItem("showSeconds") === "true";
@@ -1100,185 +1164,199 @@ function updateClock() {
       localStorage.setItem("showSeconds", showSeconds);
       updateClock();
     }
+
     function toggleWeather() {
-  const current = localStorage.getItem("showWeather") === "true";
-  localStorage.setItem("showWeather", !current);
-  applyWeatherToggle(!current);
-}
-function applyWeatherToggle(enabled) {
-  const container = document.getElementById("weatherContainer");
-  if (enabled) {
-    container.style.display = "block";
-    fetchWeather();
-  } else {
-    container.style.display = "none";
-  }
-}
-function fetchWeather() {
-  if (!navigator.geolocation) {
-    displayWeatherFallback();
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(async (position) => {
-    const { latitude, longitude } = position.coords;
-
-    try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
-      const response = await fetch(url);
-      const data = await response.json();
-      const weather = data.current_weather;
-
-      const temp = Math.round(weather.temperature);
-      const icon = getWeatherEmoji(weather.weathercode);
-      const wind = Math.round(weather.windspeed);
-const text = `${icon} ${temp}°C | Wind: ${wind} km/h`;
-      document.getElementById("weatherContainer").textContent = text;
-    } catch (err) {
-      console.error("Weather fetch error:", err);
-      document.getElementById("weatherContainer").textContent = "Could not load weather.";
-    }
-  }, displayWeatherFallback);
-}
-function displayWeatherFallback() {
-  document.getElementById("weatherContainer").textContent = "Weather data not available.";
-}
-function getWeatherEmoji(code) {
-  const map = {
-    0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
-    45: "🌫️", 48: "🌫️",
-    51: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️",
-    71: "❄️", 73: "❄️", 75: "❄️",
-    80: "🌧️", 81: "🌧️", 82: "🌧️",
-    95: "⛈️", 96: "⛈️", 99: "⛈️"
-  };
-  return map[code] || "🌡️";
-}
-
-function toggleMinimalistMode() {
-  const body = document.body;
-  const isMinimal = body.classList.toggle("minimalist");
-  localStorage.setItem("minimalistMode", isMinimal);
-
-  if (isMinimal) {
-    // If minimalist is ON, remove glass-mode class if present
-    if (body.classList.contains("glass-mode")) {
-      body.classList.remove("glass-mode");
-      localStorage.setItem("glassMode", false); // if you track glass mode in localStorage
-    }
-  }
-}
-
-
-function toggleGreeting() {
-  const current = localStorage.getItem("showGreeting") === "true";
-  localStorage.setItem("showGreeting", !current);
-  applyGreetingToggle(!current);
-}
-
-function applyGreetingToggle(enabled) {
-  const greeting = document.getElementById("greeting");
-
-  if (enabled) {
-    let name = localStorage.getItem("profileName");
-    if (!name) {
-      askUserName();
-      return; // Greeting will be re-applied after name is set
+      const current = localStorage.getItem("showWeather") === "true";
+      localStorage.setItem("showWeather", !current);
+      applyWeatherToggle(!current);
     }
 
-    greeting.textContent = generateFriendlyGreeting(name);
-    greeting.style.display = "block";
-    greeting.classList.remove("visible"); // reset first
-
-    // Force browser to apply initial hidden state
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        greeting.classList.add("visible");
-      });
-    });
-
-  } else {
-    greeting.classList.remove("visible");
-    greeting.style.display = "none";
-  }
-}
-
-function askUserName() {
-  const name = prompt("What’s your name?");
-  if (name) {
-    localStorage.setItem("profileName", name);
-    const greeting = document.getElementById("greeting");
-    if (localStorage.getItem("showGreeting") === "true") {
-      greeting.textContent = generateFriendlyGreeting(name);
-      greeting.style.display = "block";
+    function applyWeatherToggle(enabled) {
+      const container = document.getElementById("weatherContainer");
+      if (enabled) {
+        container.style.display = "block";
+        fetchWeather();
+      } else {
+        container.style.display = "none";
+      }
     }
-  }
-}
 
-function generateFriendlyGreeting(name) {
-  const hour = new Date().getHours();
-  let message = "";
-
-  if (hour >= 5 && hour < 12) {
-    message = `🌞 Good morning, ${name}! Have a bright start.`;
-  } else if (hour >= 12 && hour < 17) {
-    message = `☕ Good afternoon, ${name}! Keep up the great work.`;
-  } else if (hour >= 17 && hour < 21) {
-    message = `🌇 Good evening, ${name}! Hope you're winding down nicely.`;
-  } else {
-    message = `🌙 Good night, ${name}! Time to recharge.`;
-  }
-
-  return message;
-}
-function toggleLabels() {
-  const hiding = document.body.classList.toggle("hide-labels");
-  localStorage.setItem("hideLabels", hiding);
-}
-function animatePlaceholderText() {
-  const input = document.getElementById("searchInput");
-  const text = "Search the web...";
-  input.placeholder = ""; // Start empty
-
-  let index = 0;
-  const speed = 60; // Speed in ms per character
-
-  function typeNext() {
-    if (index <= text.length) {
-      input.placeholder = text.slice(0, index++);
-      setTimeout(typeNext, speed);
+    function getWeatherDescription(code) {
+      const map = {
+        0: "Sunny", 1: "Mostly Clear", 2: "Partly Cloudy", 3: "Cloudy",
+        45: "Foggy", 48: "Foggy",
+        51: "Light Rain", 61: "Rain", 63: "Moderate Rain", 65: "Heavy Rain",
+        71: "Light Snow", 73: "Moderate Snow", 75: "Heavy Snow",
+        80: "Showers", 81: "Heavy Showers", 82: "Violent Showers",
+        95: "Thunderstorm", 96: "Thunderstorm", 99: "Thunderstorm"
+      };
+      return map[code] || "Unknown";
     }
-  }
 
-  typeNext();
-}
+    function getWeatherEmoji(code) {
+      const map = {
+        0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+        45: "🌫️", 48: "🌫️",
+        51: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️",
+        71: "❄️", 73: "❄️", 75: "❄️",
+        80: "🌧️", 81: "🌧️", 82: "🌧️",
+        95: "⛈️", 96: "⛈️", 99: "⛈️"
+      };
+      return map[code] || "🌡️";
+    }
 
-function resetAllSettings() {
-  const confirmReset = confirm("Are you sure you want to reset everything?\nThis will remove all bookmarks and settings.");
-  if (confirmReset) {
-    localStorage.clear();
-    location.reload();
-  }
-}
+    async function fetchWeather() {
+      if (!navigator.geolocation) {
+        displayWeatherFallback();
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}¤t_weather=true`;
+          const response = await fetch(url);
+          const data = await response.json();
+          const weather = data.current_weather;
+          const temp = Math.round(weather.temperature);
+          const icon = getWeatherEmoji(weather.weathercode);
+          const description = getWeatherDescription(weather.weathercode);
+          const wind = Math.round(weather.windspeed);
+          const text = `${icon} ${temp}°C | ${description} | Wind: ${wind} km/h`;
+          document.getElementById("weatherContainer").textContent = text;
+        } catch (err) {
+          console.error("Weather fetch error:", err);
+          document.getElementById("weatherContainer").textContent = "Could not load weather.";
+        }
+      }, displayWeatherFallback);
+    }
 
-function handleSearchInput() {
-  const input = document.getElementById("searchInput");
-  const micIcon = document.getElementById("micIcon");
-  const clearIcon = document.getElementById("clearIcon");
+    function displayWeatherFallback() {
+      document.getElementById("weatherContainer").textContent = "Weather data not available.";
+    }
 
-  if (input.value.trim() !== "") {
-    micIcon.style.display = "none";
-    clearIcon.style.display = "block";
-  } else {
-    micIcon.style.display = "block";
-    clearIcon.style.display = "none";
-  }
-}
+    function toggleMinimalistMode() {
+      const body = document.body;
+      const isMinimal = body.classList.toggle("minimalist");
+      localStorage.setItem("minimalistMode", isMinimal);
+      if (isMinimal && body.classList.contains("glass-mode")) {
+        body.classList.remove("glass-mode");
+        localStorage.setItem("glassMode", false);
+      }
+    }
+
+    function toggleGreeting() {
+      const current = localStorage.getItem("showGreeting") === "true";
+      localStorage.setItem("showGreeting", !current);
+      applyGreetingToggle(!current);
+    }
+
+    function applyGreetingToggle(enabled) {
+      const greeting = document.getElementById("greeting");
+      if (enabled) {
+        let name = localStorage.getItem("profileName");
+        if (!name) {
+          askUserName();
+          return;
+        }
+        greeting.textContent = generateFriendlyGreeting(name);
+        greeting.style.display = "block";
+        greeting.classList.remove("visible");
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            greeting.classList.add("visible");
+          });
+        });
+      } else {
+        greeting.classList.remove("visible");
+        greeting.style.display = "none";
+      }
+    }
+
+    function askUserName() {
+      const name = prompt("What’s your name?");
+      if (name) {
+        localStorage.setItem("profileName", name);
+        const greeting = document.getElementById("greeting");
+        if (localStorage.getItem("showGreeting") === "true") {
+          greeting.textContent = generateFriendlyGreeting(name);
+          greeting.style.display = "block";
+        }
+      }
+    }
+
+    function generateFriendlyGreeting(name) {
+      const hour = new Date().getHours();
+      let message = "";
+      if (hour >= 5 && hour < 12) {
+        message = `🌞 Good morning, ${name}! Have a bright start.`;
+      } else if (hour >= 12 && hour < 17) {
+        message = `☕ Good afternoon, ${name}! Keep up the great work.`;
+      } else if (hour >= 17 && hour < 21) {
+        message = `🌇 Good evening, ${name}! Hope you're winding down nicely.`;
+      } else {
+        message = `🌙 Good night, ${name}! Time to recharge.`;
+      }
+      return message;
+    }
+
+    function toggleLabels() {
+      const hiding = document.body.classList.toggle("hide-labels");
+      localStorage.setItem("hideLabels", hiding);
+    }
+
+    function toggleNewTabLinks() {
+      newTabLinks = !newTabLinks;
+      localStorage.setItem("newTabLinks", newTabLinks);
+      updateNewTabLinksOption();
+      loadBookmarks();
+    }
+
+    function updateNewTabLinksOption() {
+      const option = document.getElementById("newTabLinksOption");
+      option.textContent = `🔗 Open Links in New Tab ${newTabLinks ? "✅" : "❌"}`;
+    }
+
+    function animatePlaceholderText() {
+      const input = document.getElementById("searchInput");
+      const text = "Search the web...";
+      input.placeholder = "";
+      let index = 0;
+      const speed = 60;
+      function typeNext() {
+        if (index <= text.length) {
+          input.placeholder = text.slice(0, index++);
+          setTimeout(typeNext, speed);
+        }
+      }
+      typeNext();
+    }
+
+    function resetAllSettings() {
+      const confirmReset = confirm("Are you sure you want to reset everything?\nThis will remove all bookmarks and settings.");
+      if (confirmReset) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    function handleSearchInput() {
+      const input = document.getElementById("searchInput");
+      const micIcon = document.getElementById("micIcon");
+      const clearIcon = document.getElementById("clearIcon");
+      if (input.value.trim() !== "") {
+        micIcon.style.display = "none";
+        clearIcon.style.display = "block";
+      } else {
+        micIcon.style.display = "block";
+        clearIcon.style.display = "none";
+      }
+    }
 
     function createBookmarkElement(bookmark, index) {
       const a = document.createElement("a");
       a.href = bookmark.url;
       a.className = "tile";
+      if (newTabLinks) a.target = "_blank";
       a.draggable = true;
       a.dataset.index = index;
       a.tabIndex = 0;
@@ -1293,16 +1371,16 @@ function handleSearchInput() {
         img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
       }
       img.draggable = false;
-const name = document.createElement("div");
-name.className = "bookmark-label";
-name.textContent = bookmark.name;
-name.draggable = false;
+      const name = document.createElement("div");
+      name.className = "bookmark-label";
+      name.textContent = bookmark.name;
+      name.draggable = false;
       const menu = document.createElement("div");
       menu.className = "menu";
       menu.textContent = "⋮";
       const options = document.createElement("div");
       options.className = "menu-options";
-["Edit", "Delete"].forEach(action => {
+      ["Edit", "Delete"].forEach(action => {
         const opt = document.createElement("div");
         opt.textContent = action;
         opt.onclick = (e) => {
@@ -1311,7 +1389,7 @@ name.draggable = false;
           if (action === "Delete") {
             bookmarks.splice(index, 1);
             localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-            location.reload();
+            loadBookmarks();
           } else if (action === "Edit") {
             const modal = document.getElementById("bookmarkModal");
             const nameInput = document.getElementById("bookmarkName");
@@ -1323,6 +1401,7 @@ name.draggable = false;
             urlInput.value = bookmark.url;
             iconInput.value = bookmark.icon || "";
             modal.classList.remove("hidden");
+            modal.style.display = "flex";
             const submitBtn = modal.querySelector("button:first-of-type");
             const originalSubmit = submitBtn.onclick;
             submitBtn.textContent = "Save";
@@ -1332,15 +1411,14 @@ name.draggable = false;
               const newName = nameInput.value.trim();
               const newURL = urlInput.value.trim();
               const newIcon = iconInput.value.trim();
-              if (!newName || !newURL) return;
-bookmarks[index] = {
-  name: newName,
-  url: newURL,
-  icon: newIcon,
-};
+              if (!newName || !newURL) {
+                showAlert("Please enter both a name and URL.");
+                return;
+              }
+              bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
               localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
               closeModal();
-              location.reload();
+              loadBookmarks();
             };
             modal.addEventListener("click", function handler(e) {
               if (e.target === modal) {
@@ -1350,8 +1428,7 @@ bookmarks[index] = {
                 modal.removeEventListener("click", handler);
               }
             }, { once: true });
-          }         
-
+          }
           options.style.display = "none";
         };
         options.appendChild(opt);
@@ -1373,26 +1450,23 @@ bookmarks[index] = {
 
     function loadBookmarks() {
       bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-const grid = document.getElementById("bookmarkGrid");
-grid.innerHTML = '';
-
-bookmarks.forEach((b, i) => {
-  const el = createBookmarkElement(b, i);
-  grid.appendChild(el);
-});
-
-
+      const grid = document.getElementById("bookmarkGrid");
+      grid.innerHTML = '';
+      bookmarks.forEach((b, i) => {
+        const el = createBookmarkElement(b, i);
+        grid.appendChild(el);
+      });
       const savedSize = localStorage.getItem("tileSize") || 90;
       const slider = document.getElementById('tileSizeSlider');
       slider.value = savedSize;
       setTileSize(savedSize);
       applyGlassMode();
+      updateNewTabLinksOption();
     }
 
     function enableDragAndDrop() {
       const grid = document.getElementById("bookmarkGrid");
       let dragSrcIndex = null;
-
       grid.addEventListener("dragstart", (e) => {
         const tile = e.target.closest(".tile:not(.add-tile)");
         if (!tile) return;
@@ -1400,17 +1474,14 @@ bookmarks.forEach((b, i) => {
         tile.classList.add("dragging");
         e.dataTransfer.setData("text/plain", dragSrcIndex);
       });
-
       grid.addEventListener("dragend", (e) => {
         const tile = e.target.closest(".tile:not(.add-tile)");
         if (!tile) return;
         tile.classList.remove("dragging");
       });
-
       grid.addEventListener("dragover", (e) => {
         e.preventDefault();
       });
-
       grid.addEventListener("drop", (e) => {
         e.preventDefault();
         const targetTile = e.target.closest(".tile:not(.add-tile)");
@@ -1420,26 +1491,28 @@ bookmarks.forEach((b, i) => {
         const moved = bookmarks.splice(dragSrcIndex, 1)[0];
         bookmarks.splice(dropIndex, 0, moved);
         localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-        location.reload();
+        loadBookmarks();
       });
     }
 
     function addBookmark() {
-      console.log('Entering addBookmark');
+      console.log("addBookmark function triggered");
       const modal = document.getElementById("bookmarkModal");
-      if (modal) {
-        console.log('Modal found, removing hidden class');
-        modal.classList.remove("hidden");
-        modal.style.opacity = '1';
-        modal.style.zIndex = '2000';
-        modal.style.display = 'flex';
-        document.getElementById("modalTitle").textContent = "Add Bookmark";
-        document.getElementById("bookmarkModal").querySelector("button:first-of-type").textContent = "Add";
-        console.log('Modal state after update:', modal.className, modal.style.opacity, modal.style.display);
-      } else {
-        console.error('Modal element not found');
-      }
-      event.stopPropagation();
+      const nameInput = document.getElementById("bookmarkName");
+      const urlInput = document.getElementById("bookmarkUrl");
+      const iconInput = document.getElementById("bookmarkIcon");
+      const modalTitle = document.getElementById("modalTitle");
+      const submitBtn = modal.querySelector("button:first-of-type");
+      modalTitle.textContent = "Add Bookmark";
+      nameInput.value = "";
+      urlInput.value = "";
+      iconInput.value = "";
+      submitBtn.textContent = "Add";
+      submitBtn.onclick = submitBookmark;
+      modal.classList.remove("hidden");
+      modal.style.display = "flex";
+      modal.style.opacity = "1";
+      nameInput.focus();
     }
 
     function submitBookmark() {
@@ -1447,54 +1520,50 @@ bookmarks.forEach((b, i) => {
       const url = document.getElementById("bookmarkUrl").value.trim();
       const icon = document.getElementById("bookmarkIcon").value.trim();
       if (!url || !name) {
-        alert("Please enter both a name and URL.");
+        showAlert("Please enter both a name and URL.");
         return;
       }
-bookmarks.push({ url, name, icon });
+      bookmarks.push({ url, name, icon });
       localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
       closeModal();
-      location.reload();
+      loadBookmarks();
     }
 
     function closeModal() {
       const modal = document.getElementById("bookmarkModal");
-      if (modal) {
-        console.log('Closing modal');
-        modal.classList.add("hidden");
-        modal.style.display = 'none';
-        document.getElementById("bookmarkName").value = "";
-        document.getElementById("bookmarkUrl").value = "";
-        document.getElementById("bookmarkIcon").value = "";
-        document.getElementById("modalTitle").textContent = "Add Bookmark";
-        const submitBtn = modal.querySelector("button:first-of-type");
-        submitBtn.textContent = "Add";
-        submitBtn.onclick = submitBookmark;
-      }
+      modal.classList.add("hidden");
+      modal.style.display = "none";
+      document.getElementById("bookmarkName").value = "";
+      document.getElementById("bookmarkUrl").value = "";
+      document.getElementById("bookmarkIcon").value = "";
+      document.getElementById("modalTitle").textContent = "Add Bookmark";
+      const submitBtn = modal.querySelector("button:first-of-type");
+      submitBtn.textContent = "Add";
+      submitBtn.onclick = submitBookmark;
     }
 
     document.getElementById("bookmarkModal").addEventListener("click", function(event) {
-      console.log('Modal clicked, target:', event.target);
       if (event.target === this || event.target.id === "cancelBtn") {
         closeModal();
       }
     });
 
-document.getElementById("bookmarkIcon").addEventListener("paste", async function (e) {
-  const clipboardItems = e.clipboardData.items;
-  for (let i = 0; i < clipboardItems.length; i++) {
-    const item = clipboardItems[i];
-    if (item.type.indexOf("image") !== -1) {
-      const blob = item.getAsFile();
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        document.getElementById("bookmarkIcon").value = event.target.result; // base64 image data
-      };
-      reader.readAsDataURL(blob);
-      e.preventDefault();
-      break;
-    }
-  }
-});
+    document.getElementById("bookmarkIcon").addEventListener("paste", async function (e) {
+      const clipboardItems = e.clipboardData.items;
+      for (let i = 0; i < clipboardItems.length; i++) {
+        const item = clipboardItems[i];
+        if (item.type.indexOf("image") !== -1) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            document.getElementById("bookmarkIcon").value = event.target.result;
+          };
+          reader.readAsDataURL(blob);
+          e.preventDefault();
+          break;
+        }
+      }
+    });
 
     function toggleToolbar() {
       const panel = document.getElementById("toolbarPanel");
@@ -1543,36 +1612,35 @@ document.getElementById("bookmarkIcon").addEventListener("paste", async function
       localStorage.setItem("glassMode", glassMode);
       applyGlassMode();
     }
+
     function toggleIconStyle() {
-  const styles = ["round", "squircle", "rounded-rect"];
-  const current = localStorage.getItem("iconStyle") || "round";
-  const currentIndex = styles.indexOf(current);
-  const nextIndex = (currentIndex + 1) % styles.length;
-  const newStyle = styles[nextIndex];
-  localStorage.setItem("iconStyle", newStyle);
-  applyIconStyle(newStyle);
-}
-
-function applyIconStyle(style) {
-  const allIcons = document.querySelectorAll(".tile img");
-  allIcons.forEach(img => {
-    if (style === "squircle") {
-      img.style.borderRadius = "20%";
-    } else if (style === "rounded-rect") {
-      // Enhanced Samsung-style shape (One UI 7-ish)
-      img.style.borderRadius = "30% 30% 28% 28%"; // top-left, top-right, bottom-right, bottom-left
-    } else {
-      img.style.borderRadius = "50%"; // round
+      const styles = ["round", "squircle", "rounded-rect"];
+      const current = localStorage.getItem("iconStyle") || "round";
+      const currentIndex = styles.indexOf(current);
+      const nextIndex = (currentIndex + 1) % styles.length;
+      const newStyle = styles[nextIndex];
+      localStorage.setItem("iconStyle", newStyle);
+      applyIconStyle(newStyle);
     }
-  });
-}
 
-
+    function applyIconStyle(style) {
+      const allIcons = document.querySelectorAll(".tile img");
+      allIcons.forEach(img => {
+        if (style === "squircle") {
+          img.style.borderRadius = "20%";
+        } else if (style === "rounded-rect") {
+          img.style.borderRadius = "30% 30% 28% 28%";
+        } else {
+          img.style.borderRadius = "50%";
+        }
+      });
+    }
 
     function setTileSize(size) {
       const tiles = document.querySelectorAll(".tile");
       const grid = document.getElementById('bookmarkGrid');
       const slider = document.getElementById('tileSizeSlider');
+      const tileSizeLabel = document.getElementById('tileSizeLabel');
       let width = parseInt(size);
       tiles.forEach(tile => {
         tile.style.width = `${width}px`;
@@ -1584,7 +1652,10 @@ function applyIconStyle(style) {
         }
       });
       grid.classList.remove('tile-xsmall', 'tile-small', 'tile-medium', 'tile-large');
+      const percentage = ((width - 40) / (120 - 40)) * 100;
+      slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
       slider.value = width;
+      tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
       localStorage.setItem("tileSize", width);
     }
 
@@ -1596,13 +1667,13 @@ function applyIconStyle(style) {
           const data = JSON.parse(e.target.result);
           if (Array.isArray(data)) {
             localStorage.setItem("bookmarks", JSON.stringify(data));
-            location.reload();
+            loadBookmarks();
           } else {
-            alert("Invalid bookmark file format. Please upload a valid JSON file.");
+            showAlert("Invalid bookmark file format. Please upload a valid JSON file.");
           }
         } catch (error) {
           console.error("Import error:", error);
-          alert("Failed to import bookmarks: " + error.message);
+          showAlert("Failed to import bookmarks: " + error.message);
         }
       };
       reader.readAsText(file);
@@ -1624,11 +1695,10 @@ function applyIconStyle(style) {
           localStorage.setItem("hasVideo", "true");
           localStorage.removeItem("videoUrl");
           localStorage.removeItem("bgImage");
-          console.log("Video storage completed");
         } catch (error) {
           console.error("Failed to store video:", error.message, error.stack);
         }
-      } 
+      }
     });
 
     document.getElementById("bgInput").addEventListener("change", function(event) {
@@ -1657,11 +1727,11 @@ function applyIconStyle(style) {
     }
 
     let recognition = null;
-let recognitionWasAborted = false;
+    let recognitionWasAborted = false;
 
     function startVoiceSearch() {
       if (!('webkitSpeechRecognition' in window)) {
-        alert("Voice search is not supported. Please type your query.");
+        showAlert("Voice search is not supported. Please type your query.");
         document.getElementById("searchInput").focus();
         return;
       }
@@ -1690,38 +1760,32 @@ let recognitionWasAborted = false;
         searchInput.value = finalTranscript + interimTranscript;
       };
       recognition.onerror = (event) => {
-  if (event.error !== "aborted") {
-    alert("Voice recognition error: " + event.error);
-  }
-  searchInput.placeholder = "Search the web...";
-  micIcon.style.color = "";
-};
-
+        if (event.error !== "aborted") {
+          showAlert("Voice recognition error: " + event.error);
+        }
+        searchInput.placeholder = "Search the web...";
+        micIcon.style.color = "";
+      };
       recognition.onend = () => {
-  recognition._isStarted = false;
-  searchInput.placeholder = "Search the web...";
-  micIcon.style.color = "";
-
-  if (!recognitionWasAborted && searchInput.value.trim()) {
-    searchGoogle();
-  }
-
-  // Reset the abort flag for next time
-  recognitionWasAborted = false;
-};
-
+        recognition._isStarted = false;
+        searchInput.placeholder = "Search the web...";
+        micIcon.style.color = "";
+        if (!recognitionWasAborted && searchInput.value.trim()) {
+          searchGoogle();
+        }
+        recognitionWasAborted = false;
+      };
       finalTranscript = "";
       recognition.start();
     }
-   document.addEventListener("click", function (event) {
-  if (recognition && recognition._isStarted) {
-    recognitionWasAborted = true; // mark that we aborted it
-    recognition.abort();
-    cleanupVoiceSearch();
-  }
-}, true);
 
-
+    document.addEventListener("click", function (event) {
+      if (recognition && recognition._isStarted) {
+        recognitionWasAborted = true;
+        recognition.abort();
+        cleanupVoiceSearch();
+      }
+    }, true);
 
     function cancelVoiceSearch() {
       if (recognition) {
@@ -1741,7 +1805,7 @@ let recognitionWasAborted = false;
       try {
         const bookmarksData = localStorage.getItem("bookmarks");
         if (!bookmarksData || bookmarksData === "[]") {
-          alert("No bookmarks to export.");
+          showAlert("No bookmarks to export.");
           return;
         }
         const blob = new Blob([bookmarksData], { type: "application/json" });
@@ -1755,7 +1819,7 @@ let recognitionWasAborted = false;
         URL.revokeObjectURL(url);
       } catch (error) {
         console.error("Export error:", error);
-        alert("Failed to export bookmarks: " + error.message);
+        showAlert("Failed to export bookmarks: " + error.message);
       }
     }
 
@@ -1818,33 +1882,21 @@ let recognitionWasAborted = false;
       loadBookmarks();
       enableDragAndDrop();
       const savedIconStyle = localStorage.getItem("iconStyle") || "round";
-applyIconStyle(savedIconStyle);
-
-const weatherEnabled = localStorage.getItem("showWeather") === "true";
-applyWeatherToggle(weatherEnabled);
-
-const greetingEnabled = localStorage.getItem("showGreeting") === "true";
-applyGreetingToggle(greetingEnabled);
-
-// Animate placeholder
-  animatePlaceholderText();
-
-  // Animate mic
-  const mic = document.getElementById("micIcon");
-  mic.classList.add("animate-mic");
-  setTimeout(() => mic.classList.remove("animate-mic"), 1000);
-
-
-
-if (localStorage.getItem("hideLabels") === "true") {
-  document.body.classList.add("hide-labels");
-}
-
-if (localStorage.getItem("minimalistMode") === "true") {
-  document.body.classList.add("minimalist");
-}
-
-
+      applyIconStyle(savedIconStyle);
+      const weatherEnabled = localStorage.getItem("showWeather") === "true";
+      applyWeatherToggle(weatherEnabled);
+      const greetingEnabled = localStorage.getItem("showGreeting") === "true";
+      applyGreetingToggle(greetingEnabled);
+      animatePlaceholderText();
+      const mic = document.getElementById("micIcon");
+      mic.classList.add("animate-mic");
+      setTimeout(() => mic.classList.remove("animate-mic"), 1000);
+      if (localStorage.getItem("hideLabels") === "true") {
+        document.body.classList.add("hide-labels");
+      }
+      if (localStorage.getItem("minimalistMode") === "true") {
+        document.body.classList.add("minimalist");
+      }
     };
 
     document.getElementById("searchInput").addEventListener("keydown", function(event) {
@@ -1863,10 +1915,11 @@ if (localStorage.getItem("minimalistMode") === "true") {
       if (!toolbar.contains(event.target) && !button.contains(event.target)) {
         toolbar.style.display = "none";
       }
-      if (modal && !modal.contains(event.target) && !modal.classList.contains("hidden")) {
-        console.log('Click outside modal detected');
-        closeModal();
+      const isAddBookmarkBtn = event.target.closest("#addBookmarkBtn");
+      if (!isAddBookmarkBtn && modal && !modal.contains(event.target) && !modal.classList.contains("hidden")) {
+      closeModal();
       }
+
       document.querySelectorAll(".menu-options").forEach(m => {
         m.style.display = "none";
       });
