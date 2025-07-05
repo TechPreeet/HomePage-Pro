@@ -593,6 +593,22 @@
       display: none;
     }
 
+    .rearrange-active .tile {
+  cursor: grab;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s;
+  box-shadow: 0 2px 12px rgba(0,123,255,0.15);
+}
+.tile.dragging, .tile.drag-ghost {
+  opacity: 0.7;
+  transform: scale(1.08) rotate(-2deg);
+  z-index: 10;
+  box-shadow: 0 8px 32px rgba(0,123,255,0.25);
+}
+.tile:not(.add-tile):hover {
+  transform: scale(1.12);
+  box-shadow: 0 8px 24px rgba(0,123,255,0.18);
+}
+
     .modal {
       position: fixed;
       top: 0;
@@ -955,6 +971,7 @@
     <div class="toolbar-option" onclick="askUserName()">✏️ Change Name</div>
     <div class="toolbar-option" onclick="toggleMinimalistMode()">🧘 Minimalist Mode</div>
     <div class="toolbar-option" id="newTabLinksOption" onclick="toggleNewTabLinks()">🔗 Open Links in New Tab</div>
+    <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()">🔄 Rearrange Bookmarks</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
     <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
     <div class="toolbar-option" onclick="resetAllSettings()">🗑️ Reset All Settings</div>
@@ -963,6 +980,9 @@
   </div>
 
   <script>
+
+    let rearrangeMode = localStorage.getItem("rearrangeMode") === "true";
+
     let bookmarks = [];
     let glassMode = false;
     let newTabLinks = localStorage.getItem("newTabLinks") === "true";
@@ -980,6 +1000,27 @@
         { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
     ];
 
+function toggleRearrangeMode() {
+  rearrangeMode = !rearrangeMode;
+  localStorage.setItem("rearrangeMode", rearrangeMode);
+  updateRearrangeToggleUI();
+  applyRearrangeMode();
+}
+
+function updateRearrangeToggleUI() {
+  const toggle = document.getElementById("rearrangeBookmarksToggle");
+  toggle.textContent = `🔄 Rearrange Bookmarks ${rearrangeMode ? "✅" : "❌"}`;
+}
+
+function applyRearrangeMode() {
+  const grid = document.getElementById("bookmarkGrid");
+  if (rearrangeMode) {
+    grid.classList.add("rearrange-active");
+  } else {
+    grid.classList.remove("rearrange-active");
+  }
+  loadBookmarks();
+}
 
     function showAlert(message) {
       const modal = document.getElementById("alertModal");
@@ -1441,6 +1482,7 @@
 
     function createBookmarkElement(bookmark, index) {
       const a = document.createElement("a");
+      a.draggable = rearrangeMode;
       a.href = bookmark.url;
       a.className = "tile";
       if (newTabLinks) a.target = "_blank";
@@ -1552,35 +1594,53 @@
     }
 
     function enableDragAndDrop() {
-      const grid = document.getElementById("bookmarkGrid");
-      let dragSrcIndex = null;
-      grid.addEventListener("dragstart", (e) => {
-        const tile = e.target.closest(".tile:not(.add-tile)");
-        if (!tile) return;
-        dragSrcIndex = Number(tile.dataset.index);
-        tile.classList.add("dragging");
-        e.dataTransfer.setData("text/plain", dragSrcIndex);
-      });
-      grid.addEventListener("dragend", (e) => {
-        const tile = e.target.closest(".tile:not(.add-tile)");
-        if (!tile) return;
-        tile.classList.remove("dragging");
-      });
-      grid.addEventListener("dragover", (e) => {
-        e.preventDefault();
-      });
-      grid.addEventListener("drop", (e) => {
-        e.preventDefault();
-        const targetTile = e.target.closest(".tile:not(.add-tile)");
-        if (!targetTile || targetTile.dataset.index === undefined) return;
-        const dropIndex = Number(targetTile.dataset.index);
-        if (dragSrcIndex === dropIndex) return;
-        const moved = bookmarks.splice(dragSrcIndex, 1)[0];
-        bookmarks.splice(dropIndex, 0, moved);
-        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-        loadBookmarks();
-      });
+  const grid = document.getElementById("bookmarkGrid");
+  let dragSrcIndex = null;
+  let draggingTile = null;
+
+  grid.addEventListener("dragstart", (e) => {
+    if (!rearrangeMode) return e.preventDefault();
+    const tile = e.target.closest(".tile:not(.add-tile)");
+    if (!tile) return;
+    dragSrcIndex = Number(tile.dataset.index);
+    draggingTile = tile;
+    tile.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", dragSrcIndex);
+    setTimeout(() => tile.classList.add("drag-ghost"), 0);
+  });
+
+  grid.addEventListener("dragend", (e) => {
+    if (!draggingTile) return;
+    draggingTile.classList.remove("dragging", "drag-ghost");
+    draggingTile = null;
+  });
+
+  grid.addEventListener("dragover", (e) => {
+    if (!rearrangeMode) return;
+    e.preventDefault();
+    const targetTile = e.target.closest(".tile:not(.add-tile)");
+    if (!targetTile || !draggingTile || targetTile === draggingTile) return;
+    const bounding = targetTile.getBoundingClientRect();
+    const offset = e.clientY - bounding.top;
+    if (offset > bounding.height / 2) {
+      targetTile.after(draggingTile);
+    } else {
+      targetTile.before(draggingTile);
     }
+  });
+
+  grid.addEventListener("drop", (e) => {
+    if (!rearrangeMode) return;
+    e.preventDefault();
+    const tiles = Array.from(grid.querySelectorAll(".tile:not(.add-tile)"));
+    const newOrder = tiles.map(tile => bookmarks[Number(tile.dataset.index)]);
+    bookmarks = newOrder;
+    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+    loadBookmarks();
+  });
+}
+
 
     function addBookmark() {
       const modal = document.getElementById("bookmarkModal");
@@ -1785,31 +1845,31 @@
         }
     });
 
-    document.getElementById("bgInput").addEventListener("change", function(event) {
-        const file = event.target.files[0];
-        if (file) {
-            removeWallpaper(false);
-            const reader = new FileReader();
-            reader.onload = function(e) {
+            document.getElementById("bgInput").addEventListener("change", function(event) {
+              const file = event.target.files[0];
+              if (file) {
+              removeWallpaper(false);
+              const reader = new FileReader();
+              reader.onload = function(e) {
                 document.body.style.backgroundImage = `url('${e.target.result}')`;
                 document.body.classList.add("bg-image-active");
                 localStorage.setItem("bgImage", e.target.result);
             };
-            reader.readAsDataURL(file);
+              reader.readAsDataURL(file);
         }
     });
 
-    function searchGoogle() {
-  const input = document.getElementById("searchInput").value;
-  if (input.trim()) {
-    const url = 'https://www.google.com/search?q=' + encodeURIComponent(input);
-    if (newTabLinks) {
-      window.open(url, '_blank');
-    } else {
-      window.location.href = url;
+          function searchGoogle() {
+          const input = document.getElementById("searchInput").value;
+          if (input.trim()) {
+          const url = 'https://www.google.com/search?q=' + encodeURIComponent(input);
+          if (newTabLinks) {
+          window.open(url, '_blank');
+          } else {
+          window.location.href = url;
+        }
+      }
     }
-  }
-}
 
     let recognition = null;
     let handleCancelClick; // --- NEW: Define handler in a broader scope ---
@@ -1974,6 +2034,14 @@
           await loadBackgrounds();
       }
       
+    window.onload = async function() {
+      rearrangeMode = localStorage.getItem("rearrangeMode") === "true";
+      updateRearrangeToggleUI();
+      applyRearrangeMode();
+      enableDragAndDrop();
+  
+      };
+
       applyDarkMode(localStorage.getItem("dark-mode") === "true");
       loadBookmarks();
       enableDragAndDrop();
@@ -2000,10 +2068,32 @@
     };
 
     document.getElementById("searchInput").addEventListener("keydown", function(event) {
-  if (event.key === "Enter") {
-    searchGoogle();
-  }
-});
+      if (event.key === "Enter") {
+      searchGoogle();
+      }
+    });
+      let touchTimer = null;
+      let touchDragging = false;
+
+    document.getElementById("bookmarkGrid").addEventListener("touchstart", function(e) {
+     if (!rearrangeMode) return;
+     const tile = e.target.closest(".tile:not(.add-tile)");
+     if (!tile) return;
+     touchTimer = setTimeout(() => {
+    touchDragging = true;
+    tile.draggable = true;
+    tile.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
+     }, 300); // 300ms long-press
+    }, { passive: true });
+
+    document.getElementById("bookmarkGrid").addEventListener("touchend", function(e) {
+      clearTimeout(touchTimer);
+      if (touchDragging) {
+      touchDragging = false;
+      const tile = e.target.closest(".tile:not(.add-tile)");
+      if (tile) tile.draggable = false;
+      }
+    });
 
 
     document.addEventListener("click", function (event) {
