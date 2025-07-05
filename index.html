@@ -13,6 +13,16 @@
       --grid-gap: 20px;
     }
 
+    html, body {
+      pointer-events: auto !important;
+    }
+
+
+    /* --- FIX: Make body focusable without a visible outline --- */
+    body:focus {
+        outline: none;
+    }
+
     .hidden {
       display: none;
     }
@@ -122,6 +132,7 @@
       color: var(--text-color);
       overflow-x: hidden;
       overflow-y: auto;
+      transition: background 0.5s ease-in-out; 
     }
 
     .container {
@@ -211,6 +222,11 @@
       color: var(--text-color);
       font-size: 16px;
       outline: none;
+    }
+    
+    .search-bar input::placeholder {
+        color: var(--text-color);
+        opacity: 0.7;
     }
 
     .search-bar svg, .search-bar .material-icons {
@@ -526,7 +542,7 @@
       transform: scale(1.02);
     }
 
-    #tileSizeSlider {
+    #tileSizeSlider, #gradientSlider {
       width: 90%;
       margin: 5px 0;
       -webkit-appearance: none;
@@ -538,7 +554,7 @@
       transition: background 0.2s ease;
     }
 
-    #tileSizeSlider::-webkit-slider-thumb {
+    #tileSizeSlider::-webkit-slider-thumb, #gradientSlider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
       width: 16px;
@@ -550,11 +566,11 @@
       transition: transform 0.2s ease;
     }
 
-    #tileSizeSlider::-webkit-slider-thumb:hover {
+    #tileSizeSlider::-webkit-slider-thumb:hover, #gradientSlider::-webkit-slider-thumb:hover {
       transform: scale(1.2);
     }
 
-    #tileSizeSlider::-moz-range-thumb {
+    #tileSizeSlider::-moz-range-thumb, #gradientSlider::-moz-range-thumb {
       width: 16px;
       height: 16px;
       background: #ffffff;
@@ -564,11 +580,11 @@
       transition: transform 0.2s ease;
     }
 
-    #tileSizeSlider::-moz-range-thumb:hover {
+    #tileSizeSlider::-moz-range-thumb:hover, #gradientSlider::-moz-range-thumb:hover {
       transform: scale(1.2);
     }
 
-    #tileSizeSliderContainer {
+    #tileSizeSliderContainer, #gradientSliderContainer {
       margin: 10px 0;
       padding: 0 10px;
     }
@@ -589,10 +605,12 @@
       justify-content: center;
       z-index: 1000;
       transition: opacity 0.3s ease;
+      pointer-events: none;
       opacity: 0;
     }
 
     .modal:not(.hidden) {
+      pointer-events: auto;
       opacity: 1;
     }
 
@@ -656,10 +674,12 @@
       justify-content: center;
       z-index: 1001;
       transition: opacity 0.3s ease;
+      pointer-events: none;
       opacity: 0;
     }
 
     .alert-modal:not(.hidden) {
+      pointer-events: auto;
       opacity: 1;
     }
 
@@ -792,6 +812,7 @@
       height: 100%;
       object-fit: cover;
       z-index: -1;
+      pointer-events: none;
     }
 
     body.video-active #videoBg {
@@ -835,7 +856,7 @@
     }
   </style>
 </head>
-<body>
+<body tabindex="-1">
   <div id="aboutModal" class="modal hidden">
     <div class="about-box">
       <span class="close-icon" onclick="closeAboutModal()">✖</span>
@@ -912,9 +933,13 @@
     <div class="toolbar-option" id="addBookmarkBtn" aria-label="Add Bookmark" onclick="addBookmark()">📝 Add Bookmark</div>
     <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()">🖼️ Change Background</div>
     <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()">🎥 Set Video Background</div>
-    <div class="toolbar-option" aria-label="Set Video URL" onclick="promptVideoUrl()">🌐 Set Video URL</div>
+    <div class="toolbar-option" aria-label="Remove Wallpaper" onclick="removeWallpaper()">🚫 Remove Wallpaper</div>
     <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mov,.hevc">
     <input type="file" id="bgInput" accept="image/*" />
+    <div class="toolbar-option" id="gradientLabel">Background Color</div>
+    <div id="gradientSliderContainer">
+        <input type="range" id="gradientSlider" min="0" max="9" value="0" class="toolbar-option" oninput="setGradientBackground(this.value)">
+    </div>
     <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()">🧊 Toggle Glass Mode</div>
     <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
     <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()">🕒 Toggle Clock Format</div>
@@ -941,6 +966,20 @@
     let bookmarks = [];
     let glassMode = false;
     let newTabLinks = localStorage.getItem("newTabLinks") === "true";
+
+    const gradients = [
+        { name: 'Default', value: '' },
+        { name: 'Sunrise', value: 'linear-gradient(to right, #ff9966, #ff5e62)' },
+        { name: 'Ocean', value: 'linear-gradient(to right, #43cea2, #185a9d)' },
+        { name: 'Twilight', value: 'linear-gradient(to right, #ee0979, #ff6a00)' },
+        { name: 'Emerald', value: 'linear-gradient(to right, #00c9ff, #92fe9d)' },
+        { name: 'Amethyst', value: 'linear-gradient(to right, #9d50bb, #6e48aa)' },
+        { name: 'Sunset', value: 'linear-gradient(to right, #ff7e5f, #feb47b)' },
+        { name: 'Cosmic', value: 'linear-gradient(to right, #1d2b64, #f8cdda)' },
+        { name: 'Pastel', value: 'linear-gradient(to right, #a1c4fd, #c2e9fb)' },
+        { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
+    ];
+
 
     function showAlert(message) {
       const modal = document.getElementById("alertModal");
@@ -1075,6 +1114,7 @@
     async function promptVideoUrl() {
       const url = prompt("Enter video URL (e.g., from GitHub, .mp4, .webm, or .ogg):");
       if (url && (url.endsWith(".mp4") || url.endsWith(".webm") || url.endsWith(".ogg"))) {
+        removeWallpaper(false); 
         const videoBg = document.getElementById("videoBg");
         try {
           const response = await fetch(url, { method: "HEAD" });
@@ -1087,7 +1127,7 @@
           document.body.classList.remove("bg-image-active");
           localStorage.setItem("videoUrl", url);
           localStorage.setItem("hasVideo", "true");
-          localStorage.removeItem("bgImage");
+
           try {
             const db = await openDB();
             const transaction = db.transaction(["videos"], "readwrite");
@@ -1110,6 +1150,55 @@
         showAlert("Please enter a valid video URL (.mp4, .webm, or .ogg).");
       }
     }
+    
+    function removeWallpaper(showAlertMsg = true) {
+        const videoBg = document.getElementById("videoBg");
+        videoBg.src = "";
+        videoBg.classList.add("hidden");
+        document.body.classList.remove("video-active");
+        localStorage.removeItem("hasVideo");
+        localStorage.removeItem("videoUrl");
+
+        document.body.style.backgroundImage = '';
+        document.body.classList.remove("bg-image-active");
+        localStorage.removeItem("bgImage");
+
+        localStorage.setItem("gradientIndex", 0);
+        applyGradientBackground(0);
+        document.getElementById('gradientSlider').value = 0;
+
+
+        if(showAlertMsg) showAlert("Wallpaper has been removed.");
+    }
+
+    function setGradientBackground(index) {
+        const gradientIndex = parseInt(index, 10);
+        const gradient = gradients[gradientIndex];
+        const label = document.getElementById('gradientLabel');
+        
+        if (gradient && gradient.value) {
+            document.body.style.backgroundImage = gradient.value;
+            document.body.classList.remove("bg-image-active", "video-active");
+        } else {
+            if (!localStorage.getItem('bgImage') && !localStorage.getItem('hasVideo')) {
+                document.body.style.backgroundImage = '';
+            }
+        }
+        
+        label.textContent = `Background: ${gradient.name}`;
+        localStorage.setItem("gradientIndex", gradientIndex);
+
+        const slider = document.getElementById('gradientSlider');
+        const percentage = (gradientIndex / (gradients.length - 1)) * 100;
+        slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
+    }
+
+    function applyGradientBackground(index) {
+        const slider = document.getElementById('gradientSlider');
+        slider.value = index;
+        setGradientBackground(index);
+    }
+
 
     function openAboutModal() {
       toggleToolbar();
@@ -1181,18 +1270,6 @@
       }
     }
 
-    function getWeatherDescription(code) {
-      const map = {
-        0: "Sunny", 1: "Mostly Clear", 2: "Partly Cloudy", 3: "Cloudy",
-        45: "Foggy", 48: "Foggy",
-        51: "Light Rain", 61: "Rain", 63: "Moderate Rain", 65: "Heavy Rain",
-        71: "Light Snow", 73: "Moderate Snow", 75: "Heavy Snow",
-        80: "Showers", 81: "Heavy Showers", 82: "Violent Showers",
-        95: "Thunderstorm", 96: "Thunderstorm", 99: "Thunderstorm"
-      };
-      return map[code] || "Unknown";
-    }
-
     function getWeatherEmoji(code) {
       const map = {
         0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
@@ -1207,41 +1284,51 @@
 
     async function fetchWeather() {
       if (!navigator.geolocation) {
-        displayWeatherFallback();
+        displayWeatherFallback("Geolocation is not supported by your browser.");
         return;
       }
       navigator.geolocation.getCurrentPosition(async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}¤t_weather=true`;
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
           const response = await fetch(url);
+          if (!response.ok) {
+              throw new Error(`API request failed with status ${response.status}`);
+          }
           const data = await response.json();
           const weather = data.current_weather;
           const temp = Math.round(weather.temperature);
           const icon = getWeatherEmoji(weather.weathercode);
-          const description = getWeatherDescription(weather.weathercode);
           const wind = Math.round(weather.windspeed);
-          const text = `${icon} ${temp}°C | ${description} | Wind: ${wind} km/h`;
+          const text = `${icon} ${temp}°C | Wind: ${wind} km/h`;
           document.getElementById("weatherContainer").textContent = text;
         } catch (err) {
           console.error("Weather fetch error:", err);
-          document.getElementById("weatherContainer").textContent = "Could not load weather.";
+          displayWeatherFallback("Could not load weather data.");
         }
-      }, displayWeatherFallback);
+      }, (error) => {
+          console.error("Geolocation error:", error);
+          displayWeatherFallback("Location permission denied.");
+      });
     }
 
-    function displayWeatherFallback() {
-      document.getElementById("weatherContainer").textContent = "Weather data not available.";
+    function displayWeatherFallback(message) {
+      document.getElementById("weatherContainer").textContent = message;
     }
 
     function toggleMinimalistMode() {
-      const body = document.body;
-      const isMinimal = body.classList.toggle("minimalist");
-      localStorage.setItem("minimalistMode", isMinimal);
-      if (isMinimal && body.classList.contains("glass-mode")) {
-        body.classList.remove("glass-mode");
-        localStorage.setItem("glassMode", false);
-      }
+        const body = document.body;
+        const isMinimal = body.classList.toggle("minimalist");
+        localStorage.setItem("minimalistMode", isMinimal);
+        if (isMinimal) {
+            if (body.classList.contains("glass-mode")) {
+                body.classList.remove("glass-mode");
+                localStorage.setItem("glassMode", false);
+            }
+            body.style.backgroundImage = '';
+        } else {
+            loadBackgrounds();
+        }
     }
 
     function toggleGreeting() {
@@ -1496,7 +1583,6 @@
     }
 
     function addBookmark() {
-      console.log("addBookmark function triggered");
       const modal = document.getElementById("bookmarkModal");
       const nameInput = document.getElementById("bookmarkName");
       const urlInput = document.getElementById("bookmarkUrl");
@@ -1680,54 +1766,53 @@
     });
 
     document.getElementById("videoInput").addEventListener("change", async function (event) {
-      const file = event.target.files[0];
-      if (file && file.type.startsWith("video/")) {
-        const videoBg = document.getElementById("videoBg");
-        const blobUrl = URL.createObjectURL(file);
-        videoBg.src = blobUrl;
-        videoBg.load();
-        videoBg.play().catch(error => console.error("Video play error:", error));
-        videoBg.classList.remove("hidden");
-        document.body.classList.add("video-active");
-        document.body.classList.remove("bg-image-active");
-        try {
-          await storeVideo(file);
-          localStorage.setItem("hasVideo", "true");
-          localStorage.removeItem("videoUrl");
-          localStorage.removeItem("bgImage");
-        } catch (error) {
-          console.error("Failed to store video:", error.message, error.stack);
+        const file = event.target.files[0];
+        if (file && file.type.startsWith("video/")) {
+            removeWallpaper(false);
+            const videoBg = document.getElementById("videoBg");
+            const blobUrl = URL.createObjectURL(file);
+            videoBg.src = blobUrl;
+            videoBg.load();
+            videoBg.play().catch(error => console.error("Video play error:", error));
+            videoBg.classList.remove("hidden");
+            document.body.classList.add("video-active");
+            try {
+                await storeVideo(file);
+                localStorage.setItem("hasVideo", "true");
+            } catch (error) {
+                console.error("Failed to store video:", error.message, error.stack);
+            }
         }
-      }
     });
 
     document.getElementById("bgInput").addEventListener("change", function(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const videoBg = document.getElementById("videoBg");
-          videoBg.classList.add("hidden");
-          document.body.classList.remove("video-active");
-          document.body.style.backgroundImage = `url('${e.target.result}')`;
-          document.body.classList.add("bg-image-active");
-          localStorage.setItem("bgImage", e.target.result);
-          localStorage.removeItem("hasVideo");
-          localStorage.removeItem("videoUrl");
-        };
-        reader.readAsDataURL(file);
-      }
+        const file = event.target.files[0];
+        if (file) {
+            removeWallpaper(false);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.body.style.backgroundImage = `url('${e.target.result}')`;
+                document.body.classList.add("bg-image-active");
+                localStorage.setItem("bgImage", e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
     });
 
     function searchGoogle() {
-      const input = document.getElementById("searchInput").value;
-      if (input.trim()) {
-        window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(input);
-      }
+  const input = document.getElementById("searchInput").value;
+  if (input.trim()) {
+    const url = 'https://www.google.com/search?q=' + encodeURIComponent(input);
+    if (newTabLinks) {
+      window.open(url, '_blank');
+    } else {
+      window.location.href = url;
     }
+  }
+}
 
     let recognition = null;
-    let recognitionWasAborted = false;
+    let handleCancelClick; // --- NEW: Define handler in a broader scope ---
 
     function startVoiceSearch() {
       if (!('webkitSpeechRecognition' in window)) {
@@ -1735,18 +1820,38 @@
         document.getElementById("searchInput").focus();
         return;
       }
+      
+      if (recognition && recognition._isStarted) {
+        recognition.stop();
+        return;
+      }
+
       recognition = new webkitSpeechRecognition();
       recognition.lang = "en-US";
       recognition.interimResults = true;
       recognition.continuous = false;
       const searchInput = document.getElementById("searchInput");
       const micIcon = document.getElementById("micIcon");
+      const container = document.querySelector('.container');
       let finalTranscript = "";
+
+      // --- NEW: Function to handle clicks outside interactive elements to cancel ---
+      handleCancelClick = function(event) {
+        if (!event.target.closest('a, button, input, .menu, .toolbar-option')) {
+          if (recognition && recognition._isStarted) {
+            recognition.stop();
+          }
+        }
+      };
+
       recognition.onstart = () => {
         recognition._isStarted = true;
         searchInput.placeholder = "Listening...";
         micIcon.style.color = "red";
+        // Add listener only when recognition starts
+        container.addEventListener('click', handleCancelClick);
       };
+
       recognition.onresult = (event) => {
         let interimTranscript = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -1758,47 +1863,27 @@
           }
         }
         searchInput.value = finalTranscript + interimTranscript;
+        handleSearchInput();
       };
+
       recognition.onerror = (event) => {
-        if (event.error !== "aborted") {
+        if (event.error !== "aborted" && event.error !== 'no-speech') {
           showAlert("Voice recognition error: " + event.error);
         }
-        searchInput.placeholder = "Search the web...";
-        micIcon.style.color = "";
       };
+
       recognition.onend = () => {
         recognition._isStarted = false;
         searchInput.placeholder = "Search the web...";
         micIcon.style.color = "";
-        if (!recognitionWasAborted && searchInput.value.trim()) {
+        // IMPORTANT: Remove listener when recognition ends
+        container.removeEventListener('click', handleCancelClick);
+        if (finalTranscript.trim()) {
           searchGoogle();
         }
-        recognitionWasAborted = false;
       };
-      finalTranscript = "";
+
       recognition.start();
-    }
-
-    document.addEventListener("click", function (event) {
-      if (recognition && recognition._isStarted) {
-        recognitionWasAborted = true;
-        recognition.abort();
-        cleanupVoiceSearch();
-      }
-    }, true);
-
-    function cancelVoiceSearch() {
-      if (recognition) {
-        recognition.abort();
-        cleanupVoiceSearch();
-      }
-    }
-
-    function cleanupVoiceSearch() {
-      const micBtn = document.getElementById("micIcon");
-      const searchInput = document.getElementById("searchInput");
-      if (micBtn) micBtn.style.color = "";
-      if (searchInput) searchInput.placeholder = "Search the web...";
     }
 
     function exportBookmarks() {
@@ -1822,62 +1907,73 @@
         showAlert("Failed to export bookmarks: " + error.message);
       }
     }
+    
+    async function loadBackgrounds() {
+        const bgImage = localStorage.getItem("bgImage");
+        const hasVideo = localStorage.getItem("hasVideo") === "true";
+        const videoUrl = localStorage.getItem("videoUrl");
+        const gradientIndex = parseInt(localStorage.getItem("gradientIndex") || "0", 10);
+        const videoBg = document.getElementById("videoBg");
+
+        if (bgImage) {
+            document.body.style.backgroundImage = `url('${bgImage}')`;
+            document.body.classList.add("bg-image-active");
+        } else if (hasVideo) {
+            if (videoUrl) {
+                try {
+                    const response = await fetch(videoUrl, { method: "HEAD" });
+                    if (response.ok) {
+                        videoBg.src = videoUrl;
+                        videoBg.classList.remove("hidden");
+                        document.body.classList.add("video-active");
+                        videoBg.load();
+                        videoBg.play().catch(error => console.error("Video play error on load:", error));
+                    } else {
+                        localStorage.removeItem("videoUrl");
+                        localStorage.removeItem("hasVideo");
+                    }
+                } catch (error) {
+                    console.error("Failed to load video URL on startup:", error.message, error.stack);
+                    localStorage.removeItem("videoUrl");
+                    localStorage.removeItem("hasVideo");
+                }
+            } else {
+                try {
+                    const videoData = await getVideo();
+                    if (videoData && videoData.data) {
+                        videoBg.src = URL.createObjectURL(videoData.data);
+                        videoBg.classList.remove("hidden");
+                        document.body.classList.add("video-active");
+                        videoBg.load();
+                        videoBg.play().catch(error => console.error("Video play error on load:", error));
+                    } else {
+                        localStorage.removeItem("hasVideo");
+                    }
+                } catch (error) {
+                    localStorage.removeItem("hasVideo");
+                }
+            }
+        } else if (gradientIndex > 0) {
+            applyGradientBackground(gradientIndex);
+        }
+    }
 
     window.onload = async function() {
       updateClock();
       setInterval(updateClock, 1000);
       glassMode = localStorage.getItem("glassMode") === "true";
       applyGlassMode();
+      
       const savedSize = localStorage.getItem("tileSize") || 90;
-      const slider = document.getElementById('tileSizeSlider');
-      slider.value = savedSize;
       setTileSize(savedSize);
-      const bg = localStorage.getItem("bgImage");
-      if (bg) {
-        document.body.style.backgroundImage = `url('${bg}')`;
-        document.body.classList.add("bg-image-active");
+      
+      const savedGradient = localStorage.getItem("gradientIndex") || 0;
+      applyGradientBackground(savedGradient);
+      
+      if (localStorage.getItem("minimalistMode") !== "true") {
+          await loadBackgrounds();
       }
-      if (localStorage.getItem("hasVideo") === "true") {
-        const videoUrl = localStorage.getItem("videoUrl");
-        const videoBg = document.getElementById("videoBg");
-        if (videoUrl) {
-          try {
-            const response = await fetch(videoUrl, { method: "HEAD" });
-            if (response.ok) {
-              videoBg.src = videoUrl;
-              videoBg.classList.remove("hidden");
-              document.body.classList.add("video-active");
-              videoBg.load();
-              videoBg.play().catch(error => console.error("Video play error on load:", error));
-            } else {
-              console.warn("Video URL inaccessible:", videoUrl);
-              localStorage.removeItem("videoUrl");
-              localStorage.removeItem("hasVideo");
-            }
-          } catch (error) {
-            console.error("Failed to load video URL on startup:", error.message, error.stack);
-            localStorage.removeItem("videoUrl");
-            localStorage.removeItem("hasVideo");
-          }
-        } else {
-          try {
-            const videoData = await getVideo();
-            if (videoData && videoData.data) {
-              videoBg.src = URL.createObjectURL(videoData.data);
-              videoBg.classList.remove("hidden");
-              document.body.classList.add("video-active");
-              videoBg.load();
-              videoBg.play().catch(error => console.error("Video play error on load:", error));
-            } else {
-              console.warn("No video data found in IndexedDB");
-              localStorage.removeItem("hasVideo");
-            }
-          } catch (error) {
-            console.error("Failed to load video on startup:", error.message, error.stack);
-            localStorage.removeItem("hasVideo");
-          }
-        }
-      }
+      
       applyDarkMode(localStorage.getItem("dark-mode") === "true");
       loadBookmarks();
       enableDragAndDrop();
@@ -1897,33 +1993,37 @@
       if (localStorage.getItem("minimalistMode") === "true") {
         document.body.classList.add("minimalist");
       }
+        
+        document.body.style.pointerEvents = "auto";
+
+
     };
 
     document.getElementById("searchInput").addEventListener("keydown", function(event) {
-      if (event.key === "Enter") {
-        const query = this.value.trim();
-        if (query) {
-          window.location.href = "https://www.google.com/search?q=" + encodeURIComponent(query);
-        }
-      }
-    });
+  if (event.key === "Enter") {
+    searchGoogle();
+  }
+});
+
 
     document.addEventListener("click", function (event) {
       const toolbar = document.getElementById("toolbarPanel");
       const button = document.getElementById("toolbarBtn");
-      const modal = document.getElementById("bookmarkModal");
-      if (!toolbar.contains(event.target) && !button.contains(event.target)) {
+      
+      if (toolbar.style.display === 'block' && !toolbar.contains(event.target) && !button.contains(event.target)) {
         toolbar.style.display = "none";
       }
-      const isAddBookmarkBtn = event.target.closest("#addBookmarkBtn");
-      if (!isAddBookmarkBtn && modal && !modal.contains(event.target) && !modal.classList.contains("hidden")) {
-      closeModal();
-      }
 
-      document.querySelectorAll(".menu-options").forEach(m => {
-        m.style.display = "none";
-      });
+      const isMenuClick = event.target.classList.contains('menu');
+      if (!isMenuClick) {
+        document.querySelectorAll(".menu-options").forEach(m => {
+          if (!m.contains(event.target)) {
+            m.style.display = "none";
+          }
+        });
+      }
     });
+
   </script>
 </body>
 </html>
