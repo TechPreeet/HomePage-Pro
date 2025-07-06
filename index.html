@@ -870,6 +870,37 @@
     #micIcon.animate-mic {
       animation: spinOnce 1s ease;
     }
+
+    @keyframes wiggle {
+  0% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+  100% { transform: rotate(-1.5deg); }
+}
+
+.tile.rearrange-wiggle {
+  animation: wiggle 0.3s ease-in-out infinite;
+}
+
+.delete-btn {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: red;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+
   </style>
 </head>
 <body tabindex="-1">
@@ -914,7 +945,7 @@
         autocorrect="off"
         autocapitalize="off"
         oninput="handleSearchInput()"
-        onkeydown="if(event.key === 'Enter') { window.location.href = 'https://www.google.com/search?q=' + encodeURIComponent(this.value); }"
+        onkeydown="if(event.key === 'Enter') { searchGoogle(); }"
       />
       <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
         xmlns="http://www.w3.org/2000/svg"
@@ -980,8 +1011,8 @@
   </div>
 
   <script>
-
-    let rearrangeMode = localStorage.getItem("rearrangeMode") === "true";
+    
+    let rearrangeMode = false; // Always start OFF
 
     let bookmarks = [];
     let glassMode = false;
@@ -1003,9 +1034,23 @@
 function toggleRearrangeMode() {
   rearrangeMode = !rearrangeMode;
   localStorage.setItem("rearrangeMode", rearrangeMode);
+
+  toggleToolbar(); // ✅ Same way your About button hides the panel
+
   updateRearrangeToggleUI();
   applyRearrangeMode();
 }
+document.addEventListener("click", function (e) {
+  const isTileOrSettings = e.target.closest(".tile, .settings-panel, .toolbar-option");
+  if (rearrangeMode && !isTileOrSettings) {
+    rearrangeMode = false;
+    localStorage.setItem("rearrangeMode", rearrangeMode);
+    updateRearrangeToggleUI();
+    applyRearrangeMode(); // handles .rearrange-active and loadBookmarks
+  }
+});
+
+
 
 function updateRearrangeToggleUI() {
   const toggle = document.getElementById("rearrangeBookmarksToggle");
@@ -1507,6 +1552,7 @@ function applyRearrangeMode() {
       const menu = document.createElement("div");
       menu.className = "menu";
       menu.textContent = "⋮";
+      
       const options = document.createElement("div");
       options.className = "menu-options";
       ["Edit", "Delete"].forEach(action => {
@@ -1574,6 +1620,29 @@ function applyRearrangeMode() {
       a.appendChild(options);
       a.appendChild(img);
       a.appendChild(name);
+
+      // 🔴 Delete button (only visible in rearrange mode)
+const deleteBtn = document.createElement("div");
+deleteBtn.className = "delete-btn";
+deleteBtn.innerHTML = "&#8722;"; // minus symbol
+deleteBtn.title = "Delete Bookmark";
+deleteBtn.onclick = (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  bookmarks.splice(index, 1);
+  localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+  loadBookmarks();
+};
+a.appendChild(deleteBtn);
+
+// Apply wiggle if in rearrange mode
+if (rearrangeMode) {
+  a.classList.add("rearrange-wiggle");
+  deleteBtn.style.display = "flex";
+} else {
+  deleteBtn.style.display = "none";
+}
+
       return a;
     }
 
