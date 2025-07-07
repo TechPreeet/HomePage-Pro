@@ -406,65 +406,97 @@
       padding: 4px 0;
     }
 
-    .tile .menu {
-      position: absolute;
-      top: 0;
-      right: 0;
-      cursor: pointer;
-      font-weight: bold;
-      background: rgba(0,0,0,0.5);
-      color: white;
-      border-radius: 5px;
-      padding: 2px 6px;
-      z-index: 11;
-    }
+    /* Base: Hide the menu by default */
+.tile .menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border-radius: 5px;
+  padding: 2px 6px;
+  z-index: 11;
+  display: none; /* hidden by default */
+}
 
-    @media (hover: hover) and (pointer: fine) {
-      .tile .menu {
-        display: none;
-      }
+/* 💻 Desktop: Show only on hover */
+@media (hover: hover) and (pointer: fine) {
+  .tile:hover .menu {
+    display: block;
+  }
+}
 
-      .tile:hover .menu {
-        display: block;
-      }
-    }
+/* 📱 Mobile: Always show on touchscreens */
+@media (hover: none) and (pointer: coarse) {
+  .tile .menu {
+    display: block !important;
+  }
+}
 
-    @media (hover: none) and (pointer: coarse) {
-      .tile .menu {
-        display: block !important;
-      }
-    }
 
-    .tile .menu-options {
-      display: none;
-      position: absolute;
-      bottom: 18px;
-      right: 0;
-      background: rgba(0, 0, 0, 0.85);
-      color: white;
-      padding: 1px 0;
-      border-radius: 4px;
-      z-index: 9999;
-      min-width: 65px;
-      font-size: 10px;
-      white-space: nowrap;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-      line-height: 1.2;
-    }
 
-    .tile .menu-options div {
-      padding: 3px 5px;
-      cursor: pointer;
-      width: 100%;
-      box-sizing: border-box;
-      font-size: 10px;
-      line-height: 1.2;
-    }
 
-    .tile .menu-options div:hover {
-      background: #444;
-    }
+   .menu-options {
+  display: none;
+  position: absolute;
+  top: auto;
+  bottom: 100%;
+  right: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: 13px;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  line-height: 1.5;
+  z-index: 999999;
+  overflow-y: auto;
+  max-height: 200px;
+}
 
+
+
+    .menu-options div {
+  padding: 6px 10px;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.menu-options div:hover {
+  background: #444;
+}
+
+
+  .floating-menu {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.95);
+    border-radius: 8px;
+    padding: 6px 0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    color: white;
+    font-size: 13px;
+    line-height: 1.4;
+    z-index: 999999;
+    overflow-y: auto;
+    max-height: 200px;
+    min-width: 140px;
+  }
+
+  .floating-menu div {
+    padding: 6px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .floating-menu div:hover {
+    background: #444;
+  }
     .tile {
       position: relative;
       overflow: visible !important;
@@ -472,14 +504,17 @@
 
     .tile img.round {
       border-radius: 50%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .tile img.squircle {
       border-radius: 20%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .tile img.rounded-rect {
-      border-radius: 30% 30% 28% 28%;
+      border-radius: 29%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .bookmarks-container {
@@ -899,6 +934,38 @@
   z-index: 10;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
+.grid, .tile, .scrollable-bookmarks, .bookmarks-container, .container {
+  overflow: visible !important;
+}
+@media (hover: none) and (pointer: coarse) {
+  .tile:not(.add-tile):hover {
+    transform: none;
+    box-shadow: none;
+    background: none;
+  }
+}
+/* Prevent long-press text selection globally */
+body, html, .container, .bookmarks-container {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Re-enable selection for input fields (forms, modals, etc.) */
+input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+@media (hover: none), (pointer: coarse) {
+  .tile .menu {
+    display: block !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-weight: bold;
+    z-index: 9999;
+  }
+}
 
 
   </style>
@@ -1012,8 +1079,7 @@
 
   <script>
     
-    let rearrangeMode = false; // Always start OFF
-
+let rearrangeMode = false; // Always start OFF
     let bookmarks = [];
     let glassMode = false;
     let newTabLinks = localStorage.getItem("newTabLinks") === "true";
@@ -1031,41 +1097,98 @@
         { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
     ];
 
-function toggleRearrangeMode() {
-  rearrangeMode = !rearrangeMode;
-  localStorage.setItem("rearrangeMode", rearrangeMode);
+    function showMenuOptions(tile) {
+      document.querySelectorAll(".floating-menu").forEach(m => m.remove());
+      const original = tile.querySelector(".menu-options");
+      if (!original) return;
 
-  toggleToolbar(); // ✅ Same way your About button hides the panel
+      const clone = original.cloneNode(true);
+      clone.classList.add("floating-menu");
 
-  updateRearrangeToggleUI();
-  applyRearrangeMode();
-}
-document.addEventListener("click", function (e) {
-  const isTileOrSettings = e.target.closest(".tile, .settings-panel, .toolbar-option");
-  if (rearrangeMode && !isTileOrSettings) {
-    rearrangeMode = false;
-    localStorage.setItem("rearrangeMode", rearrangeMode);
-    updateRearrangeToggleUI();
-    applyRearrangeMode(); // handles .rearrange-active and loadBookmarks
-  }
-});
+      [...original.children].forEach((origItem, i) => {
+        clone.children[i].onclick = origItem.onclick;
+      });
 
+      const rect = tile.getBoundingClientRect();
+      const menuWidth = 140;
+      const menuHeight = 160;
 
+      const spaceRight = window.innerWidth - rect.right;
+      const spaceLeft = rect.left;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
 
-function updateRearrangeToggleUI() {
-  const toggle = document.getElementById("rearrangeBookmarksToggle");
-  toggle.textContent = `🔄 Rearrange Bookmarks ${rearrangeMode ? "✅" : "❌"}`;
-}
+      if (spaceRight >= menuWidth) {
+        clone.style.left = `${rect.right}px`;
+      } else if (spaceLeft >= menuWidth) {
+        clone.style.left = `${rect.left - menuWidth}px`;
+      } else {
+        clone.style.left = `${Math.max(rect.left, 10)}px`;
+      }
 
-function applyRearrangeMode() {
-  const grid = document.getElementById("bookmarkGrid");
-  if (rearrangeMode) {
-    grid.classList.add("rearrange-active");
-  } else {
-    grid.classList.remove("rearrange-active");
-  }
-  loadBookmarks();
-}
+      if (spaceBelow >= menuHeight || spaceAbove < menuHeight) {
+        clone.style.top = `${rect.bottom}px`;
+      } else {
+        clone.style.top = `${Math.max(rect.top - menuHeight, 10)}px`;
+      }
+
+      clone.style.position = "fixed";
+      clone.style.zIndex = "999999";
+      clone.style.background = "rgba(0, 0, 0, 0.9)";
+      clone.style.borderRadius = "8px";
+      clone.style.padding = "6px 0";
+      clone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.3)";
+      clone.style.color = "white";
+      clone.style.minWidth = "130px";
+      clone.style.maxHeight = "200px";
+      clone.style.overflowY = "auto";
+      clone.style.fontSize = "13px";
+      clone.style.lineHeight = "1.4";
+
+      document.body.appendChild(clone);
+
+      setTimeout(() => {
+        document.addEventListener("click", function handler(e) {
+          if (!clone.contains(e.target)) {
+            clone.remove();
+            document.removeEventListener("click", handler);
+          }
+        });
+      }, 50);
+    }
+
+    function toggleRearrangeMode() {
+      rearrangeMode = !rearrangeMode;
+      localStorage.setItem("rearrangeMode", rearrangeMode);
+      toggleToolbar();
+      updateRearrangeToggleUI();
+      applyRearrangeMode();
+    }
+
+    document.addEventListener("click", function (e) {
+      const isTileOrSettings = e.target.closest(".tile, .settings-panel, .toolbar-option");
+      if (rearrangeMode && !isTileOrSettings) {
+        rearrangeMode = false;
+        localStorage.setItem("rearrangeMode", rearrangeMode);
+        updateRearrangeToggleUI();
+        applyRearrangeMode();
+      }
+    });
+
+    function updateRearrangeToggleUI() {
+      const toggle = document.getElementById("rearrangeBookmarksToggle");
+      toggle.textContent = `🔄 Rearrange Bookmarks ${rearrangeMode ? "✅" : "❌"}`;
+    }
+
+    function applyRearrangeMode() {
+      const grid = document.getElementById("bookmarkGrid");
+      if (rearrangeMode) {
+        grid.classList.add("rearrange-active");
+      } else {
+        grid.classList.remove("rearrange-active");
+      }
+      loadBookmarks();
+    }
 
     function showAlert(message) {
       const modal = document.getElementById("alertModal");
@@ -1200,7 +1323,7 @@ function applyRearrangeMode() {
     async function promptVideoUrl() {
       const url = prompt("Enter video URL (e.g., from GitHub, .mp4, .webm, or .ogg):");
       if (url && (url.endsWith(".mp4") || url.endsWith(".webm") || url.endsWith(".ogg"))) {
-        removeWallpaper(false); 
+        removeWallpaper(false);
         const videoBg = document.getElementById("videoBg");
         try {
           const response = await fetch(url, { method: "HEAD" });
@@ -1253,7 +1376,6 @@ function applyRearrangeMode() {
         applyGradientBackground(0);
         document.getElementById('gradientSlider').value = 0;
 
-
         if(showAlertMsg) showAlert("Wallpaper has been removed.");
     }
 
@@ -1284,7 +1406,6 @@ function applyRearrangeMode() {
         slider.value = index;
         setGradientBackground(index);
     }
-
 
     function openAboutModal() {
       toggleToolbar();
@@ -1531,12 +1652,59 @@ function applyRearrangeMode() {
       a.href = bookmark.url;
       a.className = "tile";
       if (newTabLinks) a.target = "_blank";
-      a.draggable = true;
       a.dataset.index = index;
       a.tabIndex = 0;
+      // --- PASTE THE NEW MENU LOGIC HERE ---
+      if ('ontouchstart' in window) {
+        let pressTimer = null;
+        let longPressDidOccur = false;
+
+        a.addEventListener('touchstart', (e) => {
+          if (rearrangeMode) return; // Don't run this logic in rearrange mode
+          longPressDidOccur = false;
+          pressTimer = setTimeout(() => {
+            longPressDidOccur = true;
+            showMenuOptions(a);
+          }, 500); // 500ms for a long press
+        });
+
+        a.addEventListener('touchmove', () => {
+          // If finger moves, it's a scroll, so cancel the long press
+          clearTimeout(pressTimer);
+        });
+
+        a.addEventListener('touchend', () => {
+          clearTimeout(pressTimer);
+        });
+
+        a.addEventListener('click', (e) => {
+          // If a long press happened, prevent the click from navigating
+          if (longPressDidOccur) {
+            e.preventDefault();
+          }
+        });
+      }
+      // --- END OF NEW MENU LOGIC ---
+
+      // Prevent link navigation if in rearrange mode.
+      a.addEventListener('click', (e) => {
+        if (rearrangeMode) {
+            e.preventDefault();
+        }
+      });
+      // ... the rest of your function continues here
+
+      // Prevent link navigation if in rearrange mode.
+      a.addEventListener('click', (e) => {
+        if (rearrangeMode) {
+            e.preventDefault();
+        }
+      });
+
       a.addEventListener("keydown", (e) => {
         if (e.key === "Enter") window.location.href = bookmark.url;
       });
+
       const img = document.createElement("img");
       try {
         img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
@@ -1555,59 +1723,64 @@ function applyRearrangeMode() {
       
       const options = document.createElement("div");
       options.className = "menu-options";
-      ["Edit", "Delete"].forEach(action => {
-        const opt = document.createElement("div");
-        opt.textContent = action;
-        opt.onclick = (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (action === "Delete") {
-            bookmarks.splice(index, 1);
-            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-            loadBookmarks();
-          } else if (action === "Edit") {
-            const modal = document.getElementById("bookmarkModal");
-            const nameInput = document.getElementById("bookmarkName");
-            const urlInput = document.getElementById("bookmarkUrl");
-            const iconInput = document.getElementById("bookmarkIcon");
-            const modalTitle = document.getElementById("modalTitle");
-            modalTitle.textContent = "Edit Bookmark";
-            nameInput.value = bookmark.name;
-            urlInput.value = bookmark.url;
-            iconInput.value = bookmark.icon || "";
-            modal.classList.remove("hidden");
-            modal.style.display = "flex";
-            const submitBtn = modal.querySelector("button:first-of-type");
-            const originalSubmit = submitBtn.onclick;
-            submitBtn.textContent = "Save";
-            submitBtn.onclick = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const newName = nameInput.value.trim();
-              const newURL = urlInput.value.trim();
-              const newIcon = iconInput.value.trim();
-              if (!newName || !newURL) {
-                showAlert("Please enter both a name and URL.");
-                return;
-              }
-              bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
+["Edit", "Delete"].forEach(action => {
+  const opt = document.createElement("div");
+  opt.innerHTML = {
+    "Edit": "📝",
+    "Delete": "🗑️"
+  }[action];
+          opt.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (action === "Delete") {
+              bookmarks.splice(index, 1);
               localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-              closeModal();
               loadBookmarks();
-            };
-            modal.addEventListener("click", function handler(e) {
-              if (e.target === modal) {
-                submitBtn.textContent = "Add";
-                submitBtn.onclick = originalSubmit;
-                modalTitle.textContent = "Add Bookmark";
-                modal.removeEventListener("click", handler);
-              }
-            }, { once: true });
-          }
-          options.style.display = "none";
-        };
-        options.appendChild(opt);
+            } else if (action === "Edit") {
+              const modal = document.getElementById("bookmarkModal");
+              const nameInput = document.getElementById("bookmarkName");
+              const urlInput = document.getElementById("bookmarkUrl");
+              const iconInput = document.getElementById("bookmarkIcon");
+              const modalTitle = document.getElementById("modalTitle");
+              modalTitle.textContent = "Edit Bookmark";
+              nameInput.value = bookmark.name;
+              urlInput.value = bookmark.url;
+              iconInput.value = bookmark.icon || "";
+              modal.classList.remove("hidden");
+              modal.style.display = "flex";
+              const submitBtn = modal.querySelector("button:first-of-type");
+              const originalSubmit = submitBtn.onclick;
+              submitBtn.textContent = "Save";
+              submitBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const newName = nameInput.value.trim();
+                const newURL = urlInput.value.trim();
+                const newIcon = iconInput.value.trim();
+                if (!newName || !newURL) {
+                  showAlert("Please enter both a name and URL.");
+                  return;
+                }
+                bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
+                localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+                closeModal();
+                loadBookmarks();
+              };
+              modal.addEventListener("click", function handler(e) {
+                if (e.target === modal) {
+                  submitBtn.textContent = "Add";
+                  submitBtn.onclick = originalSubmit;
+                  modalTitle.textContent = "Add Bookmark";
+                  modal.removeEventListener("click", handler);
+                }
+              }, { once: true });
+            } 
+            options.style.display = "none";
+          };
+          options.appendChild(opt);
       });
+
       menu.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -1616,35 +1789,35 @@ function applyRearrangeMode() {
         });
         options.style.display = options.style.display === "block" ? "none" : "block";
       };
+
       a.appendChild(menu);
       a.appendChild(options);
       a.appendChild(img);
       a.appendChild(name);
 
-      // 🔴 Delete button (only visible in rearrange mode)
-const deleteBtn = document.createElement("div");
-deleteBtn.className = "delete-btn";
-deleteBtn.innerHTML = "&#8722;"; // minus symbol
-deleteBtn.title = "Delete Bookmark";
-deleteBtn.onclick = (e) => {
-  e.stopPropagation();
-  e.preventDefault();
-  bookmarks.splice(index, 1);
-  localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-  loadBookmarks();
-};
-a.appendChild(deleteBtn);
+      const deleteBtn = document.createElement("div");
+      deleteBtn.className = "delete-btn";
+      deleteBtn.innerHTML = "&#8722;"; // minus symbol
+      deleteBtn.title = "Delete Bookmark";
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        bookmarks.splice(index, 1);
+        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        loadBookmarks();
+      };
+      a.appendChild(deleteBtn);
 
-// Apply wiggle if in rearrange mode
-if (rearrangeMode) {
-  a.classList.add("rearrange-wiggle");
-  deleteBtn.style.display = "flex";
-} else {
-  deleteBtn.style.display = "none";
-}
+      if (rearrangeMode) {
+        a.classList.add("rearrange-wiggle");
+        deleteBtn.style.display = "flex";
+      } else {
+        deleteBtn.style.display = "none";
+      }
 
       return a;
     }
+
 
     function loadBookmarks() {
       bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
@@ -1662,11 +1835,14 @@ if (rearrangeMode) {
       updateNewTabLinksOption();
     }
 
-    function enableDragAndDrop() {
+// PASTE THIS ENTIRE BLOCK to replace the old enableDragAndDrop function
+
+function enableDragAndDrop() {
   const grid = document.getElementById("bookmarkGrid");
   let dragSrcIndex = null;
   let draggingTile = null;
 
+  // --- MOUSE DRAG AND DROP (No changes here) ---
   grid.addEventListener("dragstart", (e) => {
     if (!rearrangeMode) return e.preventDefault();
     const tile = e.target.closest(".tile:not(.add-tile)");
@@ -1685,31 +1861,109 @@ if (rearrangeMode) {
     draggingTile = null;
   });
 
+  grid.addEventListener("drop", (e) => {
+    if (!rearrangeMode || draggingTile) { 
+        e.preventDefault();
+        const tiles = Array.from(grid.querySelectorAll(".tile:not(.add-tile)"));
+        const newOrder = tiles.map(tile => bookmarks[Number(tile.dataset.index)]);
+        bookmarks = newOrder;
+        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        loadBookmarks();
+    }
+  });
+
+  // --- IMPROVED TOUCH DRAG LOGIC WITH AUTO-SCROLL ---
+  let touchDraggingTile = null;
+  let scrollInterval = null; // Variable to control the scrolling
+
+  const stopAutoScroll = () => {
+    clearInterval(scrollInterval);
+    scrollInterval = null;
+  };
+
+  grid.addEventListener('touchstart', (e) => {
+    if (!rearrangeMode || e.target.closest('.delete-btn')) return;
+    const tile = e.target.closest('.tile:not(.add-tile)');
+    if (!tile) return;
+
+    const touchTimer = setTimeout(() => {
+        touchDraggingTile = tile;
+        touchDraggingTile.classList.add('drag-ghost');
+    }, 200);
+
+    const clearTouchTimer = () => clearTimeout(touchTimer);
+    grid.addEventListener('touchend', clearTouchTimer, { once: true });
+    grid.addEventListener('touchcancel', clearTouchTimer, { once: true });
+  }, { passive: true });
+
+
+  grid.addEventListener('touchmove', (e) => {
+    if (!touchDraggingTile) return;
+    e.preventDefault(); 
+
+    const clientX = e.touches[0].clientX;
+    const clientY = e.touches[0].clientY;
+
+    // --- NEW: Auto-scroll logic ---
+    const viewportHeight = window.innerHeight;
+    const scrollZone = 80; // 80px from the top or bottom edge
+    const scrollSpeed = 15; // Pixels to scroll per interval
+
+    stopAutoScroll(); // Stop any previous scrolling
+
+    if (clientY < scrollZone) {
+      // User is in the top scroll zone
+      scrollInterval = setInterval(() => { window.scrollBy(0, -scrollSpeed); }, 16);
+    } else if (clientY > viewportHeight - scrollZone) {
+      // User is in the bottom scroll zone
+      scrollInterval = setInterval(() => { window.scrollBy(0, scrollSpeed); }, 16);
+    }
+
+    touchDraggingTile.style.display = 'none';
+    const elementUnder = document.elementFromPoint(clientX, clientY);
+    touchDraggingTile.style.display = '';
+
+    const targetTile = elementUnder ? elementUnder.closest('.tile:not(.add-tile)') : null;
+    
+    if (targetTile && targetTile !== touchDraggingTile) {
+        const bounding = targetTile.getBoundingClientRect();
+        if (clientY > bounding.top + bounding.height / 2) {
+            targetTile.after(touchDraggingTile);
+        } else {
+            targetTile.before(touchDraggingTile);
+        }
+    }
+  }, { passive: false });
+
+
+  grid.addEventListener('touchend', (e) => {
+    stopAutoScroll(); // IMPORTANT: Stop scrolling when finger is lifted
+    if (!touchDraggingTile) return;
+
+    touchDraggingTile.classList.remove('drag-ghost');
+    
+    const tiles = Array.from(grid.querySelectorAll(".tile:not(.add-tile)"));
+    const newOrder = tiles.map(tile => bookmarks[Number(tile.dataset.index)]);
+    bookmarks = newOrder;
+    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+    
+    touchDraggingTile = null;
+    loadBookmarks();
+  });
+
   grid.addEventListener("dragover", (e) => {
     if (!rearrangeMode) return;
     e.preventDefault();
     const targetTile = e.target.closest(".tile:not(.add-tile)");
     if (!targetTile || !draggingTile || targetTile === draggingTile) return;
     const bounding = targetTile.getBoundingClientRect();
-    const offset = e.clientY - bounding.top;
-    if (offset > bounding.height / 2) {
-      targetTile.after(draggingTile);
+    if (e.clientY > bounding.top + bounding.height / 2) {
+        targetTile.after(draggingTile);
     } else {
-      targetTile.before(draggingTile);
+        targetTile.before(draggingTile);
     }
   });
-
-  grid.addEventListener("drop", (e) => {
-    if (!rearrangeMode) return;
-    e.preventDefault();
-    const tiles = Array.from(grid.querySelectorAll(".tile:not(.add-tile)"));
-    const newOrder = tiles.map(tile => bookmarks[Number(tile.dataset.index)]);
-    bookmarks = newOrder;
-    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-    loadBookmarks();
-  });
 }
-
 
     function addBookmark() {
       const modal = document.getElementById("bookmarkModal");
@@ -1844,7 +2098,7 @@ if (rearrangeMode) {
         if (style === "squircle") {
           img.style.borderRadius = "20%";
         } else if (style === "rounded-rect") {
-          img.style.borderRadius = "30% 30% 28% 28%";
+          img.style.borderRadius = "35%";
         } else {
           img.style.borderRadius = "50%";
         }
@@ -1914,34 +2168,34 @@ if (rearrangeMode) {
         }
     });
 
-            document.getElementById("bgInput").addEventListener("change", function(event) {
-              const file = event.target.files[0];
-              if (file) {
-              removeWallpaper(false);
-              const reader = new FileReader();
-              reader.onload = function(e) {
-                document.body.style.backgroundImage = `url('${e.target.result}')`;
-                document.body.classList.add("bg-image-active");
-                localStorage.setItem("bgImage", e.target.result);
-            };
-              reader.readAsDataURL(file);
-        }
+    document.getElementById("bgInput").addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (file) {
+          removeWallpaper(false);
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.body.style.backgroundImage = `url('${e.target.result}')`;
+            document.body.classList.add("bg-image-active");
+            localStorage.setItem("bgImage", e.target.result);
+        };
+          reader.readAsDataURL(file);
+    }
     });
 
-          function searchGoogle() {
-          const input = document.getElementById("searchInput").value;
-          if (input.trim()) {
+    function searchGoogle() {
+      const input = document.getElementById("searchInput").value;
+      if (input.trim()) {
           const url = 'https://www.google.com/search?q=' + encodeURIComponent(input);
           if (newTabLinks) {
-          window.open(url, '_blank');
+              window.open(url, '_blank');
           } else {
-          window.location.href = url;
-        }
+              window.location.href = url;
+          }
       }
     }
 
     let recognition = null;
-    let handleCancelClick; // --- NEW: Define handler in a broader scope ---
+    let handleCancelClick;
 
     function startVoiceSearch() {
       if (!('webkitSpeechRecognition' in window)) {
@@ -1964,7 +2218,6 @@ if (rearrangeMode) {
       const container = document.querySelector('.container');
       let finalTranscript = "";
 
-      // --- NEW: Function to handle clicks outside interactive elements to cancel ---
       handleCancelClick = function(event) {
         if (!event.target.closest('a, button, input, .menu, .toolbar-option')) {
           if (recognition && recognition._isStarted) {
@@ -1977,7 +2230,6 @@ if (rearrangeMode) {
         recognition._isStarted = true;
         searchInput.placeholder = "Listening...";
         micIcon.style.color = "red";
-        // Add listener only when recognition starts
         container.addEventListener('click', handleCancelClick);
       };
 
@@ -2005,13 +2257,11 @@ if (rearrangeMode) {
         recognition._isStarted = false;
         searchInput.placeholder = "Search the web...";
         micIcon.style.color = "";
-        // IMPORTANT: Remove listener when recognition ends
         container.removeEventListener('click', handleCancelClick);
         if (finalTranscript.trim()) {
           searchGoogle();
         }
       };
-
       recognition.start();
     }
 
@@ -2103,17 +2353,16 @@ if (rearrangeMode) {
           await loadBackgrounds();
       }
       
-    window.onload = async function() {
       rearrangeMode = localStorage.getItem("rearrangeMode") === "true";
       updateRearrangeToggleUI();
       applyRearrangeMode();
+      
+      // Call the new, corrected functions
       enableDragAndDrop();
   
-      };
-
       applyDarkMode(localStorage.getItem("dark-mode") === "true");
-      loadBookmarks();
-      enableDragAndDrop();
+      // loadBookmarks() is called by applyRearrangeMode, so it's already run
+      
       const savedIconStyle = localStorage.getItem("iconStyle") || "round";
       applyIconStyle(savedIconStyle);
       const weatherEnabled = localStorage.getItem("showWeather") === "true";
@@ -2131,39 +2380,14 @@ if (rearrangeMode) {
         document.body.classList.add("minimalist");
       }
         
-        document.body.style.pointerEvents = "auto";
-
-
+      document.body.style.pointerEvents = "auto";
     };
 
     document.getElementById("searchInput").addEventListener("keydown", function(event) {
       if (event.key === "Enter") {
-      searchGoogle();
+        searchGoogle();
       }
     });
-      let touchTimer = null;
-      let touchDragging = false;
-
-    document.getElementById("bookmarkGrid").addEventListener("touchstart", function(e) {
-     if (!rearrangeMode) return;
-     const tile = e.target.closest(".tile:not(.add-tile)");
-     if (!tile) return;
-     touchTimer = setTimeout(() => {
-    touchDragging = true;
-    tile.draggable = true;
-    tile.dispatchEvent(new DragEvent("dragstart", { bubbles: true }));
-     }, 300); // 300ms long-press
-    }, { passive: true });
-
-    document.getElementById("bookmarkGrid").addEventListener("touchend", function(e) {
-      clearTimeout(touchTimer);
-      if (touchDragging) {
-      touchDragging = false;
-      const tile = e.target.closest(".tile:not(.add-tile)");
-      if (tile) tile.draggable = false;
-      }
-    });
-
 
     document.addEventListener("click", function (event) {
       const toolbar = document.getElementById("toolbarPanel");
@@ -2183,6 +2407,15 @@ if (rearrangeMode) {
       }
     });
 
+
+    document.addEventListener("contextmenu", function (e) {
+      if (rearrangeMode) {
+        e.preventDefault();
+      }
+    });
+
+    
+    
   </script>
 </body>
 </html>
