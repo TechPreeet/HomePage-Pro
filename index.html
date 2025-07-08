@@ -1752,11 +1752,11 @@ let deferredPrompt;
 
       const img = document.createElement("img");
       try {
-      img.src = "icons/icon-192.png"; // fallback to your local icon
-        } catch (e) {
-          console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
-          img.src = "icons/icon-192.png"; // local fallback icon
-        }
+      img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
+      } catch (e) {
+        console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
+        img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
+      }
       img.draggable = false;
       const name = document.createElement("div");
       name.className = "bookmark-label";
