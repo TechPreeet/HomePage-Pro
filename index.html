@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Start Page</title>
+  <title>HomePage Pro</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#b30000">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icons/icon-512.png">
+
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
   <style>
     :root {
@@ -16,6 +22,7 @@
     html, body {
       pointer-events: auto !important;
     }
+
 
 
     /* --- FIX: Make body focusable without a visible outline --- */
@@ -985,11 +992,11 @@
       100% { background-position: 0% 50%; }
     }
 
-
-
+    
   </style>
 </head>
-<body tabindex="-1">
+<body
+tabindex="-1">
   <div id="aboutModal" class="modal hidden">
     <div class="about-box">
       <span class="close-icon" onclick="closeAboutModal()">✖</span>
@@ -1004,6 +1011,9 @@
       <p style="margin-top: 20px; font-style: italic; font-size: 17px;">❤️ Made with love, caffeine, and late-night debugging.</p>
     </div>
   </div>
+
+<div class="toolbar-option" id="installAppBtn" style="display:none;">📲 Install App</div>
+
 
   <div id="alertModal" class="alert-modal hidden">
     <div class="alert-content">
@@ -1175,6 +1185,22 @@
         });
       }, 50);
     }
+
+let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('installAppBtn').style.display = 'block';
+
+    document.getElementById('installAppBtn').addEventListener('click', () => {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+        document.getElementById('installAppBtn').style.display = 'none';
+      });
+    });
+  });
 
     function toggleRearrangeMode() {
       rearrangeMode = !rearrangeMode;
@@ -1726,11 +1752,11 @@
 
       const img = document.createElement("img");
       try {
-        img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
-      } catch (e) {
-        console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
-        img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
-      }
+      img.src = "icons/icon-192.png"; // fallback to your local icon
+        } catch (e) {
+          console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
+          img.src = "icons/icon-192.png"; // local fallback icon
+        }
       img.draggable = false;
       const name = document.createElement("div");
       name.className = "bookmark-label";
@@ -2433,6 +2459,14 @@ function enableDragAndDrop() {
       }
     });
 
+    
+    if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("serviceWorker.js")
+        .then(reg => console.log("✅ Service worker registered"))
+        .catch(err => console.error("Service worker failed", err));
+    });
+  }
     
     
   </script>
