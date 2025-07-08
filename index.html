@@ -54,43 +54,42 @@
       }
     }
 
-    body.glass-mode .clock-wrapper {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px) saturate(180%);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    }
-
     body.glass-mode .tile,
+    body.glass-mode .clock-wrapper,
     body.glass-mode .search-bar {
-      background: rgba(255, 255, 255, 0.2);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px) saturate(180%);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px) saturate(120%);
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text-color);
+      transform: translateZ(0);
+      will-change: transform, opacity;
     }
 
-    body.glass-mode .clock-wrapper:hover,
-    body.glass-mode .tile:hover,
-    body.glass-mode .search-bar:hover {
-      transform: scale(1.05);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    }
-
-    body.dark-mode.glass-mode .clock-wrapper,
     body.dark-mode.glass-mode .tile,
+    body.dark-mode.glass-mode .clock-wrapper,
     body.dark-mode.glass-mode .search-bar {
       background: rgba(30, 30, 30, 0.3);
       border-color: rgba(100, 100, 100, 0.3);
-      color: var(--text-color);
     }
 
-    body.glass-mode:not(.dark-mode) .clock-wrapper,
-    body.glass-mode:not(.dark-mode) .tile,
-    body.glass-mode:not(.dark-mode) .search-bar {
-      background: rgba(255, 255, 255, 0.007);
-      border-color: rgba(255, 255, 255, 0.15);
-      color: var(--text-color);
+    @media (max-width: 768px) {
+    body.glass-mode .tile,
+    body.glass-mode .clock-wrapper,
+    body.glass-mode .search-bar {
+      backdrop-filter: none;
+      background: rgba(255, 255, 255, 0.1);
+      }
     }
+    @media (hover: hover) and (pointer: fine) {
+      body.glass-mode .tile:hover,
+      body.glass-mode .clock-wrapper:hover,
+      body.glass-mode .search-bar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      }
+    }
+
 
     body.minimalist {
       background: linear-gradient(135deg, rgba(100, 100, 100, 0.4), rgba(60, 60, 60, 0.4)) !important;
@@ -407,96 +406,93 @@
     }
 
     /* Base: Hide the menu by default */
-.tile .menu {
-  position: absolute;
-  top: 0;
-  right: 0;
-  cursor: pointer;
-  font-weight: bold;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  border-radius: 5px;
-  padding: 2px 6px;
-  z-index: 11;
-  display: none; /* hidden by default */
-}
+    .tile .menu {
+      position: absolute;
+      top: 0;
+      right: 0;
+      cursor: pointer;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border-radius: 5px;
+      padding: 2px 6px;
+      z-index: 11;
+      display: none; /* hidden by default */
+    }
 
-/* 💻 Desktop: Show only on hover */
-@media (hover: hover) and (pointer: fine) {
-  .tile:hover .menu {
-    display: block;
-  }
-}
+    /* 💻 Desktop: Show only on hover */
+    @media (hover: hover) and (pointer: fine) {
+      .tile:hover .menu {
+        display: block;
+      }
+    }
 
-/* 📱 Mobile: Always show on touchscreens */
-@media (hover: none) and (pointer: coarse) {
-  .tile .menu {
-    display: block !important;
-  }
-}
-
-
-
+    /* 📱 Mobile: Always show on touchscreens */
+    @media (hover: none) and (pointer: coarse) {
+      .tile .menu {
+        display: block !important;
+      }
+    }
 
    .menu-options {
-  display: none;
-  position: absolute;
-  top: auto;
-  bottom: 100%;
-  right: 0;
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
-  padding: 2px 6px;
-  border-radius: 5px;
-  font-size: 13px;
-  white-space: nowrap;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  line-height: 1.5;
-  z-index: 999999;
-  overflow-y: auto;
-  max-height: 200px;
-}
+      display: none;
+      position: absolute;
+      top: auto;
+      bottom: 100%;
+      right: 0;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: 13px;
+      white-space: nowrap;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+      line-height: 1.5;
+      z-index: 999999;
+      overflow-y: auto;
+      max-height: 200px;
+    }
 
 
 
     .menu-options div {
-  padding: 6px 10px;
-  cursor: pointer;
-  width: 100%;
-  box-sizing: border-box;
-  font-size: 13px;
-  line-height: 1.3;
-}
+      padding: 6px 10px;
+      cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
+      font-size: 13px;
+      line-height: 1.3;
+    }
 
-.menu-options div:hover {
-  background: #444;
-}
+    .menu-options div:hover {
+      background: #444;
+    }
 
 
-  .floating-menu {
-    position: fixed;
-    background: rgba(0, 0, 0, 0.95);
-    border-radius: 8px;
-    padding: 6px 0;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-    color: white;
-    font-size: 13px;
-    line-height: 1.4;
-    z-index: 999999;
-    overflow-y: auto;
-    max-height: 200px;
-    min-width: 140px;
-  }
+    .floating-menu {
+      position: fixed;
+      background: rgba(0, 0, 0, 0.95);
+      border-radius: 8px;
+      padding: 6px 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      color: white;
+      font-size: 13px;
+      line-height: 1.4;
+      z-index: 999999;
+      overflow-y: auto;
+      max-height: 200px;
+      min-width: 140px;
+    }
 
-  .floating-menu div {
-    padding: 6px 10px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
+    .floating-menu div {
+      padding: 6px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
 
-  .floating-menu div:hover {
-    background: #444;
-  }
+    .floating-menu div:hover {
+      background: #444;
+    }
     .tile {
       position: relative;
       overflow: visible !important;
@@ -629,20 +625,20 @@
     }
 
     .rearrange-active .tile {
-  cursor: grab;
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s;
-  box-shadow: 0 2px 12px rgba(0,123,255,0.15);
-}
-.tile.dragging, .tile.drag-ghost {
-  opacity: 0.7;
-  transform: scale(1.08) rotate(-2deg);
-  z-index: 10;
-  box-shadow: 0 8px 32px rgba(0,123,255,0.25);
-}
-.tile:not(.add-tile):hover {
-  transform: scale(1.12);
-  box-shadow: 0 8px 24px rgba(0,123,255,0.18);
-}
+      cursor: grab;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s;
+      box-shadow: 0 2px 12px rgba(0,123,255,0.15);
+    }
+    .tile.dragging, .tile.drag-ghost {
+      opacity: 0.7;
+      transform: scale(1.08) rotate(-2deg);
+      z-index: 10;
+      box-shadow: 0 8px 32px rgba(0,123,255,0.25);
+    }
+    .tile:not(.add-tile):hover {
+      transform: scale(1.12);
+      box-shadow: 0 8px 24px rgba(0,123,255,0.18);
+    }
 
     .modal {
       position: fixed;
@@ -907,65 +903,88 @@
     }
 
     @keyframes wiggle {
-  0% { transform: rotate(-1.5deg); }
-  50% { transform: rotate(1.5deg); }
-  100% { transform: rotate(-1.5deg); }
-}
+      0% { transform: rotate(-1.5deg); }
+      50% { transform: rotate(1.5deg); }
+      100% { transform: rotate(-1.5deg); }
+    }
 
-.tile.rearrange-wiggle {
-  animation: wiggle 0.3s ease-in-out infinite;
-}
+    .tile.rearrange-wiggle {
+      animation: wiggle 0.3s ease-in-out infinite;
+    }
 
-.delete-btn {
-  position: absolute;
-  top: -6px;
-  left: -6px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background-color: red;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-}
-.grid, .tile, .scrollable-bookmarks, .bookmarks-container, .container {
-  overflow: visible !important;
-}
-@media (hover: none) and (pointer: coarse) {
-  .tile:not(.add-tile):hover {
-    transform: none;
-    box-shadow: none;
-    background: none;
-  }
-}
-/* Prevent long-press text selection globally */
-body, html, .container, .bookmarks-container {
-  user-select: none;
-  -webkit-user-select: none;
-}
+    .delete-btn {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background-color: red;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+    .grid, .tile, .scrollable-bookmarks, .bookmarks-container, .container {
+      overflow: visible !important;
+    }
+    @media (hover: none) and (pointer: coarse) {
+    .tile:not(.add-tile):hover {
+      transform: none;
+      box-shadow: none;
+      background: none;
+      }
+    } 
+    /* Prevent long-press text selection globally */
+    body, html, .container, .bookmarks-container {
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-/* Re-enable selection for input fields (forms, modals, etc.) */
-input, textarea {
-  user-select: text;
-  -webkit-user-select: text;
-}
-@media (hover: none), (pointer: coarse) {
-  .tile .menu {
-    display: block !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    color: white !important;
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-weight: bold;
-    z-index: 9999;
-  }
-}
+    /* Re-enable selection for input fields (forms, modals, etc.) */
+    input, textarea {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    @media (hover: none), (pointer: coarse) {
+      .tile .menu {
+        display: block !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        color: white !important;
+        border-radius: 4px;
+        padding: 2px 6px;
+        font-weight: bold;
+        z-index: 9999;
+      }
+    }
+      body.glass-mode .tile::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: inherit;
+      background: linear-gradient(45deg, #00f6ff, #ff4dff, #00f6ff);
+      background-size: 400%;
+      z-index: 0;
+      filter: blur(10px);
+      opacity: 0.09;
+      animation: gradientGlow 6s ease infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gradientGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
 
 
   </style>
@@ -1079,10 +1098,10 @@ input, textarea {
 
   <script>
     
-let rearrangeMode = false; // Always start OFF
-    let bookmarks = [];
-    let glassMode = false;
-    let newTabLinks = localStorage.getItem("newTabLinks") === "true";
+    let rearrangeMode = false; // Always start OFF
+        let bookmarks = [];
+        let glassMode = false;
+        let newTabLinks = localStorage.getItem("newTabLinks") === "true";
 
     const gradients = [
         { name: 'Default', value: '' },
@@ -1723,12 +1742,12 @@ let rearrangeMode = false; // Always start OFF
       
       const options = document.createElement("div");
       options.className = "menu-options";
-["Edit", "Delete"].forEach(action => {
-  const opt = document.createElement("div");
-  opt.innerHTML = {
-    "Edit": "📝",
-    "Delete": "🗑️"
-  }[action];
+      ["Edit", "Delete"].forEach(action => {
+        const opt = document.createElement("div");
+        opt.innerHTML = {
+          "Edit": "📝",
+          "Delete": "🗑️"
+        }[action];
           opt.onclick = async (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1835,7 +1854,7 @@ let rearrangeMode = false; // Always start OFF
       updateNewTabLinksOption();
     }
 
-// PASTE THIS ENTIRE BLOCK to replace the old enableDragAndDrop function
+//to replace the old enableDragAndDrop function
 
 function enableDragAndDrop() {
   const grid = document.getElementById("bookmarkGrid");
@@ -1962,8 +1981,8 @@ function enableDragAndDrop() {
     } else {
         targetTile.before(draggingTile);
     }
-  });
-}
+      });
+    }
 
     function addBookmark() {
       const modal = document.getElementById("bookmarkModal");
@@ -2126,12 +2145,12 @@ function enableDragAndDrop() {
       slider.value = width;
       tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
       localStorage.setItem("tileSize", width);
-    }
+      }
 
-    document.getElementById("importInput").addEventListener("change", function(event) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
+      document.getElementById("importInput").addEventListener("change", function(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
         try {
           const data = JSON.parse(e.target.result);
           if (Array.isArray(data)) {
