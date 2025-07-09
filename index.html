@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HomePage Pro</title>
 
-  <!-- PWA Manifest -->
+<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
 
 <!-- Theme color for Android top bar & splash screen -->
@@ -1096,6 +1096,7 @@ tabindex="-1">
     </div>
     <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()">🧊 Toggle Glass Mode</div>
     <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
+    <div class="toolbar-option" aria-label="Toggle Clock & Weather Visibility" onclick="toggleClockWrapperVisibility()">🕰️ Toggle Clock & Weather</div>
     <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()">🕒 Toggle Clock Format</div>
     <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()">⏱️ Toggle Clock Seconds</div>
     <div class="toolbar-option" onclick="toggleWeather()">🌦️ Toggle Weather Widget</div>
@@ -1690,17 +1691,36 @@ let deferredPrompt;
     }
 
     function handleSearchInput() {
-      const input = document.getElementById("searchInput");
-      const micIcon = document.getElementById("micIcon");
-      const clearIcon = document.getElementById("clearIcon");
-      if (input.value.trim() !== "") {
-        micIcon.style.display = "none";
-        clearIcon.style.display = "block";
-      } else {
-        micIcon.style.display = "block";
-        clearIcon.style.display = "none";
-      }
-    }
+  const input = document.getElementById("searchInput");
+  const micIcon = document.getElementById("micIcon");
+  const clearIcon = document.getElementById("clearIcon");
+  const query = input.value.trim().toLowerCase();
+
+  // Show/hide mic & clear icons
+  if (query !== "") {
+    micIcon.style.display = "none";
+    clearIcon.style.display = "block";
+  } else {
+    micIcon.style.display = "block";
+    clearIcon.style.display = "none";
+  }
+
+  // Bookmark filtering logic
+  const tiles = document.querySelectorAll(".tile");
+
+  tiles.forEach(tile => {
+    const label = tile.querySelector(".bookmark-label");
+    const name = label?.innerText.toLowerCase() || "";
+
+    tile.style.display = name.includes(query) ? "" : "none";
+  });
+}
+
+clearIcon.addEventListener("click", () => {
+  input.value = "";
+  handleSearchInput(); // resets search and shows all
+});
+
 
     function createBookmarkElement(bookmark, index) {
       const a = document.createElement("a");
@@ -1763,7 +1783,7 @@ let deferredPrompt;
 
       const img = document.createElement("img");
       try {
-      img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
+       img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
       } catch (e) {
         console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
         img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
@@ -2160,6 +2180,51 @@ function enableDragAndDrop() {
         }
       });
     }
+
+        let clockWrapperVisible = true;
+
+function toggleClockWrapperVisibility() {
+  const clockWrapper = document.querySelector('.clock-wrapper');
+  const searchBar = document.querySelector('.search-bar');
+  const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
+
+  clockWrapperVisible = !clockWrapperVisible;
+
+  if (clockWrapperVisible) {
+    clockWrapper.classList.remove('hidden');
+    searchBar.style.marginTop = '';
+    toolbarOption.classList.add('active');
+  } else {
+    clockWrapper.classList.add('hidden');
+    searchBar.style.marginTop = '20px';
+    toolbarOption.classList.remove('active');
+  }
+
+  localStorage.setItem('clockWrapperVisible', clockWrapperVisible);
+}
+
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('clockWrapperVisible');
+
+  if (saved !== null) {
+    clockWrapperVisible = saved === 'true';
+
+    const clockWrapper = document.querySelector('.clock-wrapper');
+    const searchBar = document.querySelector('.search-bar');
+    const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
+
+    if (clockWrapperVisible) {
+      clockWrapper.classList.remove('hidden');
+      searchBar.style.marginTop = '';
+      toolbarOption.classList.add('active');
+    } else {
+      clockWrapper.classList.add('hidden');
+      searchBar.style.marginTop = '20px';
+      toolbarOption.classList.remove('active');
+    }
+  }
+});
 
     function setTileSize(size) {
       const tiles = document.querySelectorAll(".tile");
