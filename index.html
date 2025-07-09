@@ -35,7 +35,6 @@
     }
 
 
-
     /* --- FIX: Make body focusable without a visible outline --- */
     body:focus {
         outline: none;
@@ -183,6 +182,19 @@
         max-width: 95%;
       }
     }
+.clock-wrapper {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.clock-wrapper.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
+  padding: 0 !important;
+  margin: 0 !important;
+}
 
     .clock {
       font-size: 64px;
@@ -1003,11 +1015,9 @@
       100% { background-position: 0% 50%; }
     }
 
-    
   </style>
 </head>
-<body
-tabindex="-1">
+<body tabindex="-1">
   <div id="aboutModal" class="modal hidden">
     <div class="about-box">
       <span class="close-icon" onclick="closeAboutModal()">✖</span>
@@ -1022,9 +1032,6 @@ tabindex="-1">
       <p style="margin-top: 20px; font-style: italic; font-size: 17px;">❤️ Made with love, caffeine, and late-night debugging.</p>
     </div>
   </div>
-
-<div class="toolbar-option" id="installAppBtn" style="display:none;">📲 Install App</div>
-
 
   <div id="alertModal" class="alert-modal hidden">
     <div class="alert-content">
@@ -1197,22 +1204,6 @@ tabindex="-1">
         });
       }, 50);
     }
-
-let deferredPrompt;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    document.getElementById('installAppBtn').style.display = 'block';
-
-    document.getElementById('installAppBtn').addEventListener('click', () => {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        deferredPrompt = null;
-        document.getElementById('installAppBtn').style.display = 'none';
-      });
-    });
-  });
 
     function toggleRearrangeMode() {
       rearrangeMode = !rearrangeMode;
@@ -1691,35 +1682,35 @@ let deferredPrompt;
     }
 
     function handleSearchInput() {
-  const input = document.getElementById("searchInput");
-  const micIcon = document.getElementById("micIcon");
-  const clearIcon = document.getElementById("clearIcon");
-  const query = input.value.trim().toLowerCase();
+        const input = document.getElementById("searchInput");
+        const micIcon = document.getElementById("micIcon");
+        const clearIcon = document.getElementById("clearIcon");
+        const query = input.value.trim().toLowerCase();
 
-  // Show/hide mic & clear icons
-  if (query !== "") {
-    micIcon.style.display = "none";
-    clearIcon.style.display = "block";
-  } else {
-    micIcon.style.display = "block";
-    clearIcon.style.display = "none";
-  }
+        // Show/hide mic & clear icons
+        if (query !== "") {
+          micIcon.style.display = "none";
+          clearIcon.style.display = "block";
+        } else {
+          micIcon.style.display = "block";
+          clearIcon.style.display = "none";
+        }
 
-  // Bookmark filtering logic
-  const tiles = document.querySelectorAll(".tile");
+        // Bookmark filtering logic
+        const tiles = document.querySelectorAll(".tile");
 
-  tiles.forEach(tile => {
-    const label = tile.querySelector(".bookmark-label");
-    const name = label?.innerText.toLowerCase() || "";
+        tiles.forEach(tile => {
+          const label = tile.querySelector(".bookmark-label");
+          const name = label?.innerText.toLowerCase() || "";
 
-    tile.style.display = name.includes(query) ? "" : "none";
-  });
-}
+          tile.style.display = name.includes(query) ? "" : "none";
+        });
+      }
 
-clearIcon.addEventListener("click", () => {
-  input.value = "";
-  handleSearchInput(); // resets search and shows all
-});
+      clearIcon.addEventListener("click", () => {
+        input.value = "";
+        handleSearchInput(); // resets search and shows all
+      });
 
 
     function createBookmarkElement(bookmark, index) {
@@ -1783,7 +1774,7 @@ clearIcon.addEventListener("click", () => {
 
       const img = document.createElement("img");
       try {
-       img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
+        img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
       } catch (e) {
         console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
         img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
@@ -2181,7 +2172,7 @@ function enableDragAndDrop() {
       });
     }
 
-        let clockWrapperVisible = true;
+    let clockWrapperVisible = true;
 
 function toggleClockWrapperVisibility() {
   const clockWrapper = document.querySelector('.clock-wrapper');
@@ -2225,6 +2216,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 });
+
 
     function setTileSize(size) {
       const tiles = document.querySelectorAll(".tile");
@@ -2535,8 +2527,7 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    
-    if ("serviceWorker" in navigator) {
+   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("serviceWorker.js")
         .then(reg => console.log("✅ Service worker registered"))
