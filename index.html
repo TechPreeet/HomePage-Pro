@@ -12,8 +12,8 @@
 <meta name="theme-color" content="#212b36">
 
 <!-- iOS PWA Support -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 
 <!-- Favicon for browser tab -->
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
@@ -1145,7 +1145,6 @@
         { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
     ];
 
-   
     function showMenuOptions(tile) {
       document.querySelectorAll(".floating-menu").forEach(m => m.remove());
       const original = tile.querySelector(".menu-options");
@@ -2296,7 +2295,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     });
 
-     function searchGoogle() {
+    function searchGoogle() {
       const input = document.getElementById("searchInput").value;
       if (input.trim()) {
           const url = 'https://www.google.com/search?q=' + encodeURIComponent(input);
@@ -2307,7 +2306,6 @@ window.addEventListener('DOMContentLoaded', () => {
           }
       }
     }
-
 
     let recognition = null;
     let handleCancelClick;
@@ -2468,7 +2466,6 @@ window.addEventListener('DOMContentLoaded', () => {
           await loadBackgrounds();
       }
       
-
       rearrangeMode = localStorage.getItem("rearrangeMode") === "true";
       updateRearrangeToggleUI();
       applyRearrangeMode();
@@ -2523,41 +2520,6 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     });
 
- // Utility to grab ?params
-  function getParam(name) {
-    const url = new URL(location.href);
-    return url.searchParams.get(name);
-  }
-
-  window.addEventListener('load', () => {
-    const action = getParam('action');
-    if (action === 'add') {
-      // Open your Add Bookmark modal
-      openAddBookmarkModal();
-    }
-    if (action === 'share') {
-      // Pre-fill modal from share target
-      const title = getParam('title');
-      const text  = getParam('text');
-      const url   = getParam('url');
-      openAddBookmarkModal({ name: title || text, url });
-    }
-  });
-
-document.addEventListener('keydown', e => {
-    if (e.ctrlKey && e.key === 'n') {
-      e.preventDefault();
-      addNewTab();
-    }
-    if (e.ctrlKey && e.key === 'd') {
-      e.preventDefault();
-      openAddBookmarkModal();
-    }
-    if (e.key === '?') {
-      e.preventDefault();
-      showHelpOverlay();
-    }
-  });
 
     document.addEventListener("contextmenu", function (e) {
       if (rearrangeMode) {
@@ -2575,16 +2537,5 @@ document.addEventListener('keydown', e => {
     
     
   </script>
-  <!-- 1) Pull-to-Refresh library -->
-<script src="https://unpkg.com/pulltorefreshjs@0.1.16/dist/pulltorefresh.min.js"></script>
-
-<!-- 2) Initialize Pull-to-Refresh -->
-<script>
-  PullToRefresh.init({
-    mainElement: '#bookmarkGrid',  // note: matches the ID you used on the grid container
-    onRefresh() { window.location.reload(); }
-  });
-</script>
-
 </body>
 </html>
