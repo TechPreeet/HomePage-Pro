@@ -1145,32 +1145,7 @@
         { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
     ];
 
-    const SEARCH_ENGINES = [
-  {
-    id: 'google',
-    name: 'Google',
-    template: 'https://www.google.com/search?q=%s',
-    logo: 'https://www.google.com/favicon.ico'
-  },
-  {
-    id: 'bing',
-    name: 'Bing',
-    template: 'https://www.bing.com/search?q=%s',
-    logo: 'https://www.bing.com/sa/simg/favicon-2x.ico'
-  },
-  {
-    id: 'duckduckgo',
-    name: 'DuckDuckGo',
-    template: 'https://duckduckgo.com/?q=%s',
-    logo: 'https://duckduckgo.com/favicon.ico'
-  },
-  
-  // add more here if you like…
-];
-
-// Load saved choice (or default to Google)
-let currentEngine = localStorage.getItem('searchEngine') || 'google';
-
+   
     function showMenuOptions(tile) {
       document.querySelectorAll(".floating-menu").forEach(m => m.remove());
       const original = tile.querySelector(".menu-options");
@@ -1494,29 +1469,6 @@ let currentEngine = localStorage.getItem('searchEngine') || 'google';
     document.getElementById("aboutModal").addEventListener("click", function(e) {
       if (e.target === this) closeAboutModal();
     });
-
-function openEngineChooser() {
-  const container = document.getElementById('engineList');
-  container.innerHTML = '';  // clear old
-
-  SEARCH_ENGINES.forEach(engine => {
-    const isChecked = engine.id === currentEngine;
-    container.innerHTML += `
-      <label style="display:flex; align-items:center; cursor:pointer;">
-        <input type="radio" name="engine" value="${engine.id}"
-          ${isChecked ? 'checked' : ''} style="margin-right:8px;">
-        <img src="${engine.logo}" width="20" height="20" style="margin-right:6px;">
-        <span>${engine.name}</span>
-      </label>
-    `;
-  });
-
-  document.getElementById('engineModal').classList.remove('hidden');
-}
-
-function closeEngineChooser() {
-  document.getElementById('engineModal').classList.add('hidden');
-}
 
     function updateClock() {
       const now = new Date();
@@ -2344,14 +2296,17 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     });
 
-    function searchGoogle() {
-  const q = encodeURIComponent(document.getElementById('searchInput').value.trim());
-  if (!q) return;
-  const engine = SEARCH_ENGINES.find(e => e.id === currentEngine) || SEARCH_ENGINES[0];
-  const url = engine.template.replace('%s', q);
-  if (newTabLinks) window.open(url, '_blank');
-  else window.location.href = url;
-}
+     function searchGoogle() {
+      const input = document.getElementById("searchInput").value;
+      if (input.trim()) {
+          const url = 'https://www.google.com/search?q=' + encodeURIComponent(input);
+          if (newTabLinks) {
+              window.open(url, '_blank');
+          } else {
+              window.location.href = url;
+          }
+      }
+    }
 
 
     let recognition = null;
@@ -2513,10 +2468,6 @@ window.addEventListener('DOMContentLoaded', () => {
           await loadBackgrounds();
       }
       
-// display the right name in toolbar
-const engine = SEARCH_ENGINES.find(e => e.id === currentEngine);
-document.getElementById('engineLabel').textContent = engine.name;
-
 
       rearrangeMode = localStorage.getItem("rearrangeMode") === "true";
       updateRearrangeToggleUI();
