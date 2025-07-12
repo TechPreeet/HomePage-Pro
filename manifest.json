@@ -3,20 +3,45 @@
   "short_name": "HomePro",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#f0f4f8",
-  "theme_color": "#f0f4f8",
+  "background_color": "#212b36",
+  "theme_color": "#212b36",
   "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "shortcuts": [
     {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "name": "Add Bookmark",
+      "short_name": "NewBookmark",
+      "url": "/index.html?action=add",
+      "icons": [
+        {
+          "src": "icons/add.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "name": "Toggle Dark Mode",
+      "url": "/index.html?mode=dark",
+      "icons": [
+        {
+          "src": "icons/darkmode.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/index.html?action=share",
+    "method": "GET",
+     "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
-
-
