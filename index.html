@@ -457,48 +457,6 @@
       }
     }
 
-    /* 📱 Mobile: Always show on touchscreens */
-    @media (hover: none) and (pointer: coarse) {
-      .tile .menu {
-        display: block !important;
-      }
-    }
-
-   .menu-options {
-      display: none;
-      position: absolute;
-      top: auto;
-      bottom: 100%;
-      right: 0;
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      padding: 2px 6px;
-      border-radius: 5px;
-      font-size: 13px;
-      white-space: nowrap;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-      line-height: 1.5;
-      z-index: 999999;
-      overflow-y: auto;
-      max-height: 200px;
-    }
-
-
-
-    .menu-options div {
-      padding: 6px 10px;
-      cursor: pointer;
-      width: 100%;
-      box-sizing: border-box;
-      font-size: 13px;
-      line-height: 1.3;
-    }
-
-    .menu-options div:hover {
-      background: #444;
-    }
-
-
     .floating-menu {
       position: fixed;
       background: rgba(0, 0, 0, 0.95);
@@ -981,18 +939,8 @@
       user-select: text;
       -webkit-user-select: text;
     }
-    @media (hover: none), (pointer: coarse) {
-      .tile .menu {
-        display: block !important;
-        background: rgba(0, 0, 0, 0.8) !important;
-        color: white !important;
-        border-radius: 4px;
-        padding: 2px 6px;
-        font-weight: bold;
-        z-index: 9999;
-      }
-    }
-      body.glass-mode .tile::before {
+    
+    body.glass-mode .tile::before {
       content: "";
       position: absolute;
       top: -2px;
@@ -1145,64 +1093,120 @@
         { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
     ];
 
-    function showMenuOptions(tile) {
+    // STEP 1: REWRITE showMenuOptions TO BE MORE RELIABLE
+    // This function now dynamically creates the menu and its actions from scratch,
+    // ensuring the correct bookmark data is used. This fixes both desktop and mobile bugs.
+    function showMenuOptions(tile, bookmark, index) {
+      // Remove any other menus that might be open
       document.querySelectorAll(".floating-menu").forEach(m => m.remove());
-      const original = tile.querySelector(".menu-options");
-      if (!original) return;
 
-      const clone = original.cloneNode(true);
-      clone.classList.add("floating-menu");
+      // Create the menu container from scratch
+      const menu = document.createElement("div");
+      menu.className = "floating-menu";
 
-      [...original.children].forEach((origItem, i) => {
-        clone.children[i].onclick = origItem.onclick;
+      // Define the actions and their corresponding icons
+      const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab"];
+      const icons = {
+          "Edit": "📝", "Delete": "🗑️", "Share": "🔗",
+          "Copy URL": "📋", "Open in New Tab": "↗️"
+      };
+
+      // Create each menu item and attach its specific click handler
+      actions.forEach(action => {
+        const opt = document.createElement("div");
+        opt.innerHTML = `${icons[action]} ${action}`;
+        
+        opt.onclick = async (e) => {
+          e.preventDefault();
+          e.stopPropagation(); // Prevent the click from bubbling up
+
+          // --- Action Logic ---
+          if (action === "Delete") {
+            bookmarks.splice(index, 1);
+            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+            loadBookmarks();
+          } else if (action === "Edit") {
+            const modal = document.getElementById("bookmarkModal");
+            const nameInput = document.getElementById("bookmarkName");
+            const urlInput = document.getElementById("bookmarkUrl");
+            const iconInput = document.getElementById("bookmarkIcon");
+            const modalTitle = document.getElementById("modalTitle");
+            modalTitle.textContent = "Edit Bookmark";
+            nameInput.value = bookmark.name;
+            urlInput.value = bookmark.url;
+            iconInput.value = bookmark.icon || "";
+            modal.classList.remove("hidden");
+            modal.style.display = "flex";
+            const submitBtn = modal.querySelector("button:first-of-type");
+            submitBtn.textContent = "Save";
+            submitBtn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const newName = nameInput.value.trim();
+              const newURL = urlInput.value.trim();
+              const newIcon = iconInput.value.trim();
+              if (!newName || !newURL) {
+                showAlert("Please enter both a name and URL.");
+                return;
+              }
+              bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
+              localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+              closeModal();
+              loadBookmarks();
+            };
+          } else if (action === "Share") {
+              if (navigator.share) {
+                  try {
+                      await navigator.share({
+                          title: bookmark.name,
+                          text: `Check out this link: ${bookmark.name}`,
+                          url: bookmark.url,
+                      });
+                  } catch (err) {
+                      console.error("Share failed:", err.message);
+                  }
+              } else {
+                  showAlert("Share not supported on this browser.");
+              }
+          } else if (action === "Copy URL") {
+              copyToClipboard(bookmark.url);
+          } else if (action === "Open in New Tab") {
+              window.open(bookmark.url, '_blank');
+          }
+          
+          // IMPORTANT: Remove the menu after an action is taken.
+          menu.remove();
+        };
+        menu.appendChild(opt);
       });
 
+      // --- Positioning Logic ---
       const rect = tile.getBoundingClientRect();
-      const menuWidth = 140;
+      const menuWidth = 140; 
       const menuHeight = 160;
 
       const spaceRight = window.innerWidth - rect.right;
       const spaceLeft = rect.left;
       const spaceBelow = window.innerHeight - rect.bottom;
-      const spaceAbove = rect.top;
 
-      if (spaceRight >= menuWidth) {
-        clone.style.left = `${rect.right}px`;
-      } else if (spaceLeft >= menuWidth) {
-        clone.style.left = `${rect.left - menuWidth}px`;
-      } else {
-        clone.style.left = `${Math.max(rect.left, 10)}px`;
-      }
+      menu.style.left = spaceRight >= menuWidth || spaceRight >= spaceLeft 
+        ? `${rect.right}px` 
+        : `${rect.left - menuWidth}px`;
 
-      if (spaceBelow >= menuHeight || spaceAbove < menuHeight) {
-        clone.style.top = `${rect.bottom}px`;
-      } else {
-        clone.style.top = `${Math.max(rect.top - menuHeight, 10)}px`;
-      }
+      menu.style.top = spaceBelow >= menuHeight
+        ? `${rect.bottom}px`
+        : `${rect.top - menuHeight}px`;
 
-      clone.style.position = "fixed";
-      clone.style.zIndex = "999999";
-      clone.style.background = "rgba(0, 0, 0, 0.9)";
-      clone.style.borderRadius = "8px";
-      clone.style.padding = "6px 0";
-      clone.style.boxShadow = "0 8px 24px rgba(0,0,0,0.3)";
-      clone.style.color = "white";
-      clone.style.minWidth = "130px";
-      clone.style.maxHeight = "200px";
-      clone.style.overflowY = "auto";
-      clone.style.fontSize = "13px";
-      clone.style.lineHeight = "1.4";
+      document.body.appendChild(menu);
 
-      document.body.appendChild(clone);
-
+      // Add a one-time event listener to close the menu if the user clicks elsewhere
       setTimeout(() => {
         document.addEventListener("click", function handler(e) {
-          if (!clone.contains(e.target)) {
-            clone.remove();
-            document.removeEventListener("click", handler);
+          if (!menu.contains(e.target)) {
+            menu.remove();
           }
-        });
-      }, 50);
+        }, { once: true });
+      }, 0);
     }
 
     function toggleRearrangeMode() {
@@ -1712,7 +1716,35 @@
         handleSearchInput(); // resets search and shows all
       });
 
+    function copyToClipboard(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert("URL copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showAlert("Failed to copy URL.");
+            });
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showAlert("URL copied to clipboard!");
+            } catch (err) {
+                console.error('Fallback failed to copy: ', err);
+                showAlert("Failed to copy URL.");
+            }
+            document.body.removeChild(textArea);
+        }
+    }
 
+    // STEP 2: REWRITE createBookmarkElement TO BE CLEANER
+    // This function is now simplified. It no longer creates the hidden menu. It just creates
+    // the tile and attaches the correct event listeners that call the new showMenuOptions function.
     function createBookmarkElement(bookmark, index) {
       const a = document.createElement("a");
       a.draggable = rearrangeMode;
@@ -1721,47 +1753,35 @@
       if (newTabLinks) a.target = "_blank";
       a.dataset.index = index;
       a.tabIndex = 0;
-      // --- PASTE THE NEW MENU LOGIC HERE ---
+
+      // --- Touch & Hold Logic ---
       if ('ontouchstart' in window) {
         let pressTimer = null;
         let longPressDidOccur = false;
 
         a.addEventListener('touchstart', (e) => {
-          if (rearrangeMode) return; // Don't run this logic in rearrange mode
+          if (rearrangeMode) return;
           longPressDidOccur = false;
           pressTimer = setTimeout(() => {
             longPressDidOccur = true;
-            showMenuOptions(a);
-          }, 500); // 500ms for a long press
+            showMenuOptions(a, bookmark, index); // Call the new, reliable function
+          }, 500);
         });
 
-        a.addEventListener('touchmove', () => {
-          // If finger moves, it's a scroll, so cancel the long press
-          clearTimeout(pressTimer);
-        });
-
-        a.addEventListener('touchend', () => {
-          clearTimeout(pressTimer);
-        });
+        a.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
+        a.addEventListener('touchend', () => { clearTimeout(pressTimer); });
 
         a.addEventListener('click', (e) => {
-          // If a long press happened, prevent the click from navigating
           if (longPressDidOccur) {
             e.preventDefault();
           }
         });
       }
-      // --- END OF NEW MENU LOGIC ---
+      
+      // Prevent browser's default context menu on right-click or long-press
+      a.addEventListener('contextmenu', (e) => { e.preventDefault(); });
 
-      // Prevent link navigation if in rearrange mode.
-      a.addEventListener('click', (e) => {
-        if (rearrangeMode) {
-            e.preventDefault();
-        }
-      });
-      // ... the rest of your function continues here
-
-      // Prevent link navigation if in rearrange mode.
+      // Prevent navigation when in rearrange mode
       a.addEventListener('click', (e) => {
         if (rearrangeMode) {
             e.preventDefault();
@@ -1780,91 +1800,32 @@
         img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
       }
       img.draggable = false;
+      
       const name = document.createElement("div");
       name.className = "bookmark-label";
       name.textContent = bookmark.name;
       name.draggable = false;
+      
       const menu = document.createElement("div");
       menu.className = "menu";
       menu.textContent = "⋮";
       
-      const options = document.createElement("div");
-      options.className = "menu-options";
-      ["Edit", "Delete"].forEach(action => {
-        const opt = document.createElement("div");
-        opt.innerHTML = {
-          "Edit": "📝",
-          "Delete": "🗑️"
-        }[action];
-          opt.onclick = async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            if (action === "Delete") {
-              bookmarks.splice(index, 1);
-              localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-              loadBookmarks();
-            } else if (action === "Edit") {
-              const modal = document.getElementById("bookmarkModal");
-              const nameInput = document.getElementById("bookmarkName");
-              const urlInput = document.getElementById("bookmarkUrl");
-              const iconInput = document.getElementById("bookmarkIcon");
-              const modalTitle = document.getElementById("modalTitle");
-              modalTitle.textContent = "Edit Bookmark";
-              nameInput.value = bookmark.name;
-              urlInput.value = bookmark.url;
-              iconInput.value = bookmark.icon || "";
-              modal.classList.remove("hidden");
-              modal.style.display = "flex";
-              const submitBtn = modal.querySelector("button:first-of-type");
-              const originalSubmit = submitBtn.onclick;
-              submitBtn.textContent = "Save";
-              submitBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const newName = nameInput.value.trim();
-                const newURL = urlInput.value.trim();
-                const newIcon = iconInput.value.trim();
-                if (!newName || !newURL) {
-                  showAlert("Please enter both a name and URL.");
-                  return;
-                }
-                bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
-                localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-                closeModal();
-                loadBookmarks();
-              };
-              modal.addEventListener("click", function handler(e) {
-                if (e.target === modal) {
-                  submitBtn.textContent = "Add";
-                  submitBtn.onclick = originalSubmit;
-                  modalTitle.textContent = "Add Bookmark";
-                  modal.removeEventListener("click", handler);
-                }
-              }, { once: true });
-            } 
-            options.style.display = "none";
-          };
-          options.appendChild(opt);
-      });
-
+      // Desktop: click the three-dot menu to show options
       menu.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        document.querySelectorAll(".menu-options").forEach(m => {
-          if (m !== options) m.style.display = "none";
-        });
-        options.style.display = options.style.display === "block" ? "none" : "block";
+        showMenuOptions(a, bookmark, index); // Call the new, reliable function
       };
 
+      // Assemble the tile
       a.appendChild(menu);
-      a.appendChild(options);
       a.appendChild(img);
       a.appendChild(name);
 
+      // Add the delete button for rearrange mode
       const deleteBtn = document.createElement("div");
       deleteBtn.className = "delete-btn";
-      deleteBtn.innerHTML = "&#8722;"; // minus symbol
+      deleteBtn.innerHTML = "&#8722;";
       deleteBtn.title = "Delete Bookmark";
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
@@ -2510,14 +2471,15 @@ window.addEventListener('DOMContentLoaded', () => {
         toolbar.style.display = "none";
       }
 
-      const isMenuClick = event.target.classList.contains('menu');
-      if (!isMenuClick) {
-        document.querySelectorAll(".menu-options").forEach(m => {
-          if (!m.contains(event.target)) {
-            m.style.display = "none";
-          }
-        });
-      }
+      // This logic is now handled by the listener in showMenuOptions
+      // const isMenuClick = event.target.classList.contains('menu');
+      // if (!isMenuClick) {
+      //   document.querySelectorAll(".floating-menu").forEach(m => {
+      //     if (!m.contains(event.target)) {
+      //       m.style.display = "none";
+      //     }
+      //   });
+      // }
     });
 
 
