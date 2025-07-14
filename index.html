@@ -299,6 +299,7 @@
       max-height: 120px;
       overflow: hidden;
       border-radius: 16px;
+      -webkit-touch-callout: none;
     }
 
     .tile img {
@@ -435,7 +436,6 @@
       padding: 4px 0;
     }
 
-    /* Base: Hide the menu by default */
     .tile .menu {
       position: absolute;
       top: 0;
@@ -447,10 +447,9 @@
       border-radius: 5px;
       padding: 2px 6px;
       z-index: 11;
-      display: none; /* hidden by default */
+      display: none;
     }
 
-    /* 💻 Desktop: Show only on hover */
     @media (hover: hover) and (pointer: fine) {
       .tile:hover .menu {
         display: block;
@@ -507,42 +506,81 @@
       z-index: 1;
     }
 
-    #toolbarBtn {
-      background: rgba(30, 30, 30, 0.85);
-      color: white;
-      backdrop-filter: blur(10px);
-      transition: background 0.3s ease, color 0.3s ease;
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 100;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    /* UI/UX UPDATE: New styles for the top-right hamburger menu */
+    #sidebar-toggle-btn {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(30, 30, 30, 0.5);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: background 0.3s ease;
     }
-
-    #toolbarPanel {
-      display: none;
+    #sidebar-toggle-btn:hover {
+        background: rgba(50, 50, 50, 0.7);
+    }
+    #sidebar-toggle-btn .hamburger-icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+    }
+    #sidebar-toggle-btn .hamburger-icon span {
+        display: block;
+        height: 2px;
+        width: 100%;
+        background: var(--text-color);
+        border-radius: 2px;
+    }
+    
+    /* UI/UX UPDATE: New styles for the settings sidebar */
+    #settings-sidebar {
       position: fixed;
-      bottom: 90px;
-      right: 20px;
-      width: 250px;
-      max-height: 50vh;
-      overflow-y: auto;
+      top: 0;
+      right: 0;
+      width: 300px;
+      max-width: 85vw;
+      height: 100%;
       background: rgba(30, 30, 30, 0.8);
       backdrop-filter: blur(15px);
       color: white;
-      border-radius: 12px;
-      padding: 15px;
-      z-index: 101;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
-      transition: background 0.2s ease, transform 0.2s ease;
+      z-index: 1001;
+      box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4);
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #settings-sidebar.open {
+      transform: translateX(0);
+    }
+    
+    /* UI/UX UPDATE: New styles for the overlay */
+    #sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+    }
+    #sidebar-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
     }
 
     .toolbar-option {
@@ -559,6 +597,21 @@
     .toolbar-option:hover {
       background: var(--accent-color);
       transform: scale(1.02);
+    }
+    
+    .toolbar-option select {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    .toolbar-option select:focus {
+        outline: none;
+        border-color: var(--accent-color);
     }
 
     #tileSizeSlider, #gradientSlider {
@@ -928,13 +981,11 @@
       background: none;
       }
     } 
-    /* Prevent long-press text selection globally */
     body, html, .container, .bookmarks-container {
       user-select: none;
       -webkit-user-select: none;
     }
 
-    /* Re-enable selection for input fields (forms, modals, etc.) */
     input, textarea {
       user-select: text;
       -webkit-user-select: text;
@@ -989,6 +1040,17 @@
   </div>
 
   <video id="videoBg" autoplay muted loop playsinline class="hidden"></video>
+  
+  <!-- UI/UX UPDATE: New hamburger button and sidebar structure -->
+  <div id="sidebar-toggle-btn" onclick="toggleSidebar()">
+      <div class="hamburger-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+      </div>
+  </div>
+  <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
   <div class="container">
     <div class="clock-wrapper">
       <div class="clock" id="clock"></div>
@@ -1007,7 +1069,7 @@
         autocorrect="off"
         autocapitalize="off"
         oninput="handleSearchInput()"
-        onkeydown="if(event.key === 'Enter') { searchGoogle(); }"
+        onkeydown="if(event.key === 'Enter') { performSearch(); }"
       />
       <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
         xmlns="http://www.w3.org/2000/svg"
@@ -1036,10 +1098,14 @@
     </div>
   </div>
 
-  <div id="toolbarBtn" onclick="toggleToolbar()">⚙️</div>
+  <!-- UI/UX UPDATE: The old toolbar button is removed -->
 
-  <div id="toolbarPanel">
+  <!-- UI/UX UPDATE: The old panel is now the settings sidebar -->
+  <div id="settings-sidebar">
     <div class="toolbar-option" id="addBookmarkBtn" aria-label="Add Bookmark" onclick="addBookmark()">📝 Add Bookmark</div>
+    <div class="toolbar-option">
+        <select id="searchEngineSelect" onchange="setSearchEngine(this.value)" title="Change Search Engine"></select>
+    </div>
     <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()">🖼️ Change Background</div>
     <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()">🎥 Set Video Background</div>
     <div class="toolbar-option" aria-label="Remove Wallpaper" onclick="removeWallpaper()">🚫 Remove Wallpaper</div>
@@ -1075,10 +1141,10 @@
 
   <script>
     
-    let rearrangeMode = false; // Always start OFF
-        let bookmarks = [];
-        let glassMode = false;
-        let newTabLinks = localStorage.getItem("newTabLinks") === "true";
+    let rearrangeMode = false;
+    let bookmarks = [];
+    let glassMode = false;
+    let newTabLinks = localStorage.getItem("newTabLinks") === "true";
 
     const gradients = [
         { name: 'Default', value: '' },
@@ -1093,34 +1159,35 @@
         { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
     ];
 
-    // STEP 1: REWRITE showMenuOptions TO BE MORE RELIABLE
-    // This function now dynamically creates the menu and its actions from scratch,
-    // ensuring the correct bookmark data is used. This fixes both desktop and mobile bugs.
+    const searchEngines = {
+        'Google': 'https://www.google.com/search?q=',
+        'Gemini': 'https://gemini.google.com/app/search?q=',
+        'DuckDuckGo': 'https://duckduckgo.com/?q=',
+        'Bing': 'https://www.bing.com/search?q=',
+        'Brave': 'https://search.brave.com/search?q=',
+        'Perplexity': 'https://www.perplexity.ai/search?q='
+    };
+
     function showMenuOptions(tile, bookmark, index) {
-      // Remove any other menus that might be open
       document.querySelectorAll(".floating-menu").forEach(m => m.remove());
 
-      // Create the menu container from scratch
       const menu = document.createElement("div");
       menu.className = "floating-menu";
 
-      // Define the actions and their corresponding icons
       const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab"];
       const icons = {
           "Edit": "📝", "Delete": "🗑️", "Share": "🔗",
           "Copy URL": "📋", "Open in New Tab": "↗️"
       };
 
-      // Create each menu item and attach its specific click handler
       actions.forEach(action => {
         const opt = document.createElement("div");
         opt.innerHTML = `${icons[action]} ${action}`;
         
         opt.onclick = async (e) => {
           e.preventDefault();
-          e.stopPropagation(); // Prevent the click from bubbling up
+          e.stopPropagation();
 
-          // --- Action Logic ---
           if (action === "Delete") {
             bookmarks.splice(index, 1);
             localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
@@ -1174,13 +1241,11 @@
               window.open(bookmark.url, '_blank');
           }
           
-          // IMPORTANT: Remove the menu after an action is taken.
           menu.remove();
         };
         menu.appendChild(opt);
       });
 
-      // --- Positioning Logic ---
       const rect = tile.getBoundingClientRect();
       const menuWidth = 140; 
       const menuHeight = 160;
@@ -1199,7 +1264,6 @@
 
       document.body.appendChild(menu);
 
-      // Add a one-time event listener to close the menu if the user clicks elsewhere
       setTimeout(() => {
         document.addEventListener("click", function handler(e) {
           if (!menu.contains(e.target)) {
@@ -1212,7 +1276,7 @@
     function toggleRearrangeMode() {
       rearrangeMode = !rearrangeMode;
       localStorage.setItem("rearrangeMode", rearrangeMode);
-      toggleToolbar();
+      toggleSidebar();
       updateRearrangeToggleUI();
       applyRearrangeMode();
     }
@@ -1267,6 +1331,11 @@
         closeAlertModal();
         closeAboutModal();
         closeModal();
+        // Close sidebar on escape
+        const sidebar = document.getElementById('settings-sidebar');
+        if (sidebar.classList.contains('open')) {
+            toggleSidebar();
+        }
       }
     });
 
@@ -1460,7 +1529,7 @@
     }
 
     function openAboutModal() {
-      toggleToolbar();
+      toggleSidebar();
       document.getElementById("aboutModal").classList.remove("hidden");
     }
 
@@ -1691,7 +1760,6 @@
         const clearIcon = document.getElementById("clearIcon");
         const query = input.value.trim().toLowerCase();
 
-        // Show/hide mic & clear icons
         if (query !== "") {
           micIcon.style.display = "none";
           clearIcon.style.display = "block";
@@ -1700,7 +1768,6 @@
           clearIcon.style.display = "none";
         }
 
-        // Bookmark filtering logic
         const tiles = document.querySelectorAll(".tile");
 
         tiles.forEach(tile => {
@@ -1713,7 +1780,7 @@
 
       clearIcon.addEventListener("click", () => {
         input.value = "";
-        handleSearchInput(); // resets search and shows all
+        handleSearchInput();
       });
 
     function copyToClipboard(text) {
@@ -1725,7 +1792,6 @@
                 showAlert("Failed to copy URL.");
             });
         } else {
-            // Fallback for older browsers
             const textArea = document.createElement("textarea");
             textArea.value = text;
             document.body.appendChild(textArea);
@@ -1742,9 +1808,6 @@
         }
     }
 
-    // STEP 2: REWRITE createBookmarkElement TO BE CLEANER
-    // This function is now simplified. It no longer creates the hidden menu. It just creates
-    // the tile and attaches the correct event listeners that call the new showMenuOptions function.
     function createBookmarkElement(bookmark, index) {
       const a = document.createElement("a");
       a.draggable = rearrangeMode;
@@ -1754,7 +1817,6 @@
       a.dataset.index = index;
       a.tabIndex = 0;
 
-      // --- Touch & Hold Logic ---
       if ('ontouchstart' in window) {
         let pressTimer = null;
         let longPressDidOccur = false;
@@ -1764,7 +1826,7 @@
           longPressDidOccur = false;
           pressTimer = setTimeout(() => {
             longPressDidOccur = true;
-            showMenuOptions(a, bookmark, index); // Call the new, reliable function
+            showMenuOptions(a, bookmark, index);
           }, 500);
         });
 
@@ -1778,10 +1840,8 @@
         });
       }
       
-      // Prevent browser's default context menu on right-click or long-press
       a.addEventListener('contextmenu', (e) => { e.preventDefault(); });
 
-      // Prevent navigation when in rearrange mode
       a.addEventListener('click', (e) => {
         if (rearrangeMode) {
             e.preventDefault();
@@ -1810,19 +1870,16 @@
       menu.className = "menu";
       menu.textContent = "⋮";
       
-      // Desktop: click the three-dot menu to show options
       menu.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        showMenuOptions(a, bookmark, index); // Call the new, reliable function
+        showMenuOptions(a, bookmark, index);
       };
 
-      // Assemble the tile
       a.appendChild(menu);
       a.appendChild(img);
       a.appendChild(name);
 
-      // Add the delete button for rearrange mode
       const deleteBtn = document.createElement("div");
       deleteBtn.className = "delete-btn";
       deleteBtn.innerHTML = "&#8722;";
@@ -1863,14 +1920,11 @@
       updateNewTabLinksOption();
     }
 
-//to replace the old enableDragAndDrop function
-
 function enableDragAndDrop() {
   const grid = document.getElementById("bookmarkGrid");
   let dragSrcIndex = null;
   let draggingTile = null;
 
-  // --- MOUSE DRAG AND DROP (No changes here) ---
   grid.addEventListener("dragstart", (e) => {
     if (!rearrangeMode) return e.preventDefault();
     const tile = e.target.closest(".tile:not(.add-tile)");
@@ -1900,9 +1954,8 @@ function enableDragAndDrop() {
     }
   });
 
-  // --- IMPROVED TOUCH DRAG LOGIC WITH AUTO-SCROLL ---
   let touchDraggingTile = null;
-  let scrollInterval = null; // Variable to control the scrolling
+  let scrollInterval = null;
 
   const stopAutoScroll = () => {
     clearInterval(scrollInterval);
@@ -1932,18 +1985,15 @@ function enableDragAndDrop() {
     const clientX = e.touches[0].clientX;
     const clientY = e.touches[0].clientY;
 
-    // --- NEW: Auto-scroll logic ---
     const viewportHeight = window.innerHeight;
-    const scrollZone = 80; // 80px from the top or bottom edge
-    const scrollSpeed = 15; // Pixels to scroll per interval
+    const scrollZone = 80;
+    const scrollSpeed = 15;
 
-    stopAutoScroll(); // Stop any previous scrolling
+    stopAutoScroll();
 
     if (clientY < scrollZone) {
-      // User is in the top scroll zone
       scrollInterval = setInterval(() => { window.scrollBy(0, -scrollSpeed); }, 16);
     } else if (clientY > viewportHeight - scrollZone) {
-      // User is in the bottom scroll zone
       scrollInterval = setInterval(() => { window.scrollBy(0, scrollSpeed); }, 16);
     }
 
@@ -1965,7 +2015,7 @@ function enableDragAndDrop() {
 
 
   grid.addEventListener('touchend', (e) => {
-    stopAutoScroll(); // IMPORTANT: Stop scrolling when finger is lifted
+    stopAutoScroll();
     if (!touchDraggingTile) return;
 
     touchDraggingTile.classList.remove('drag-ghost');
@@ -2062,9 +2112,12 @@ function enableDragAndDrop() {
       }
     });
 
-    function toggleToolbar() {
-      const panel = document.getElementById("toolbarPanel");
-      panel.style.display = panel.style.display === "block" ? "none" : "block";
+    // UI/UX UPDATE: New function to toggle the sidebar
+    function toggleSidebar() {
+      const sidebar = document.getElementById('settings-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
     }
 
     function toggleDarkMode() {
@@ -2135,48 +2188,48 @@ function enableDragAndDrop() {
 
     let clockWrapperVisible = true;
 
-function toggleClockWrapperVisibility() {
-  const clockWrapper = document.querySelector('.clock-wrapper');
-  const searchBar = document.querySelector('.search-bar');
-  const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
+    function toggleClockWrapperVisibility() {
+      const clockWrapper = document.querySelector('.clock-wrapper');
+      const searchBar = document.querySelector('.search-bar');
+      const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
 
-  clockWrapperVisible = !clockWrapperVisible;
+      clockWrapperVisible = !clockWrapperVisible;
 
-  if (clockWrapperVisible) {
-    clockWrapper.classList.remove('hidden');
-    searchBar.style.marginTop = '';
-    toolbarOption.classList.add('active');
-  } else {
-    clockWrapper.classList.add('hidden');
-    searchBar.style.marginTop = '20px';
-    toolbarOption.classList.remove('active');
-  }
+      if (clockWrapperVisible) {
+        clockWrapper.classList.remove('hidden');
+        searchBar.style.marginTop = '';
+        toolbarOption.classList.add('active');
+      } else {
+        clockWrapper.classList.add('hidden');
+        searchBar.style.marginTop = '20px';
+        toolbarOption.classList.remove('active');
+      }
 
-  localStorage.setItem('clockWrapperVisible', clockWrapperVisible);
-}
-
-
-window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('clockWrapperVisible');
-
-  if (saved !== null) {
-    clockWrapperVisible = saved === 'true';
-
-    const clockWrapper = document.querySelector('.clock-wrapper');
-    const searchBar = document.querySelector('.search-bar');
-    const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
-
-    if (clockWrapperVisible) {
-      clockWrapper.classList.remove('hidden');
-      searchBar.style.marginTop = '';
-      toolbarOption.classList.add('active');
-    } else {
-      clockWrapper.classList.add('hidden');
-      searchBar.style.marginTop = '20px';
-      toolbarOption.classList.remove('active');
+      localStorage.setItem('clockWrapperVisible', clockWrapperVisible);
     }
-  }
-});
+
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('clockWrapperVisible');
+
+      if (saved !== null) {
+        clockWrapperVisible = saved === 'true';
+
+        const clockWrapper = document.querySelector('.clock-wrapper');
+        const searchBar = document.querySelector('.search-bar');
+        const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
+
+        if (clockWrapperVisible) {
+          clockWrapper.classList.remove('hidden');
+          searchBar.style.marginTop = '';
+          toolbarOption.classList.add('active');
+        } else {
+          clockWrapper.classList.add('hidden');
+          searchBar.style.marginTop = '20px';
+          toolbarOption.classList.remove('active');
+        }
+      }
+    });
 
 
     function setTileSize(size) {
@@ -2200,9 +2253,9 @@ window.addEventListener('DOMContentLoaded', () => {
       slider.value = width;
       tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
       localStorage.setItem("tileSize", width);
-      }
+    }
 
-      document.getElementById("importInput").addEventListener("change", function(event) {
+    document.getElementById("importInput").addEventListener("change", function(event) {
         const file = event.target.files[0];
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -2256,16 +2309,38 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     });
 
-    function searchGoogle() {
-      const input = document.getElementById("searchInput").value;
-      if (input.trim()) {
-          const url = 'https://www.google.com/search?q=' + encodeURIComponent(input);
+    function performSearch() {
+      const query = document.getElementById("searchInput").value;
+      if (query.trim()) {
+          const engineName = localStorage.getItem('searchEngine') || 'Google';
+          const url = searchEngines[engineName] + encodeURIComponent(query);
           if (newTabLinks) {
               window.open(url, '_blank');
           } else {
               window.location.href = url;
           }
       }
+    }
+    
+    function setSearchEngine(name) {
+        const searchInput = document.getElementById('searchInput');
+        localStorage.setItem('searchEngine', name);
+        searchInput.placeholder = `Search with ${name}...`;
+        
+        const select = document.getElementById('searchEngineSelect');
+        select.value = name;
+    }
+
+    function initSearchEngineSelector() {
+        const select = document.getElementById('searchEngineSelect');
+        Object.keys(searchEngines).forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+        const savedEngine = localStorage.getItem('searchEngine') || 'Google';
+        setSearchEngine(savedEngine);
     }
 
     let recognition = null;
@@ -2329,11 +2404,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
       recognition.onend = () => {
         recognition._isStarted = false;
-        searchInput.placeholder = "Search the web...";
+        const engineName = localStorage.getItem('searchEngine') || 'Google';
+        searchInput.placeholder = `Search with ${engineName}...`;
         micIcon.style.color = "";
         container.removeEventListener('click', handleCancelClick);
         if (finalTranscript.trim()) {
-          searchGoogle();
+          performSearch();
         }
       };
       recognition.start();
@@ -2431,11 +2507,9 @@ window.addEventListener('DOMContentLoaded', () => {
       updateRearrangeToggleUI();
       applyRearrangeMode();
       
-      // Call the new, corrected functions
       enableDragAndDrop();
-  
       applyDarkMode(localStorage.getItem("dark-mode") === "true");
-      // loadBookmarks() is called by applyRearrangeMode, so it's already run
+      loadBookmarks();
       
       const savedIconStyle = localStorage.getItem("iconStyle") || "round";
       applyIconStyle(savedIconStyle);
@@ -2443,7 +2517,9 @@ window.addEventListener('DOMContentLoaded', () => {
       applyWeatherToggle(weatherEnabled);
       const greetingEnabled = localStorage.getItem("showGreeting") === "true";
       applyGreetingToggle(greetingEnabled);
-      animatePlaceholderText();
+      
+      initSearchEngineSelector();
+      
       const mic = document.getElementById("micIcon");
       mic.classList.add("animate-mic");
       setTimeout(() => mic.classList.remove("animate-mic"), 1000);
@@ -2459,10 +2535,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById("searchInput").addEventListener("keydown", function(event) {
       if (event.key === "Enter") {
-        searchGoogle();
+        performSearch();
       }
     });
 
+    // UI/UX UPDATE: This listener is removed as the overlay handles closing now.
+    /*
     document.addEventListener("click", function (event) {
       const toolbar = document.getElementById("toolbarPanel");
       const button = document.getElementById("toolbarBtn");
@@ -2470,18 +2548,8 @@ window.addEventListener('DOMContentLoaded', () => {
       if (toolbar.style.display === 'block' && !toolbar.contains(event.target) && !button.contains(event.target)) {
         toolbar.style.display = "none";
       }
-
-      // This logic is now handled by the listener in showMenuOptions
-      // const isMenuClick = event.target.classList.contains('menu');
-      // if (!isMenuClick) {
-      //   document.querySelectorAll(".floating-menu").forEach(m => {
-      //     if (!m.contains(event.target)) {
-      //       m.style.display = "none";
-      //     }
-      //   });
-      // }
     });
-
+    */
 
     document.addEventListener("contextmenu", function (e) {
       if (rearrangeMode) {
@@ -2496,7 +2564,6 @@ window.addEventListener('DOMContentLoaded', () => {
         .catch(err => console.error("Service worker failed", err));
     });
   }
-    
     
   </script>
 </body>
