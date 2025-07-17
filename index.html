@@ -8,7 +8,7 @@
 <!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
 
-<meta name="theme-color" content="#0d0f1a">
+<meta name="theme-color" content="#050f26">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
@@ -2374,6 +2374,21 @@ function enableDragAndDrop() {
           resizeAndStoreImage(file);
     }
     });
+    // ────────────────────────────────────────────────────────────────
+    // Shortcut helper: kick off voice search when launched with ?action=voice
+    function startVoiceSearch() {
+      // Try clicking your mic icon if it exists:
+      const micBtn = document.getElementById('micIcon');
+      if (micBtn) {
+        micBtn.click();
+        return;
+      }
+      // Or, if you have a separate trigger function, call it:
+      if (typeof triggerMic === 'function') {
+        triggerMic();
+      }
+    }
+    // ────────────────────────────────────────────────────────────────
 
     function performSearch() {
       const query = document.getElementById("searchInput").value;
@@ -2650,6 +2665,9 @@ function enableDragAndDrop() {
         } else if (action === 'flip') {
           // opens the Flip-a-Coin modal
           flipCoin();                              
+        }
+        else if (action === 'voice') {
+          startVoiceSearch();
         }
   });
 
