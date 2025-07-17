@@ -4,8 +4,8 @@
   "description": "A customizable, private, and fast PWA start page.",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#0d0f1a",
-  "theme_color": "#0d0f1a",
+  "background_color": "#050f26",
+  "theme_color": "#050f26",
   "icons": [
     { "src": "icons/icon-72.png", "sizes": "72x72", "type": "image/png" },
     { "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" },
@@ -22,14 +22,39 @@
       "short_name": "Add Bookmark",
       "description": "Quickly add a new bookmark to your start page.",
       "url": "index.html?action=add",
-      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "icons/bookmark-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "Flip a Coin",
       "short_name": "Flip Coin",
       "description": "Flip a virtual coin.",
       "url": "index.html?action=flip",
-      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+      "icons": [
+        {
+          "src": "icons/flip-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Voice Search",
+      "short_name": "Voice",
+      "description": "Start a voice search immediately",
+      "url": "index.html?action=voice",
+      "icons": [
+        {
+          "src": "icons/voice-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
