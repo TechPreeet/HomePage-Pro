@@ -24,8 +24,8 @@
       "url": "index.html?action=add",
       "icons": [
         {
-          "src": "icons/bookmark-96.png",
-          "sizes": "96x96",
+          "src": "icons/bookmark-512.png",
+          "sizes": "512x512",
           "type": "image/png"
         }
       ]
@@ -37,8 +37,8 @@
       "url": "index.html?action=flip",
       "icons": [
         {
-          "src": "icons/flip-96.png",
-          "sizes": "96x96",
+          "src": "icons/flip-512.png",
+          "sizes": "512x512",
           "type": "image/png"
         }
       ]
@@ -50,8 +50,8 @@
       "url": "index.html?action=voice",
       "icons": [
         {
-          "src": "icons/voice-96.png",
-          "sizes": "96x96",
+          "src": "icons/voice-512.png",
+          "sizes": "512x512",
           "type": "image/png"
         }
       ]
