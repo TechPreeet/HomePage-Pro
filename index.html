@@ -1050,7 +1050,91 @@
     .coin .tails {
       transform: rotateY(180deg) translateZ(1px);
     }
+    /* Bookmark collapse toggle */
+    .toggle-arrow {
+      position: absolute;
+      top: -1rem;            /* tweak to sit just below the search bar */
+      left: 48%;            /* align with your tiles */
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-size: 1.15rem;     /* small but tappable */
+      color: currentColor;    /* matches your dark/light text color */
+      opacity: 0.3;
+      transition: transform 0.3s ease;
+      z-index: 10;
+    }
 
+    #bookmarkGrid {
+      overflow: hidden;
+      transition: max-height 0.4s ease, opacity 0.4s ease;
+      max-height: 1000px;     /* large enough for your grid */
+      opacity: 1;
+    }
+
+    .collapsed #bookmarkGrid {
+      max-height: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .collapsed .toggle-arrow {
+      transform: rotate(-180deg);
+    }
+
+        /* + button: same look & feel, just below the arrow */
+    .toggle-add {
+      position: absolute;
+      top: -1.25rem;           /* tweak this to sit just under the arrow */
+      left: 52%;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-size: 1.25rem;
+      font-weight: 900;
+      text-shadow: 0 0 1px currentColor;
+      color: currentColor;
+      opacity: 0.3;
+      transition: color 0.2s ease;
+      z-index: 20;
+    }
+
+        /* Hide the + when bookmarks are hidden */
+    .collapsed .toggle-add {
+      display: none;
+    }
+
+    /* Hover effect for clarity */
+    .toggle-add:hover,
+    .toggle-arrow:hover {
+      opacity: 2;
+      color: #1E90FF;           /* or whatever your highlight color is */
+    }
+
+
+    /* Hide all native “×” clear buttons on search inputs */
+/* WebKit / Blink */
+#searchInput::-webkit-search-cancel-button,
+#searchInput::-webkit-search-decoration,
+#searchInput::-webkit-search-results-button,
+#searchInput::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+/* Firefox (if ever shows one) */
+#searchInput::-moz-search-cancel-button {
+  display: none;
+}
+
+/* IE / Edge */
+#searchInput::-ms-clear,
+#searchInput::-ms-reveal {
+  display: none;
+}
 
   </style>
 </head>
@@ -1121,9 +1205,22 @@
         style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
         <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
       </svg>
-    </form>
-    <div class="grid" id="bookmarkGrid"></div>
-  </div>
+          </form>
+
+            <div id="bookmarksWrapper" style="position: relative;">
+        <!-- Collapse/expand arrow -->
+        <button id="toggleBookmarks" class="toggle-arrow" aria-label="Hide bookmarks">▼</button>
+
+        <!-- “+” to add a new bookmark -->
+        <button id="addBookmarkBtn" class="toggle-add" aria-label="Add bookmark">＋</button>
+
+        <!-- Your existing bookmarks grid -->
+        <div class="grid" id="bookmarkGrid">
+          <!-- …tiles… -->
+        </div>
+      </div>
+
+        </div>
 
   <div id="bookmarkModal" class="modal hidden">
     <div class="modal-content">
@@ -2391,17 +2488,33 @@ function enableDragAndDrop() {
     // ────────────────────────────────────────────────────────────────
 
     function performSearch() {
-      const query = document.getElementById("searchInput").value;
-      if (query.trim()) {
-          const engineName = localStorage.getItem('searchEngine') || 'Google';
-          const url = searchEngines[engineName] + encodeURIComponent(query);
-          if (newTabLinks) {
-              window.open(url, '_blank');
-          } else {
-              window.location.href = url;
-          }
-      }
-    }
+  const query = document.getElementById("searchInput").value.trim();
+  if (!query) return;
+
+  // 1) Detect if this is a URL (with http(s):// or looks like domain.tld[/...])
+  const isFullURL   = /^(https?:\/\/)/i.test(query);
+  const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
+
+  if (isFullURL || isDomainURL) {
+    // Prepend https:// if they didn’t type it
+    const dest = isFullURL ? query : `https://${query}`;
+    // Open in same tab (just like browser address bar)
+    window.location.href = dest;
+    return;
+  }
+
+  // 2) Otherwise, do a normal search via the chosen engine
+  const engineName = localStorage.getItem('searchEngine') || 'Google';
+  const baseURL    = searchEngines[engineName];
+  const searchURL  = baseURL + encodeURIComponent(query);
+
+  if (newTabLinks) {
+    window.open(searchURL, '_blank');
+  } else {
+    window.location.href = searchURL;
+  }
+}
+
     
     function setSearchEngine(name) {
         const searchInput = document.getElementById('searchInput');
@@ -2670,6 +2783,47 @@ function enableDragAndDrop() {
           startVoiceSearch();
         }
   });
+
+     document.addEventListener('DOMContentLoaded', () => {
+  const wrapper   = document.getElementById('bookmarksWrapper');
+  const toggleBtn = document.getElementById('toggleBookmarks');
+  const addBtn    = document.getElementById('addBookmarkBtn');
+
+  // ── Restore collapse state on load ──
+  const saved = localStorage.getItem('bookmarksCollapsed') === 'true';
+  wrapper.classList.toggle('collapsed', saved);
+  addBtn.style.display = saved ? 'none' : '';
+  toggleBtn.setAttribute(
+    'aria-label',
+    saved ? 'Show bookmarks' : 'Hide bookmarks'
+  );
+
+      // ── Collapse/expand on arrow click ──
+      toggleBtn.addEventListener('click', () => {
+        // Capture the new state
+        const isCollapsed = wrapper.classList.toggle('collapsed');
+
+        // Update aria-label
+        toggleBtn.setAttribute(
+          'aria-label',
+          isCollapsed ? 'Show bookmarks' : 'Hide bookmarks'
+        );
+        // Show/hide the + button
+        addBtn.style.display = isCollapsed ? 'none' : '';
+
+        // Persist for next load
+        localStorage.setItem('bookmarksCollapsed', isCollapsed);
+      });
+
+      // ── Open Add Bookmark modal ──
+      addBtn.addEventListener('click', () => {
+        addBookmark();
+      });
+
+      // …your other bindings (search, clear icon, etc.)…
+    });
+
+
 
    if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
