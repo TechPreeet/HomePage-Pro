@@ -1,0 +1,2585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomePage Pro</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Theme color for Android top bar & splash screen -->
+<meta name="theme-color" content="#002f50">
+
+<!-- iOS PWA Support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<!-- Favicon for browser tab -->
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+
+<!-- Apple Touch Icon (used when added to Home Screen on iOS) -->
+<link rel="apple-touch-icon" href="icons/icon-512.png">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <style>
+    :root {
+      --accent-color: #007bff;
+      --bg-color: white;
+      --text-color: #000000;
+      --grid-gap: 20px;
+    }
+
+    html, body {
+      pointer-events: auto !important;
+    }
+
+
+    /* --- FIX: Make body focusable without a visible outline --- */
+    body:focus {
+        outline: none;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .tile.dragging {
+      opacity: 0.5;
+      transform: scale(0.95);
+      transition: transform 0.1s ease, opacity 0.1s ease;
+      z-index: 10;
+    }
+
+    .tile:not(.add-tile):hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.4));
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .tile:not(.add-tile):hover .bookmark-label {
+      transform: scale(1.05);
+      transition: transform 0.2s ease;
+    }
+
+    @media (hover: none) and (pointer: coarse) {
+      .tile:not(.add-tile):active {
+        transform: scale(1.1);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.4));
+      }
+    }
+
+    body.glass-mode .tile,
+    body.glass-mode .clock-wrapper,
+    body.glass-mode .search-bar {
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(10px) saturate(120%);
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text-color);
+      transform: translateZ(0);
+      will-change: transform, opacity;
+    }
+
+    body.dark-mode.glass-mode .tile,
+    body.dark-mode.glass-mode .clock-wrapper,
+    body.dark-mode.glass-mode .search-bar {
+      background: rgba(30, 30, 30, 0.3);
+      border-color: rgba(100, 100, 100, 0.3);
+    }
+
+    @media (max-width: 768px) {
+    body.glass-mode .tile,
+    body.glass-mode .clock-wrapper,
+    body.glass-mode .search-bar {
+      backdrop-filter: none;
+      background: rgba(255, 255, 255, 0.1);
+      }
+    }
+    @media (hover: hover) and (pointer: fine) {
+      body.glass-mode .tile:hover,
+      body.glass-mode .clock-wrapper:hover,
+      body.glass-mode .search-bar:hover {
+      transform: scale(1.05);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+
+    body.minimalist {
+      background: linear-gradient(135deg, rgba(100, 100, 100, 0.4), rgba(60, 60, 60, 0.4)) !important;
+      background-color: #2a2a2a !important;
+      background-image: none !important;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    body.minimalist .clock-wrapper {
+      background: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+      pointer-events: none;
+    }
+
+    body.minimalist #clock,
+    body.minimalist #date,
+    body.minimalist #weatherContainer,
+    body.minimalist #greeting {
+      display: none !important;
+    }
+
+    body.minimalist #videoBg {
+      display: none !important;
+    }
+
+    body.minimalist * {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      overflow-x: hidden;
+      overflow-y: auto;
+      transition: background 0.5s ease-in-out; 
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding-bottom: 100px;
+    }
+
+    .clock-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 50px auto 25px auto;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      z-index: 1;
+      min-height: 20vh;
+      width: 90%;
+      max-width: 480px;
+      box-sizing: border-box;
+    }
+
+    /* BUG FIX & UI UPDATE: Adjust clock wrapper on very narrow screens to avoid overlap */
+    @media (max-width: 400px) {
+      .clock-wrapper {
+        margin-top: 65px; /* Push it down below the settings button */
+      }
+    }
+
+    @media (max-width: 500px) {
+      .clock-wrapper {
+        padding: 16px;
+        max-width: 95%;
+      }
+    }
+.clock-wrapper {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.clock-wrapper.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+    .clock {
+      font-size: 64px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .ampm {
+      font-size: 24px;
+      vertical-align: super;
+      margin-left: 5px;
+    }
+
+    .date {
+      font-size: 24px;
+      opacity: 1;
+      font-weight: 400;
+      margin-top: 8px;
+    }
+
+    .search-bar {
+      width: 90%;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .search-bar {
+      color: var(--icon-color, #555);
+      position: relative;
+    }
+
+    body.dark-mode .search-bar {
+      color: var(--icon-color-dark, #ddd);
+    }
+
+    .search-bar:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-size: 16px;
+      outline: none;
+    }
+    
+    .search-bar input::placeholder {
+        color: var(--text-color);
+        opacity: 0.7;
+    }
+
+    .search-bar svg, .search-bar .material-icons {
+      margin-left: 10px;
+      cursor: pointer;
+      color: var(--text-color);
+      transition: color 0.3s ease;
+    }
+
+    .search-bar svg:hover, .search-bar .material-icons:hover {
+      color: #007bff;
+    }
+
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--grid-gap, 20px);
+      justify-content: center;
+      padding-bottom: 100px;
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+      overflow-y: auto;
+      height: auto;
+      margin-top: 20px;
+      min-height: 0;
+    }
+
+    .tile {
+      width: 90px;
+      text-align: center;
+      color: var(--text-color);
+      text-decoration: none;
+      font-size: 13px;
+      position: relative;
+      margin-left: 6px;
+      margin-right: 6px;
+      box-sizing: border-box;
+      z-index: 1;
+      word-break: break-word;
+      max-height: 120px;
+      overflow: hidden;
+      border-radius: 16px;
+      -webkit-touch-callout: none;
+    }
+
+    .tile img {
+      width: 80%;
+      height: 80%;
+      border-radius: 50%;
+    }
+
+    .tile.xsmall img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .tile.xsmall {
+      font-size: 9px;
+      width: 50px;
+    }
+
+    .tile.img {
+      width: 80px;
+      height: 80px;
+      border-radius: 16px;
+      background: #ccc;
+    }
+
+    @media (max-width: 600px) {
+      .tile img {
+        width: 60px;
+        height: 60px;
+      }
+
+      .tile {
+        width: 70px;
+        font-size: 11px;
+      }
+
+      .tile.xsmall img {
+        width: 30px;
+        height: 30px;
+      }
+
+      .tile.xsmall {
+        width: 40px;
+      }
+
+      .clock {
+        font-size: 36px;
+      }
+
+      .ampm {
+        font-size: 18px;
+      }
+
+      .grid {
+        justify-content: center;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .tile img {
+        width: 100px;
+        height: 100px;
+      }
+
+      .tile {
+        width: 110px;
+        font-size: 14px;
+      }
+
+      .tile.xsmall img {
+        width: 50px;
+        height: 50px;
+      }
+
+      .tile.xsmall {
+        width: 60px;
+        margin: 2px 0;
+      }
+
+      .tile.small img {
+        width: 50px;
+        height: 50px;
+      }
+
+      .tile.small {
+        font-size: 11px;
+        width: 60px;
+        margin: 4px 0;
+      }
+
+      :root {
+        --grid-gap: 10px;
+      }
+    }
+
+    .tile.small img {
+      width: 50px;
+      height: 50px;
+    }
+
+    .tile.small {
+      font-size: 11px;
+      width: 60px;
+    }
+
+    .tile.medium img {
+      width: 80px;
+      height: 80px;
+    }
+
+    .tile.medium {
+      font-size: 13px;
+      width: 90px;
+    }
+
+    .tile.large img {
+      width: 100px;
+      height: 100px;
+    }
+
+    .tile.large {
+      font-size: 15px;
+      width: 110px;
+    }
+
+    .hide-labels .bookmark-label {
+      display: none;
+    }
+
+    .bookmark-label {
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      padding: 4px 0;
+    }
+
+    .tile .menu {
+      position: absolute;
+      top: 0;
+      right: 0;
+      cursor: pointer;
+      font-weight: bold;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border-radius: 5px;
+      padding: 2px 6px;
+      z-index: 11;
+      display: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .tile:hover .menu {
+        display: block;
+      }
+    }
+
+    .floating-menu {
+      position: fixed;
+      background: rgba(0, 0, 0, 0.95);
+      border-radius: 8px;
+      padding: 6px 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      color: white;
+      font-size: 13px;
+      line-height: 1.4;
+      z-index: 999999;
+      overflow-y: auto;
+      max-height: 200px;
+      min-width: 140px;
+    }
+
+    .floating-menu div {
+      padding: 6px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .floating-menu div:hover {
+      background: #444;
+    }
+    .tile {
+      position: relative;
+      overflow: visible !important;
+    }
+
+    .tile img.round {
+      border-radius: 50%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .tile img.squircle {
+      border-radius: 20%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .tile img.rounded-rect {
+      border-radius: 29%;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .bookmarks-container {
+      position: relative;
+      overflow: visible !important;
+      z-index: 1;
+    }
+
+    /* BUG FIX & UI UPDATE: New styles for the top-right hamburger menu and its animation */
+    #sidebar-toggle-btn {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        background: rgba(30, 30, 30, 0.5);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 1002; /* Must be on top of the sidebar */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: background 0.3s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    #sidebar-toggle-btn:hover {
+        background: rgba(50, 50, 50, 0.7);
+    }
+    #sidebar-toggle-btn .hamburger-icon {
+        width: 24px;
+        height: 24px;
+        position: relative;
+    }
+    #sidebar-toggle-btn .hamburger-icon span {
+        display: block;
+        position: absolute;
+        height: 2px;
+        width: 100%;
+        background: var(--text-color);
+        border-radius: 2px;
+        opacity: 1;
+        left: 0;
+        transform: rotate(0deg);
+        transition: .25s ease-in-out;
+    }
+    #sidebar-toggle-btn .hamburger-icon span:nth-child(1) { top: 4px; }
+    #sidebar-toggle-btn .hamburger-icon span:nth-child(2) { top: 11px; }
+    #sidebar-toggle-btn .hamburger-icon span:nth-child(3) { top: 18px; }
+
+    #sidebar-toggle-btn.open {
+        transform: rotate(180deg);
+    }
+    #sidebar-toggle-btn.open .hamburger-icon span:nth-child(1) {
+        top: 11px;
+        transform: rotate(135deg);
+    }
+    #sidebar-toggle-btn.open .hamburger-icon span:nth-child(2) {
+        opacity: 0;
+        left: -24px;
+    }
+    #sidebar-toggle-btn.open .hamburger-icon span:nth-child(3) {
+        top: 11px;
+        transform: rotate(-135deg);
+    }
+    
+    #settings-sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 300px;
+      max-width: 85vw;
+      height: 100%;
+      background: rgba(30, 30, 30, 0.8);
+      backdrop-filter: blur(15px);
+      color: white;
+      z-index: 1001;
+      box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4);
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      overflow-y: auto;
+      padding: 20px;
+      /* BUG FIX & UI UPDATE: Add padding to the top to make space for the close button */
+      padding-top: 70px;
+      box-sizing: border-box;
+    }
+    #settings-sidebar.open {
+      transform: translateX(0);
+    }
+    
+    #sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+    }
+    #sidebar-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .toolbar-option {
+      margin: 10px 0;
+      padding: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s ease, transform 0.2s ease;
+      border-radius: 8px;
+    }
+
+    .toolbar-option:hover {
+      background: var(--accent-color);
+      transform: scale(1.02);
+    }
+    
+    .toolbar-option select {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 5px;
+        padding: 5px;
+        font-size: 14px;
+    }
+
+    .toolbar-option select:focus {
+        outline: none;
+        border-color: var(--accent-color);
+    }
+
+    #tileSizeSlider, #gradientSlider {
+      width: 90%;
+      margin: 5px 0;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) 50%, #ffffff 50%, #ffffff 100%);
+      outline: none;
+      transition: background 0.2s ease;
+    }
+
+    #tileSizeSlider::-webkit-slider-thumb, #gradientSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #tileSizeSlider::-webkit-slider-thumb:hover, #gradientSlider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    #tileSizeSlider::-moz-range-thumb, #gradientSlider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #tileSizeSlider::-moz-range-thumb:hover, #gradientSlider::-moz-range-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    #tileSizeSliderContainer, #gradientSliderContainer {
+      margin: 10px 0;
+      padding: 0 10px;
+    }
+
+    #bgInput, #importInput, #videoInput, #lensInput {
+      display: none;
+    }
+
+    .rearrange-active .tile {
+      cursor: grab;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s;
+      box-shadow: 0 2px 12px rgba(0,123,255,0.15);
+    }
+    .tile.dragging, .tile.drag-ghost {
+      opacity: 0.7;
+      transform: scale(1.08) rotate(-2deg);
+      z-index: 10;
+      box-shadow: 0 8px 32px rgba(0,123,255,0.25);
+    }
+    .tile:not(.add-tile):hover {
+      transform: scale(1.12);
+      box-shadow: 0 8px 24px rgba(0,123,255,0.18);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .modal:not(.hidden) {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    .modal-content {
+      background: rgba(30, 30, 30, 0.85);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.3s ease;
+      transform: scale(0.9);
+    }
+
+    .modal:not(.hidden) .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-content input {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      width: 80%;
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 5px;
+    }
+
+    .modal-content button {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      cursor: pointer;
+      width: 80%;
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 5px;
+    }
+
+    .modal-content button:hover {
+      background: #007bff;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .alert-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .alert-modal:not(.hidden) {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    .alert-content {
+      background: rgba(30, 30, 30, 0.9);
+      backdrop-filter: blur(12px);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: transform 0.3s ease;
+      transform: scale(0.9);
+    }
+
+    .alert-modal:not(.hidden) .alert-content {
+      transform: scale(1);
+    }
+
+    .alert-content p {
+      font-size: 16px;
+      margin: 0 0 20px 0;
+      line-height: 1.5;
+    }
+
+    .alert-content button {
+      background: var(--accent-color);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .alert-content button:hover {
+      background: #0056b3;
+      transform: scale(1.05);
+    }
+
+    .close-icon {
+      position: absolute;
+      top: 10px;
+      right: 16px;
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .about-box {
+      background: rgba(30, 30, 30, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 16px;
+      max-width: 90vw;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      line-height: 1.6;
+      color: white;
+      position: relative;
+      animation: fadeIn 0.4s ease;
+      box-sizing: border-box;
+    }
+
+    .about-box h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .about-box p {
+      font-size: 18px;
+      margin: 12px 0;
+      z-index: 1;
+      position: relative;
+    }
+
+    .about-box strong {
+      font-weight: 600;
+    }
+
+    .about-box em {
+      font-style: italic;
+      color: #cccccc;
+    }
+
+    .cta-link {
+      font-size: 18px;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 6px;
+      color: var(--accent-color);
+      text-decoration: none;
+    }
+
+    .cta-link:hover {
+      text-decoration: underline;
+    }
+
+    .about-box .close-icon {
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+      from {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    #videoBg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    body.video-active #videoBg {
+      z-index: 0;
+    }
+
+    body.bg-image-active {
+      background-size: cover;
+      background-position: center;
+      z-index: 1;
+    }
+
+    #clock .seconds {
+      font-size: inherit;
+      opacity: 0.6;
+    }
+
+    #clock .ampm {
+      font-size: 0.35em;
+      vertical-align: super;
+      opacity: 0.6;
+      margin-left: 6px;
+    }
+
+    #greeting {
+      opacity: 0;
+      transition: opacity 2.7s ease;
+    }
+
+    #greeting.visible {
+      opacity: 1;
+    }
+
+    @keyframes spinOnce {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #micIcon.animate-mic {
+      animation: spinOnce 1s ease;
+    }
+
+    @keyframes wiggle {
+      0% { transform: rotate(-1.5deg); }
+      50% { transform: rotate(1.5deg); }
+      100% { transform: rotate(-1.5deg); }
+    }
+
+    .tile.rearrange-wiggle {
+      animation: wiggle 0.3s ease-in-out infinite;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background-color: red;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    }
+    .grid, .tile, .scrollable-bookmarks, .bookmarks-container, .container {
+      overflow: visible !important;
+    }
+    @media (hover: none) and (pointer: coarse) {
+    .tile:not(.add-tile):hover {
+      transform: none;
+      box-shadow: none;
+      background: none;
+      }
+    } 
+    body, html, .container, .bookmarks-container {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    input, textarea {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    
+    body.glass-mode .tile::before {
+      content: "";
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      border-radius: inherit;
+      background: linear-gradient(45deg, #00f6ff, #ff4dff, #00f6ff);
+      background-size: 400%;
+      z-index: 0;
+      filter: blur(10px);
+      opacity: 0.09;
+      animation: gradientGlow 6s ease infinite;
+      pointer-events: none;
+    }
+
+    @keyframes gradientGlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+  </style>
+</head>
+<body tabindex="-1">
+  <div id="aboutModal" class="modal hidden">
+    <div class="about-box">
+      <span class="close-icon" onclick="closeAboutModal()">✖</span>
+      <h2>🧾 About This Start Page</h2>
+      <p>🚀 <strong>Built by TechPreeet</strong> — <em>HomePage-Pro</em></p>
+      <p>🛠️ <strong>Open-source on GitHub:</strong><br>
+        <a href="https://github.com/TechPreeet/HomePage-Pro" target="_blank" class="cta-link">github.com/TechPreeet/HomePage-Pro</a>
+      </p>
+      <p>💖 <strong>If you enjoy using it, consider supporting the project:</strong></p>
+      <p><a href="https://buymeacoffee.com/techpreeet" target="_blank" class="cta-link">☕ Buy Me a Coffee</a></p>
+      <p>🌐 <strong>Made with HTML, CSS, JS – no frameworks, no trackers.</strong></p>
+      <p style="margin-top: 20px; font-style: italic; font-size: 17px;">❤️ Made with love, caffeine, and late-night debugging.</p>
+    </div>
+  </div>
+
+  <div id="alertModal" class="alert-modal hidden">
+    <div class="alert-content">
+      <p id="alertMessage"></p>
+      <button onclick="closeAlertModal()">OK</button>
+    </div>
+  </div>
+
+  <video id="videoBg" autoplay muted loop playsinline class="hidden"></video>
+  
+  <div id="sidebar-toggle-btn" onclick="toggleSidebar()">
+      <div class="hamburger-icon">
+          <span></span>
+          <span></span>
+          <span></span>
+      </div>
+  </div>
+  <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <div class="container">
+    <div class="clock-wrapper">
+      <div class="clock" id="clock"></div>
+      <div class="date" id="date"></div>
+      <div id="weatherContainer" style="font-size: 18px; margin-top: 10px; display: none;"></div>
+      <div id="greeting" style="font-size: 20px; margin-top: 10px; text-align: center; display: none; max-width: 100%; word-wrap: break-word;"></div>
+    </div>
+
+    <div class="search-bar">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search the web..."
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
+        autocapitalize="off"
+        oninput="handleSearchInput()"
+        onkeydown="if(event.key === 'Enter') { performSearch(); }"
+      />
+      <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
+        xmlns="http://www.w3.org/2000/svg"
+        height="24" width="24" fill="currentColor">
+        <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
+      </svg>
+      <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
+        xmlns="http://www.w3.org/2000/svg"
+        height="24" width="24" fill="currentColor"
+        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
+        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="grid" id="bookmarkGrid"></div>
+  </div>
+
+  <div id="bookmarkModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-icon" onclick="closeModal()">✖</span>
+      <h3 id="modalTitle">Add Bookmark</h3>
+      <input type="text" id="bookmarkName" placeholder="Name">
+      <input type="text" id="bookmarkUrl" placeholder="URL">
+      <input type="text" id="bookmarkIcon" placeholder="Icon URL (optional)">
+      <button onclick="submitBookmark()">Add</button>
+      <button id="cancelBtn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <div id="settings-sidebar">
+    <!-- BUG FIX & UI UPDATE: The onclick handler for addBookmark is updated here -->
+    <div class="toolbar-option" id="addBookmarkBtn" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();">📝 Add Bookmark</div>
+    <div class="toolbar-option">
+        <select id="searchEngineSelect" onchange="setSearchEngine(this.value)" title="Change Search Engine"></select>
+    </div>
+    <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()">🖼️ Change Background</div>
+    <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()">🎥 Set Video Background</div>
+    <div class="toolbar-option" aria-label="Remove Wallpaper" onclick="removeWallpaper()">🚫 Remove Wallpaper</div>
+    <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mov,.hevc">
+    <input type="file" id="bgInput" accept="image/*" />
+    <div class="toolbar-option" id="gradientLabel">Background Color</div>
+    <div id="gradientSliderContainer">
+        <input type="range" id="gradientSlider" min="0" max="9" value="0" class="toolbar-option" oninput="setGradientBackground(this.value)">
+    </div>
+    <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()">🧊 Toggle Glass Mode</div>
+    <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
+    <div class="toolbar-option" aria-label="Toggle Clock & Weather Visibility" onclick="toggleClockWrapperVisibility()">🕰️ Toggle Clock & Weather</div>
+    <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()">🕒 Toggle Clock Format</div>
+    <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()">⏱️ Toggle Clock Seconds</div>
+    <div class="toolbar-option" onclick="toggleWeather()">🌦️ Toggle Weather Widget</div>
+    <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()">🌀 Toggle Icon Style</div>
+    <div class="toolbar-option" onclick="toggleLabels()">🔤 Toggle Bookmark Labels</div>
+    <div class="toolbar-option" id="tileSizeLabel">Resize Bookmark Tiles</div>
+    <div id="tileSizeSliderContainer">
+      <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
+    </div>
+    <div class="toolbar-option" onclick="toggleGreeting()">👤 Toggle Greeting</div>
+    <div class="toolbar-option" onclick="askUserName()">✏️ Change Name</div>
+    <div class="toolbar-option" onclick="toggleMinimalistMode()">🧘 Minimalist Mode</div>
+    <div class="toolbar-option" id="newTabLinksOption" onclick="toggleNewTabLinks()">🔗 Open Links in New Tab</div>
+    <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()">🔄 Rearrange Bookmarks</div>
+    <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
+    <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
+    <div class="toolbar-option" onclick="resetAllSettings()">🗑️ Reset All Settings</div>
+    <div class="toolbar-option" onclick="openAboutModal()">🧾 About This Page</div>
+    <input type="file" id="importInput" accept="application/json">
+  </div>
+
+  <script>
+    
+    let rearrangeMode = false;
+    let bookmarks = [];
+    let glassMode = false;
+    let newTabLinks = localStorage.getItem("newTabLinks") === "true";
+
+    const gradients = [
+        { name: 'Default', value: '' },
+        { name: 'Sunrise', value: 'linear-gradient(to right, #ff9966, #ff5e62)' },
+        { name: 'Ocean', value: 'linear-gradient(to right, #43cea2, #185a9d)' },
+        { name: 'Twilight', value: 'linear-gradient(to right, #ee0979, #ff6a00)' },
+        { name: 'Emerald', value: 'linear-gradient(to right, #00c9ff, #92fe9d)' },
+        { name: 'Amethyst', value: 'linear-gradient(to right, #9d50bb, #6e48aa)' },
+        { name: 'Sunset', value: 'linear-gradient(to right, #ff7e5f, #feb47b)' },
+        { name: 'Cosmic', value: 'linear-gradient(to right, #1d2b64, #f8cdda)' },
+        { name: 'Pastel', value: 'linear-gradient(to right, #a1c4fd, #c2e9fb)' },
+        { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
+    ];
+
+    const searchEngines = {
+        'Google': 'https://www.google.com/search?q=',
+        'Gemini': 'https://gemini.google.com/app/search?q=',
+        'DuckDuckGo': 'https://duckduckgo.com/?q=',
+        'Bing': 'https://www.bing.com/search?q=',
+        'Brave': 'https://search.brave.com/search?q=',
+        'Perplexity': 'https://www.perplexity.ai/search?q='
+    };
+
+    function showMenuOptions(tile, bookmark, index) {
+      document.querySelectorAll(".floating-menu").forEach(m => m.remove());
+
+      const menu = document.createElement("div");
+      menu.className = "floating-menu";
+
+      const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab"];
+      const icons = {
+          "Edit": "📝", "Delete": "🗑️", "Share": "🔗",
+          "Copy URL": "📋", "Open in New Tab": "↗️"
+      };
+
+      actions.forEach(action => {
+        const opt = document.createElement("div");
+        opt.innerHTML = `${icons[action]} ${action}`;
+        
+        opt.onclick = async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+
+          if (action === "Delete") {
+            bookmarks.splice(index, 1);
+            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+            loadBookmarks();
+          } else if (action === "Edit") {
+            const modal = document.getElementById("bookmarkModal");
+            const nameInput = document.getElementById("bookmarkName");
+            const urlInput = document.getElementById("bookmarkUrl");
+            const iconInput = document.getElementById("bookmarkIcon");
+            const modalTitle = document.getElementById("modalTitle");
+            modalTitle.textContent = "Edit Bookmark";
+            nameInput.value = bookmark.name;
+            urlInput.value = bookmark.url;
+            iconInput.value = bookmark.icon || "";
+            modal.classList.remove("hidden");
+            modal.style.display = "flex";
+            const submitBtn = modal.querySelector("button:first-of-type");
+            submitBtn.textContent = "Save";
+            submitBtn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const newName = nameInput.value.trim();
+              const newURL = urlInput.value.trim();
+              const newIcon = iconInput.value.trim();
+              if (!newName || !newURL) {
+                showAlert("Please enter both a name and URL.");
+                return;
+              }
+              bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
+              localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+              closeModal();
+              loadBookmarks();
+            };
+          } else if (action === "Share") {
+              if (navigator.share) {
+                  try {
+                      await navigator.share({
+                          title: bookmark.name,
+                          text: `Check out this link: ${bookmark.name}`,
+                          url: bookmark.url,
+                      });
+                  } catch (err) {
+                      console.error("Share failed:", err.message);
+                  }
+              } else {
+                  showAlert("Share not supported on this browser.");
+              }
+          } else if (action === "Copy URL") {
+              copyToClipboard(bookmark.url);
+          } else if (action === "Open in New Tab") {
+              window.open(bookmark.url, '_blank');
+          }
+          
+          menu.remove();
+        };
+        menu.appendChild(opt);
+      });
+
+      const rect = tile.getBoundingClientRect();
+      const menuWidth = 140; 
+      const menuHeight = 160;
+
+      const spaceRight = window.innerWidth - rect.right;
+      const spaceLeft = rect.left;
+      const spaceBelow = window.innerHeight - rect.bottom;
+
+      menu.style.left = spaceRight >= menuWidth || spaceRight >= spaceLeft 
+        ? `${rect.right}px` 
+        : `${rect.left - menuWidth}px`;
+
+      menu.style.top = spaceBelow >= menuHeight
+        ? `${rect.bottom}px`
+        : `${rect.top - menuHeight}px`;
+
+      document.body.appendChild(menu);
+
+      setTimeout(() => {
+        document.addEventListener("click", function handler(e) {
+          if (!menu.contains(e.target)) {
+            menu.remove();
+          }
+        }, { once: true });
+      }, 0);
+    }
+
+    function toggleRearrangeMode() {
+      rearrangeMode = !rearrangeMode;
+      localStorage.setItem("rearrangeMode", rearrangeMode);
+      toggleSidebar();
+      updateRearrangeToggleUI();
+      applyRearrangeMode();
+    }
+
+    document.addEventListener("click", function (e) {
+      const isTileOrSettings = e.target.closest(".tile, .settings-panel, .toolbar-option");
+      if (rearrangeMode && !isTileOrSettings) {
+        rearrangeMode = false;
+        localStorage.setItem("rearrangeMode", rearrangeMode);
+        updateRearrangeToggleUI();
+        applyRearrangeMode();
+      }
+    });
+
+    function updateRearrangeToggleUI() {
+      const toggle = document.getElementById("rearrangeBookmarksToggle");
+      toggle.textContent = `🔄 Rearrange Bookmarks ${rearrangeMode ? "✅" : "❌"}`;
+    }
+
+    function applyRearrangeMode() {
+      const grid = document.getElementById("bookmarkGrid");
+      if (rearrangeMode) {
+        grid.classList.add("rearrange-active");
+      } else {
+        grid.classList.remove("rearrange-active");
+      }
+      loadBookmarks();
+    }
+
+    function showAlert(message) {
+      const modal = document.getElementById("alertModal");
+      const messageElement = document.getElementById("alertMessage");
+      messageElement.textContent = message;
+      modal.classList.remove("hidden");
+      modal.style.display = "flex";
+    }
+
+    function closeAlertModal() {
+      const modal = document.getElementById("alertModal");
+      modal.classList.add("hidden");
+      modal.style.display = "none";
+    }
+
+    document.getElementById("alertModal").addEventListener("click", function(event) {
+      if (event.target === this) {
+        closeAlertModal();
+      }
+    });
+
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        closeAlertModal();
+        closeAboutModal();
+        closeModal();
+        const sidebar = document.getElementById('settings-sidebar');
+        if (sidebar.classList.contains('open')) {
+            toggleSidebar();
+        }
+      }
+    });
+
+    function clearSearch() {
+      const input = document.getElementById("searchInput");
+      input.value = "";
+      handleSearchInput();
+      input.focus();
+    }
+
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open("videoBackgroundDB", 2);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains("videos")) {
+            db.createObjectStore("videos", { keyPath: "id" });
+          }
+        };
+        request.onsuccess = (event) => resolve(event.target.result);
+        request.onerror = (event) => reject(new Error(`IndexedDB open error: ${event.target.error}`));
+      });
+    }
+
+    async function storeVideo(file) {
+      try {
+        if (file.size > 100 * 1024 * 1024) {
+          throw new Error("Video file exceeds 100 MB limit.");
+        }
+        const db = await openDB();
+        const CHUNK_SIZE = 10 * 1024 * 1024;
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+        const clearTransaction = db.transaction(["videos"], "readwrite");
+        const clearStore = clearTransaction.objectStore("videos");
+        for (let i = 0; i < 100; i++) {
+          clearStore.delete(`backgroundVideo_${i}`);
+        }
+        await new Promise((resolve, reject) => {
+          clearTransaction.oncomplete = resolve;
+          clearTransaction.onerror = () => reject(new Error(`Failed to clear old video: ${clearTransaction.error}`));
+        });
+
+        for (let i = 0; i < totalChunks; i++) {
+          const start = i * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, file.size);
+          const chunk = file.slice(start, end);
+          const chunkData = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(new Error(`FileReader error for chunk ${i}: ${reader.error}`));
+            reader.readAsArrayBuffer(chunk);
+          });
+          const transaction = db.transaction(["videos"], "readwrite");
+          const store = transaction.objectStore("videos");
+          await new Promise((resolve, reject) => {
+            const putRequest = store.put({
+              id: `backgroundVideo_${i}`,
+              data: chunkData,
+              mimeType: file.type,
+              chunkIndex: i,
+              totalChunks: totalChunks
+            });
+            putRequest.onsuccess = resolve;
+            putRequest.onerror = () => reject(new Error(`IndexedDB put error for chunk ${i}: ${putRequest.error}`));
+          });
+        }
+        return;
+      } catch (error) {
+        console.error("IndexedDB store error:", error.message, error.stack);
+        showAlert(`Failed to store video: ${error.message}. It will play this session but won't persist after refresh.`);
+        throw error;
+      }
+    }
+
+    async function getVideo() {
+      try {
+        const db = await openDB();
+        const transaction = db.transaction(["videos"], "readonly");
+        const store = transaction.objectStore("videos");
+        const chunks = [];
+        let mimeType = "video/mp4";
+        let totalChunks = 0;
+        for (let i = 0; i < 100; i++) {
+          const request = await new Promise((resolve, reject) => {
+            const req = store.get(`backgroundVideo_${i}`);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(new Error(`IndexedDB get error for chunk ${i}: ${req.error}`));
+          });
+          if (!request) break;
+          chunks.push(request.data);
+          mimeType = request.mimeType || mimeType;
+          totalChunks = request.totalChunks || 1;
+        }
+        if (chunks.length === 0) {
+          console.warn("No video data found in IndexedDB");
+          return null;
+        }
+        const combinedData = new Blob(chunks, { type: mimeType });
+        return { data: combinedData, mimeType };
+      } catch (error) {
+        console.error("IndexedDB get error:", error.message, error.stack);
+        return null;
+      }
+    }
+
+    async function promptVideoUrl() {
+      const url = prompt("Enter video URL (e.g., from GitHub, .mp4, .webm, or .ogg):");
+      if (url && (url.endsWith(".mp4") || url.endsWith(".webm") || url.endsWith(".ogg"))) {
+        removeWallpaper(false);
+        const videoBg = document.getElementById("videoBg");
+        try {
+          const response = await fetch(url, { method: "HEAD" });
+          if (!response.ok) throw new Error(`Failed to access video URL: ${response.statusText}`);
+          videoBg.src = url;
+          videoBg.load();
+          videoBg.play().catch(error => console.error("Video play error:", error));
+          videoBg.classList.remove("hidden");
+          document.body.classList.add("video-active");
+          document.body.classList.remove("bg-image-active");
+          localStorage.setItem("videoUrl", url);
+          localStorage.setItem("hasVideo", "true");
+
+          try {
+            const db = await openDB();
+            const transaction = db.transaction(["videos"], "readwrite");
+            const store = transaction.objectStore("videos");
+            for (let i = 0; i < 100; i++) {
+              store.delete(`backgroundVideo_${i}`);
+            }
+            await new Promise((resolve, reject) => {
+              transaction.oncomplete = resolve;
+              transaction.onerror = () => reject(new Error(`Failed to clear IndexedDB: ${transaction.error}`));
+            });
+          } catch (error) {
+            console.error("Error clearing IndexedDB:", error);
+          }
+        } catch (error) {
+          console.error("Video URL error:", error.message, error.stack);
+          showAlert(`Failed to load video from URL: ${error.message}`);
+        }
+      } else {
+        showAlert("Please enter a valid video URL (.mp4, .webm, or .ogg).");
+      }
+    }
+    
+    function removeWallpaper(showAlertMsg = true) {
+        const videoBg = document.getElementById("videoBg");
+        videoBg.src = "";
+        videoBg.classList.add("hidden");
+        document.body.classList.remove("video-active");
+        localStorage.removeItem("hasVideo");
+        localStorage.removeItem("videoUrl");
+
+        document.body.style.backgroundImage = '';
+        document.body.classList.remove("bg-image-active");
+        localStorage.removeItem("bgImage");
+
+        localStorage.setItem("gradientIndex", 0);
+        applyGradientBackground(0);
+        document.getElementById('gradientSlider').value = 0;
+
+        if(showAlertMsg) showAlert("Wallpaper has been removed.");
+    }
+
+    function setGradientBackground(index) {
+        const gradientIndex = parseInt(index, 10);
+        const gradient = gradients[gradientIndex];
+        const label = document.getElementById('gradientLabel');
+        
+        if (gradient && gradient.value) {
+            document.body.style.backgroundImage = gradient.value;
+            document.body.classList.remove("bg-image-active", "video-active");
+        } else {
+            if (!localStorage.getItem('bgImage') && !localStorage.getItem('hasVideo')) {
+                document.body.style.backgroundImage = '';
+            }
+        }
+        
+        label.textContent = `Background: ${gradient.name}`;
+        localStorage.setItem("gradientIndex", gradientIndex);
+
+        const slider = document.getElementById('gradientSlider');
+        const percentage = (gradientIndex / (gradients.length - 1)) * 100;
+        slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
+    }
+
+    function applyGradientBackground(index) {
+        const slider = document.getElementById('gradientSlider');
+        slider.value = index;
+        setGradientBackground(index);
+    }
+
+    function openAboutModal() {
+      toggleSidebar();
+      document.getElementById("aboutModal").classList.remove("hidden");
+    }
+
+    function closeAboutModal() {
+      const modal = document.getElementById("aboutModal");
+      modal.classList.add("hidden");
+    }
+
+    document.getElementById("aboutModal").addEventListener("click", function(e) {
+      if (e.target === this) closeAboutModal();
+    });
+
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes().toString().padStart(2, '0');
+      let seconds = now.getSeconds().toString().padStart(2, '0');
+      let ampm = '';
+      if (!is24Hour) {
+        ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+      }
+      const hourStr = is24Hour ? hours.toString().padStart(2, '0') : hours.toString();
+      let timeHTML = `${hourStr}:${minutes}`;
+      if (showSeconds) {
+        timeHTML += `:<span class="seconds">${seconds}</span>`;
+      }
+      timeHTML += ampm ? `<span class="ampm">${ampm}</span>` : '';
+      document.getElementById("clock").innerHTML = timeHTML;
+      document.getElementById("date").textContent = now.toLocaleDateString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    let is24Hour = localStorage.getItem("clockFormat") !== "12";
+    let showSeconds = localStorage.getItem("showSeconds") === "true";
+
+    function toggleClockFormat() {
+      is24Hour = !is24Hour;
+      localStorage.setItem("clockFormat", is24Hour ? "24" : "12");
+      updateClock();
+    }
+
+    function toggleClockSeconds() {
+      showSeconds = !showSeconds;
+      localStorage.setItem("showSeconds", showSeconds);
+      updateClock();
+    }
+
+    function toggleWeather() {
+      const current = localStorage.getItem("showWeather") === "true";
+      localStorage.setItem("showWeather", !current);
+      applyWeatherToggle(!current);
+    }
+
+    function applyWeatherToggle(enabled) {
+      const container = document.getElementById("weatherContainer");
+      if (enabled) {
+        container.style.display = "block";
+        fetchWeather();
+      } else {
+        container.style.display = "none";
+      }
+    }
+
+    function getWeatherEmoji(code) {
+      const map = {
+        0: "☀️", 1: "🌤️", 2: "⛅", 3: "☁️",
+        45: "🌫️", 48: "🌫️",
+        51: "🌦️", 61: "🌧️", 63: "🌧️", 65: "🌧️",
+        71: "❄️", 73: "❄️", 75: "❄️",
+        80: "🌧️", 81: "🌧️", 82: "🌧️",
+        95: "⛈️", 96: "⛈️", 99: "⛈️"
+      };
+      return map[code] || "🌡️";
+    }
+
+    async function fetchWeather() {
+      if (!navigator.geolocation) {
+        displayWeatherFallback("Geolocation is not supported by your browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+          const response = await fetch(url);
+          if (!response.ok) {
+              throw new Error(`API request failed with status ${response.status}`);
+          }
+          const data = await response.json();
+          const weather = data.current_weather;
+          const temp = Math.round(weather.temperature);
+          const icon = getWeatherEmoji(weather.weathercode);
+          const wind = Math.round(weather.windspeed);
+          const text = `${icon} ${temp}°C | Wind: ${wind} km/h`;
+          document.getElementById("weatherContainer").textContent = text;
+        } catch (err) {
+          console.error("Weather fetch error:", err);
+          displayWeatherFallback("Could not load weather data.");
+        }
+      }, (error) => {
+          console.error("Geolocation error:", error);
+          displayWeatherFallback("Location permission denied.");
+      });
+    }
+
+    function displayWeatherFallback(message) {
+      document.getElementById("weatherContainer").textContent = message;
+    }
+
+    function toggleMinimalistMode() {
+        const body = document.body;
+        const isMinimal = body.classList.toggle("minimalist");
+        localStorage.setItem("minimalistMode", isMinimal);
+        if (isMinimal) {
+            if (body.classList.contains("glass-mode")) {
+                body.classList.remove("glass-mode");
+                localStorage.setItem("glassMode", false);
+            }
+            body.style.backgroundImage = '';
+        } else {
+            loadBackgrounds();
+        }
+    }
+
+    function toggleGreeting() {
+      const current = localStorage.getItem("showGreeting") === "true";
+      localStorage.setItem("showGreeting", !current);
+      applyGreetingToggle(!current);
+    }
+
+    function applyGreetingToggle(enabled) {
+      const greeting = document.getElementById("greeting");
+      if (enabled) {
+        let name = localStorage.getItem("profileName");
+        if (!name) {
+          askUserName();
+          return;
+        }
+        greeting.textContent = generateFriendlyGreeting(name);
+        greeting.style.display = "block";
+        greeting.classList.remove("visible");
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            greeting.classList.add("visible");
+          });
+        });
+      } else {
+        greeting.classList.remove("visible");
+        greeting.style.display = "none";
+      }
+    }
+
+    function askUserName() {
+      const name = prompt("What’s your name?");
+      if (name) {
+        localStorage.setItem("profileName", name);
+        const greeting = document.getElementById("greeting");
+        if (localStorage.getItem("showGreeting") === "true") {
+          greeting.textContent = generateFriendlyGreeting(name);
+          greeting.style.display = "block";
+        }
+      }
+    }
+
+    function generateFriendlyGreeting(name) {
+      const hour = new Date().getHours();
+      let message = "";
+      if (hour >= 5 && hour < 12) {
+        message = `🌞 Good morning, ${name}! Have a bright start.`;
+      } else if (hour >= 12 && hour < 17) {
+        message = `☕ Good afternoon, ${name}! Keep up the great work.`;
+      } else if (hour >= 17 && hour < 21) {
+        message = `🌇 Good evening, ${name}! Hope you're winding down nicely.`;
+      } else {
+        message = `🌙 Good night, ${name}! Time to recharge.`;
+      }
+      return message;
+    }
+
+    function toggleLabels() {
+      const hiding = document.body.classList.toggle("hide-labels");
+      localStorage.setItem("hideLabels", hiding);
+    }
+
+    function toggleNewTabLinks() {
+      newTabLinks = !newTabLinks;
+      localStorage.setItem("newTabLinks", newTabLinks);
+      updateNewTabLinksOption();
+      loadBookmarks();
+    }
+
+    function updateNewTabLinksOption() {
+      const option = document.getElementById("newTabLinksOption");
+      option.textContent = `🔗 Open Links in New Tab ${newTabLinks ? "✅" : "❌"}`;
+    }
+
+    function animatePlaceholderText() {
+      const input = document.getElementById("searchInput");
+      const text = "Search the web...";
+      input.placeholder = "";
+      let index = 0;
+      const speed = 60;
+      function typeNext() {
+        if (index <= text.length) {
+          input.placeholder = text.slice(0, index++);
+          setTimeout(typeNext, speed);
+        }
+      }
+      typeNext();
+    }
+
+    function resetAllSettings() {
+      const confirmReset = confirm("Are you sure you want to reset everything?\nThis will remove all bookmarks and settings.");
+      if (confirmReset) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
+    function handleSearchInput() {
+        const input = document.getElementById("searchInput");
+        const micIcon = document.getElementById("micIcon");
+        const clearIcon = document.getElementById("clearIcon");
+        const query = input.value.trim().toLowerCase();
+
+        if (query !== "") {
+          micIcon.style.display = "none";
+          clearIcon.style.display = "block";
+        } else {
+          micIcon.style.display = "block";
+          clearIcon.style.display = "none";
+        }
+
+        const tiles = document.querySelectorAll(".tile");
+
+        tiles.forEach(tile => {
+          const label = tile.querySelector(".bookmark-label");
+          const name = label?.innerText.toLowerCase() || "";
+
+          tile.style.display = name.includes(query) ? "" : "none";
+        });
+      }
+
+      clearIcon.addEventListener("click", () => {
+        input.value = "";
+        handleSearchInput();
+      });
+
+    function copyToClipboard(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert("URL copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showAlert("Failed to copy URL.");
+            });
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showAlert("URL copied to clipboard!");
+            } catch (err) {
+                console.error('Fallback failed to copy: ', err);
+                showAlert("Failed to copy URL.");
+            }
+            document.body.removeChild(textArea);
+        }
+    }
+
+    function createBookmarkElement(bookmark, index) {
+      const a = document.createElement("a");
+      a.draggable = rearrangeMode;
+      a.href = bookmark.url;
+      a.className = "tile";
+      if (newTabLinks) a.target = "_blank";
+      a.dataset.index = index;
+      a.tabIndex = 0;
+
+      if ('ontouchstart' in window) {
+        let pressTimer = null;
+        let longPressDidOccur = false;
+
+        a.addEventListener('touchstart', (e) => {
+          if (rearrangeMode) return;
+          longPressDidOccur = false;
+          pressTimer = setTimeout(() => {
+            longPressDidOccur = true;
+            showMenuOptions(a, bookmark, index);
+          }, 500);
+        });
+
+        a.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
+        a.addEventListener('touchend', () => { clearTimeout(pressTimer); });
+
+        a.addEventListener('click', (e) => {
+          if (longPressDidOccur) {
+            e.preventDefault();
+          }
+        });
+      }
+      
+      a.addEventListener('contextmenu', (e) => { e.preventDefault(); });
+
+      a.addEventListener('click', (e) => {
+        if (rearrangeMode) {
+            e.preventDefault();
+        }
+      });
+
+      a.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") window.location.href = bookmark.url;
+      });
+
+      const img = document.createElement("img");
+      try {
+        img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
+      } catch (e) {
+        console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
+        img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
+      }
+      img.draggable = false;
+      
+      const name = document.createElement("div");
+      name.className = "bookmark-label";
+      name.textContent = bookmark.name;
+      name.draggable = false;
+      
+      const menu = document.createElement("div");
+      menu.className = "menu";
+      menu.textContent = "⋮";
+      
+      menu.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showMenuOptions(a, bookmark, index);
+      };
+
+      a.appendChild(menu);
+      a.appendChild(img);
+      a.appendChild(name);
+
+      const deleteBtn = document.createElement("div");
+      deleteBtn.className = "delete-btn";
+      deleteBtn.innerHTML = "&#8722;";
+      deleteBtn.title = "Delete Bookmark";
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        bookmarks.splice(index, 1);
+        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        loadBookmarks();
+      };
+      a.appendChild(deleteBtn);
+
+      if (rearrangeMode) {
+        a.classList.add("rearrange-wiggle");
+        deleteBtn.style.display = "flex";
+      } else {
+        deleteBtn.style.display = "none";
+      }
+
+      return a;
+    }
+
+
+    function loadBookmarks() {
+      bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+      const grid = document.getElementById("bookmarkGrid");
+      grid.innerHTML = '';
+      bookmarks.forEach((b, i) => {
+        const el = createBookmarkElement(b, i);
+        grid.appendChild(el);
+      });
+      const savedSize = localStorage.getItem("tileSize") || 90;
+      const slider = document.getElementById('tileSizeSlider');
+      slider.value = savedSize;
+      setTileSize(savedSize);
+      applyGlassMode();
+      updateNewTabLinksOption();
+    }
+
+function enableDragAndDrop() {
+  const grid = document.getElementById("bookmarkGrid");
+  let dragSrcIndex = null;
+  let draggingTile = null;
+
+  grid.addEventListener("dragstart", (e) => {
+    if (!rearrangeMode) return e.preventDefault();
+    const tile = e.target.closest(".tile:not(.add-tile)");
+    if (!tile) return;
+    dragSrcIndex = Number(tile.dataset.index);
+    draggingTile = tile;
+    tile.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", dragSrcIndex);
+    setTimeout(() => tile.classList.add("drag-ghost"), 0);
+  });
+
+  grid.addEventListener("dragend", (e) => {
+    if (!draggingTile) return;
+    draggingTile.classList.remove("dragging", "drag-ghost");
+    draggingTile = null;
+  });
+
+  grid.addEventListener("drop", (e) => {
+    if (!rearrangeMode || draggingTile) { 
+        e.preventDefault();
+        const tiles = Array.from(grid.querySelectorAll(".tile:not(.add-tile)"));
+        const newOrder = tiles.map(tile => bookmarks[Number(tile.dataset.index)]);
+        bookmarks = newOrder;
+        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        loadBookmarks();
+    }
+  });
+
+  let touchDraggingTile = null;
+  let scrollInterval = null;
+
+  const stopAutoScroll = () => {
+    clearInterval(scrollInterval);
+    scrollInterval = null;
+  };
+
+  grid.addEventListener('touchstart', (e) => {
+    if (!rearrangeMode || e.target.closest('.delete-btn')) return;
+    const tile = e.target.closest('.tile:not(.add-tile)');
+    if (!tile) return;
+
+    const touchTimer = setTimeout(() => {
+        touchDraggingTile = tile;
+        touchDraggingTile.classList.add('drag-ghost');
+    }, 200);
+
+    const clearTouchTimer = () => clearTimeout(touchTimer);
+    grid.addEventListener('touchend', clearTouchTimer, { once: true });
+    grid.addEventListener('touchcancel', clearTouchTimer, { once: true });
+  }, { passive: true });
+
+
+  grid.addEventListener('touchmove', (e) => {
+    if (!touchDraggingTile) return;
+    e.preventDefault(); 
+
+    const clientX = e.touches[0].clientX;
+    const clientY = e.touches[0].clientY;
+
+    const viewportHeight = window.innerHeight;
+    const scrollZone = 80;
+    const scrollSpeed = 15;
+
+    stopAutoScroll();
+
+    if (clientY < scrollZone) {
+      scrollInterval = setInterval(() => { window.scrollBy(0, -scrollSpeed); }, 16);
+    } else if (clientY > viewportHeight - scrollZone) {
+      scrollInterval = setInterval(() => { window.scrollBy(0, scrollSpeed); }, 16);
+    }
+
+    touchDraggingTile.style.display = 'none';
+    const elementUnder = document.elementFromPoint(clientX, clientY);
+    touchDraggingTile.style.display = '';
+
+    const targetTile = elementUnder ? elementUnder.closest('.tile:not(.add-tile)') : null;
+    
+    if (targetTile && targetTile !== touchDraggingTile) {
+        const bounding = targetTile.getBoundingClientRect();
+        if (clientY > bounding.top + bounding.height / 2) {
+            targetTile.after(touchDraggingTile);
+        } else {
+            targetTile.before(touchDraggingTile);
+        }
+    }
+  }, { passive: false });
+
+
+  grid.addEventListener('touchend', (e) => {
+    stopAutoScroll();
+    if (!touchDraggingTile) return;
+
+    touchDraggingTile.classList.remove('drag-ghost');
+    
+    const tiles = Array.from(grid.querySelectorAll(".tile:not(.add-tile)"));
+    const newOrder = tiles.map(tile => bookmarks[Number(tile.dataset.index)]);
+    bookmarks = newOrder;
+    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+    
+    touchDraggingTile = null;
+    loadBookmarks();
+  });
+
+  grid.addEventListener("dragover", (e) => {
+    if (!rearrangeMode) return;
+    e.preventDefault();
+    const targetTile = e.target.closest(".tile:not(.add-tile)");
+    if (!targetTile || !draggingTile || targetTile === draggingTile) return;
+    const bounding = targetTile.getBoundingClientRect();
+    if (e.clientY > bounding.top + bounding.height / 2) {
+        targetTile.after(draggingTile);
+    } else {
+        targetTile.before(draggingTile);
+    }
+      });
+    }
+
+    function addBookmark() {
+      const modal = document.getElementById("bookmarkModal");
+      const nameInput = document.getElementById("bookmarkName");
+      const urlInput = document.getElementById("bookmarkUrl");
+      const iconInput = document.getElementById("bookmarkIcon");
+      const modalTitle = document.getElementById("modalTitle");
+      const submitBtn = modal.querySelector("button:first-of-type");
+      modalTitle.textContent = "Add Bookmark";
+      nameInput.value = "";
+      urlInput.value = "";
+      iconInput.value = "";
+      submitBtn.textContent = "Add";
+      submitBtn.onclick = submitBookmark;
+      modal.classList.remove("hidden");
+      modal.style.display = "flex";
+      modal.style.opacity = "1";
+      nameInput.focus();
+    }
+
+    function submitBookmark() {
+      const name = document.getElementById("bookmarkName").value.trim();
+      const url = document.getElementById("bookmarkUrl").value.trim();
+      const icon = document.getElementById("bookmarkIcon").value.trim();
+      if (!url || !name) {
+        showAlert("Please enter both a name and URL.");
+        return;
+      }
+      bookmarks.push({ url, name, icon });
+      localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+      closeModal();
+      loadBookmarks();
+    }
+
+    function closeModal() {
+      const modal = document.getElementById("bookmarkModal");
+      modal.classList.add("hidden");
+      modal.style.display = "none";
+      document.getElementById("bookmarkName").value = "";
+      document.getElementById("bookmarkUrl").value = "";
+      document.getElementById("bookmarkIcon").value = "";
+      document.getElementById("modalTitle").textContent = "Add Bookmark";
+      const submitBtn = modal.querySelector("button:first-of-type");
+      submitBtn.textContent = "Add";
+      submitBtn.onclick = submitBookmark;
+    }
+
+    document.getElementById("bookmarkModal").addEventListener("click", function(event) {
+      if (event.target === this || event.target.id === "cancelBtn") {
+        closeModal();
+      }
+    });
+
+    document.getElementById("bookmarkIcon").addEventListener("paste", async function (e) {
+      const clipboardItems = e.clipboardData.items;
+      for (let i = 0; i < clipboardItems.length; i++) {
+        const item = clipboardItems[i];
+        if (item.type.indexOf("image") !== -1) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            document.getElementById("bookmarkIcon").value = event.target.result;
+          };
+          reader.readAsDataURL(blob);
+          e.preventDefault();
+          break;
+        }
+      }
+    });
+
+    // BUG FIX & UI UPDATE: Updated sidebar toggle function
+    function toggleSidebar() {
+      const sidebar = document.getElementById('settings-sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      const toggleBtn = document.getElementById('sidebar-toggle-btn');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+      toggleBtn.classList.toggle('open');
+    }
+
+    function toggleDarkMode() {
+      const isDark = localStorage.getItem("dark-mode") === "true";
+      const newDark = !isDark;
+      localStorage.setItem("dark-mode", newDark);
+      applyDarkMode(newDark);
+    }
+
+    function applyDarkMode(enabled) {
+      if (enabled) {
+        document.body.classList.add("dark-mode");
+        document.documentElement.style.setProperty("--bg-color", "#121212");
+        document.documentElement.style.setProperty("--text-color", "#ffffff");
+      } else {
+        document.body.classList.remove("dark-mode");
+        document.documentElement.style.setProperty("--bg-color", "white");
+        document.documentElement.style.setProperty("--text-color", "#000000");
+      }
+    }
+
+    function applyGlassMode() {
+      const body = document.body;
+      const clockWrapper = document.querySelector(".clock-wrapper");
+      const searchBar = document.querySelector(".search-bar");
+      const tiles = document.querySelectorAll(".tile:not(.add-tile)");
+      if (glassMode) {
+        body.classList.add("glass-mode");
+        clockWrapper.classList.add("glass-clock");
+        searchBar.classList.add("glass-tile");
+        tiles.forEach(tile => tile.classList.add("glass-tile"));
+      } else {
+        body.classList.remove("glass-mode");
+        clockWrapper.classList.remove("glass-clock");
+        searchBar.classList.remove("glass-tile");
+        tiles.forEach(tile => tile.classList.remove("glass-tile"));
+      }
+    }
+
+    function toggleGlassMode() {
+      glassMode = !glassMode;
+      localStorage.setItem("glassMode", glassMode);
+      applyGlassMode();
+    }
+
+    function toggleIconStyle() {
+      const styles = ["round", "squircle", "rounded-rect"];
+      const current = localStorage.getItem("iconStyle") || "round";
+      const currentIndex = styles.indexOf(current);
+      const nextIndex = (currentIndex + 1) % styles.length;
+      const newStyle = styles[nextIndex];
+      localStorage.setItem("iconStyle", newStyle);
+      applyIconStyle(newStyle);
+    }
+
+    function applyIconStyle(style) {
+      const allIcons = document.querySelectorAll(".tile img");
+      allIcons.forEach(img => {
+        if (style === "squircle") {
+          img.style.borderRadius = "20%";
+        } else if (style === "rounded-rect") {
+          img.style.borderRadius = "35%";
+        } else {
+          img.style.borderRadius = "50%";
+        }
+      });
+    }
+
+    let clockWrapperVisible = true;
+
+    function toggleClockWrapperVisibility() {
+      const clockWrapper = document.querySelector('.clock-wrapper');
+      const searchBar = document.querySelector('.search-bar');
+      const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
+
+      clockWrapperVisible = !clockWrapperVisible;
+
+      if (clockWrapperVisible) {
+        clockWrapper.classList.remove('hidden');
+        searchBar.style.marginTop = '';
+        toolbarOption.classList.add('active');
+      } else {
+        clockWrapper.classList.add('hidden');
+        searchBar.style.marginTop = '20px';
+        toolbarOption.classList.remove('active');
+      }
+
+      localStorage.setItem('clockWrapperVisible', clockWrapperVisible);
+    }
+
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('clockWrapperVisible');
+
+      if (saved !== null) {
+        clockWrapperVisible = saved === 'true';
+
+        const clockWrapper = document.querySelector('.clock-wrapper');
+        const searchBar = document.querySelector('.search-bar');
+        const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
+
+        if (clockWrapperVisible) {
+          clockWrapper.classList.remove('hidden');
+          searchBar.style.marginTop = '';
+          toolbarOption.classList.add('active');
+        } else {
+          clockWrapper.classList.add('hidden');
+          searchBar.style.marginTop = '20px';
+          toolbarOption.classList.remove('active');
+        }
+      }
+    });
+
+
+    function setTileSize(size) {
+      const tiles = document.querySelectorAll(".tile");
+      const grid = document.getElementById('bookmarkGrid');
+      const slider = document.getElementById('tileSizeSlider');
+      const tileSizeLabel = document.getElementById('tileSizeLabel');
+      let width = parseInt(size);
+      tiles.forEach(tile => {
+        tile.style.width = `${width}px`;
+        tile.style.fontSize = `${Math.max(9, Math.min(15, width / 10))}px`;
+        const img = tile.querySelector("img");
+        if (img) {
+          img.style.width = `${width * 0.8}px`;
+          img.style.height = `${width * 0.8}px`;
+        }
+      });
+      grid.classList.remove('tile-xsmall', 'tile-small', 'tile-medium', 'tile-large');
+      const percentage = ((width - 40) / (120 - 40)) * 100;
+      slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
+      slider.value = width;
+      tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
+      localStorage.setItem("tileSize", width);
+    }
+
+    document.getElementById("importInput").addEventListener("change", function(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data)) {
+            localStorage.setItem("bookmarks", JSON.stringify(data));
+            loadBookmarks();
+          } else {
+            showAlert("Invalid bookmark file format. Please upload a valid JSON file.");
+          }
+        } catch (error) {
+          console.error("Import error:", error);
+          showAlert("Failed to import bookmarks: " + error.message);
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById("videoInput").addEventListener("change", async function (event) {
+        const file = event.target.files[0];
+        if (file && file.type.startsWith("video/")) {
+            removeWallpaper(false);
+            const videoBg = document.getElementById("videoBg");
+            const blobUrl = URL.createObjectURL(file);
+            videoBg.src = blobUrl;
+            videoBg.load();
+            videoBg.play().catch(error => console.error("Video play error:", error));
+            videoBg.classList.remove("hidden");
+            document.body.classList.add("video-active");
+            try {
+                await storeVideo(file);
+                localStorage.setItem("hasVideo", "true");
+            } catch (error) {
+                console.error("Failed to store video:", error.message, error.stack);
+            }
+        }
+    });
+
+    document.getElementById("bgInput").addEventListener("change", function(event) {
+      const file = event.target.files[0];
+      if (file) {
+          removeWallpaper(false);
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.body.style.backgroundImage = `url('${e.target.result}')`;
+            document.body.classList.add("bg-image-active");
+            localStorage.setItem("bgImage", e.target.result);
+        };
+          reader.readAsDataURL(file);
+    }
+    });
+
+    function performSearch() {
+      const query = document.getElementById("searchInput").value;
+      if (query.trim()) {
+          const engineName = localStorage.getItem('searchEngine') || 'Google';
+          const url = searchEngines[engineName] + encodeURIComponent(query);
+          if (newTabLinks) {
+              window.open(url, '_blank');
+          } else {
+              window.location.href = url;
+          }
+      }
+    }
+    
+    function setSearchEngine(name) {
+        const searchInput = document.getElementById('searchInput');
+        localStorage.setItem('searchEngine', name);
+        searchInput.placeholder = `Search with ${name}...`;
+        
+        const select = document.getElementById('searchEngineSelect');
+        select.value = name;
+    }
+
+    function initSearchEngineSelector() {
+        const select = document.getElementById('searchEngineSelect');
+        Object.keys(searchEngines).forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            select.appendChild(option);
+        });
+        const savedEngine = localStorage.getItem('searchEngine') || 'Google';
+        setSearchEngine(savedEngine);
+    }
+
+    let recognition = null;
+    let handleCancelClick;
+
+    function startVoiceSearch() {
+      if (!('webkitSpeechRecognition' in window)) {
+        showAlert("Voice search is not supported. Please type your query.");
+        document.getElementById("searchInput").focus();
+        return;
+      }
+      
+      if (recognition && recognition._isStarted) {
+        recognition.stop();
+        return;
+      }
+
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      const searchInput = document.getElementById("searchInput");
+      const micIcon = document.getElementById("micIcon");
+      const container = document.querySelector('.container');
+      let finalTranscript = "";
+
+      handleCancelClick = function(event) {
+        if (!event.target.closest('a, button, input, .menu, .toolbar-option')) {
+          if (recognition && recognition._isStarted) {
+            recognition.stop();
+          }
+        }
+      };
+
+      recognition.onstart = () => {
+        recognition._isStarted = true;
+        searchInput.placeholder = "Listening...";
+        micIcon.style.color = "red";
+        container.addEventListener('click', handleCancelClick);
+      };
+
+      recognition.onresult = (event) => {
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript;
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+        searchInput.value = finalTranscript + interimTranscript;
+        handleSearchInput();
+      };
+
+      recognition.onerror = (event) => {
+        if (event.error !== "aborted" && event.error !== 'no-speech') {
+          showAlert("Voice recognition error: " + event.error);
+        }
+      };
+
+      recognition.onend = () => {
+        recognition._isStarted = false;
+        const engineName = localStorage.getItem('searchEngine') || 'Google';
+        searchInput.placeholder = `Search with ${engineName}...`;
+        micIcon.style.color = "";
+        container.removeEventListener('click', handleCancelClick);
+        if (finalTranscript.trim()) {
+          performSearch();
+        }
+      };
+      recognition.start();
+    }
+
+    function exportBookmarks() {
+      try {
+        const bookmarksData = localStorage.getItem("bookmarks");
+        if (!bookmarksData || bookmarksData === "[]") {
+          showAlert("No bookmarks to export.");
+          return;
+        }
+        const blob = new Blob([bookmarksData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "bookmarks.json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Export error:", error);
+        showAlert("Failed to export bookmarks: " + error.message);
+      }
+    }
+    
+    async function loadBackgrounds() {
+        const bgImage = localStorage.getItem("bgImage");
+        const hasVideo = localStorage.getItem("hasVideo") === "true";
+        const videoUrl = localStorage.getItem("videoUrl");
+        const gradientIndex = parseInt(localStorage.getItem("gradientIndex") || "0", 10);
+        const videoBg = document.getElementById("videoBg");
+
+        if (bgImage) {
+            document.body.style.backgroundImage = `url('${bgImage}')`;
+            document.body.classList.add("bg-image-active");
+        } else if (hasVideo) {
+            if (videoUrl) {
+                try {
+                    const response = await fetch(videoUrl, { method: "HEAD" });
+                    if (response.ok) {
+                        videoBg.src = videoUrl;
+                        videoBg.classList.remove("hidden");
+                        document.body.classList.add("video-active");
+                        videoBg.load();
+                        videoBg.play().catch(error => console.error("Video play error on load:", error));
+                    } else {
+                        localStorage.removeItem("videoUrl");
+                        localStorage.removeItem("hasVideo");
+                    }
+                } catch (error) {
+                    console.error("Failed to load video URL on startup:", error.message, error.stack);
+                    localStorage.removeItem("videoUrl");
+                    localStorage.removeItem("hasVideo");
+                }
+            } else {
+                try {
+                    const videoData = await getVideo();
+                    if (videoData && videoData.data) {
+                        videoBg.src = URL.createObjectURL(videoData.data);
+                        videoBg.classList.remove("hidden");
+                        document.body.classList.add("video-active");
+                        videoBg.load();
+                        videoBg.play().catch(error => console.error("Video play error on load:", error));
+                    } else {
+                        localStorage.removeItem("hasVideo");
+                    }
+                } catch (error) {
+                    localStorage.removeItem("hasVideo");
+                }
+            }
+        } else if (gradientIndex > 0) {
+            applyGradientBackground(gradientIndex);
+        }
+    }
+
+    window.onload = async function() {
+      updateClock();
+      setInterval(updateClock, 1000);
+      glassMode = localStorage.getItem("glassMode") === "true";
+      applyGlassMode();
+      
+      const savedSize = localStorage.getItem("tileSize") || 90;
+      setTileSize(savedSize);
+      
+      const savedGradient = localStorage.getItem("gradientIndex") || 0;
+      applyGradientBackground(savedGradient);
+      
+      if (localStorage.getItem("minimalistMode") !== "true") {
+          await loadBackgrounds();
+      }
+      
+      rearrangeMode = localStorage.getItem("rearrangeMode") === "true";
+      updateRearrangeToggleUI();
+      applyRearrangeMode();
+      
+      enableDragAndDrop();
+      applyDarkMode(localStorage.getItem("dark-mode") === "true");
+      loadBookmarks();
+      
+      const savedIconStyle = localStorage.getItem("iconStyle") || "round";
+      applyIconStyle(savedIconStyle);
+      const weatherEnabled = localStorage.getItem("showWeather") === "true";
+      applyWeatherToggle(weatherEnabled);
+      const greetingEnabled = localStorage.getItem("showGreeting") === "true";
+      applyGreetingToggle(greetingEnabled);
+      
+      initSearchEngineSelector();
+      
+      const mic = document.getElementById("micIcon");
+      mic.classList.add("animate-mic");
+      setTimeout(() => mic.classList.remove("animate-mic"), 1000);
+      if (localStorage.getItem("hideLabels") === "true") {
+        document.body.classList.add("hide-labels");
+      }
+      if (localStorage.getItem("minimalistMode") === "true") {
+        document.body.classList.add("minimalist");
+      }
+        
+      document.body.style.pointerEvents = "auto";
+    };
+
+    document.getElementById("searchInput").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        performSearch();
+      }
+    });
+
+    document.addEventListener("contextmenu", function (e) {
+      if (rearrangeMode) {
+        e.preventDefault();
+      }
+    });
+
+   if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("serviceWorker.js")
+        .then(reg => console.log("✅ Service worker registered"))
+        .catch(err => console.error("Service worker failed", err));
+    });
+  }
+    
+  </script>
+</body>
+</html>
