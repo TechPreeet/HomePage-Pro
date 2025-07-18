@@ -169,26 +169,26 @@
       padding: 20px;
       margin: 50px auto 25px auto;
       background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(4px);
+      backdrop-filter: blur(2px);
       /* BUG FIX & UI UPDATE: Increased border radius */
-      border-radius: 24px;
+      border-radius: 28px;
       z-index: 1;
-      min-height: 20vh;
+      min-height: 22vh;
       width: 90%;
       max-width: 480px;
       box-sizing: border-box;
     }
 
-    @media (max-width: 430px) and (min-height: 800px) {
+    @media (max-width: 430px) and (min-height: 600px) {
       .clock-wrapper {
         margin-top: 70px; 
       }
     }
 
-    @media (max-width: 500px) {
+    @media (max-width: 600px) {
       .clock-wrapper {
         padding: 16px;
-        max-width: 95%;
+        max-width: 90%;
       }
     }
 .clock-wrapper {
@@ -206,7 +206,7 @@
 }
 
     .clock {
-      font-size: 64px;
+      font-size: 42px;
       font-weight: 600;
       text-align: center;
       margin-bottom: 6px;
@@ -219,7 +219,7 @@
     }
 
     .date {
-      font-size: 24px;
+      font-size: 22px;
       opacity: 1;
       font-weight: 400;
       margin-top: 8px;
@@ -1073,6 +1073,32 @@
     gap: 0.5rem;
     z-index: 20;
     }
+
+
+    /* ── Glassy circular controls: reuse for refresh ── */
+    .toggle-refresh {
+      /* same size & style as .toggle-arrow/.toggle-add */
+      position: absolute;
+      width: 1.25rem;
+      height: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(6px);
+      opacity: 0.4;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 40%;
+      cursor: pointer;
+      color: currentColor;
+      font-size: 1.7rem;
+      font-weight: 600;
+      line-height: 1;
+      transition: background 0.2s ease, transform 0.2s ease;
+      z-index: 20;
+      /* nudge the glyph up by 2px */
+      transform: translateY(-0.6px);
+    }
     .toggle-arrow,
     .toggle-add {
       position: relative;
@@ -1104,20 +1130,26 @@
     
     
 
-    /* Position them side‑by‑side, centered as before */
+    /* position all three side‑by‑side */
     .toggle-arrow {
-      top: -0.01rem;  /* adjust to just under search bar */
-      left: calc(50% - 1rem); 
+      top: -0.01rem;
+      left: calc(50% - 2rem);  /* left button */
     }
     .toggle-add {
       top: -0.01rem;
-      left: calc(50% + 1rem);
+      left: 50%;               /* center button */
+      transform: translateX(50% - 1rem);
+    }
+    .toggle-refresh {
+      top: -0.01rem;
+      left: calc(50% + 2rem);  /* right button */
     }
 
-    /* Hover gives a stronger glass look */
+        /* hover effect */
     .toggle-arrow:hover,
-    .toggle-add:hover {
-      background: rgba(255, 255, 255, 0.2);
+    .toggle-add:hover,
+    .toggle-refresh:hover {
+      background: rgba(255,255,255,0.2);
       transform: scale(1.05);
     }
 
@@ -1140,6 +1172,9 @@
       display: none;
     }
 
+    .collapsed .toggle-refresh {
+      display: none;
+    }
   
         /* Hide all native “×” clear buttons on search inputs */
     /* WebKit / Blink */
@@ -1257,6 +1292,9 @@
 
         <!-- “+” to add a new bookmark -->
         <button id="addBookmarkBtn" class="toggle-add" aria-label="Add bookmark">＋</button>
+
+        <!-- New: “⟳” to refresh the page -->
+        <button id="refreshBtn" class="toggle-refresh" aria-label="Refresh">⟳</button>
 
         <!-- Your existing bookmarks grid -->
         <div class="grid" id="bookmarkGrid">
@@ -2844,6 +2882,12 @@ function enableDragAndDrop() {
           startVoiceSearch();
         }
   });
+
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      location.reload();
+    });
+
 
      document.addEventListener('DOMContentLoaded', () => {
   const wrapper   = document.getElementById('bookmarksWrapper');
