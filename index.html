@@ -1018,55 +1018,67 @@
       transform: rotateY(180deg) translateZ(1px);
     }
 
-
-
-    #bookmarksWrapper {
-      position: relative;
-      z-index: 1;
-      flex: 1 1 auto;
-      overflow: hidden;
-    }
-
-
     body, html, .container, .bookmarks-container {
       user-select: none;
       -webkit-user-select: none;
     }
 
+    /* Top‑level container */
     .container {
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: center;  /* ensure header centered */
       height: 100vh;
-      /* padding-bottom: 100px; ← gone */
+      margin: 0;
+      padding: 0;
+      overflow: hidden;     /* lock page scroll */
     }
 
+    /* Search bar stays in the middle */
+    .search-bar-form {
+      margin: 0 auto 1rem;  /* centered with bottom margin */
+    }
 
-     .grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--grid-gap, 20px);
-      justify-content: center;
+    /* The wrapper under the header scrolls */
+    #bookmarksWrapper {
+      flex: 1 1 auto;
       width: 100%;
-      max-width: 1500px;
-      margin: 0 auto;
-      height: auto;
-      margin-top: 20px;
-      min-height: 0;
-    }
-      #bookmarkGrid {
-      position: relative;
-      height: 100%;  
-      padding-top: 1.5rem; 
-      padding-bottom: 3rem;
+      padding-top: 2.5rem;
+      padding-bottom: 4rem;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+    }
+
+    /* The grid inside has padding on the sides and just wraps */
+    #bookmarkGrid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--grid-gap, 20px);   /* your existing horizontal & vertical gap */
+      justify-content: center;
+      width: 100%;
+      padding: 0 1rem 1rem;          /* ← 1rem side padding + bottom padding */
+      box-sizing: border-box;
         /* fade only—no height changes */
       transition: opacity 0.2s ease-out;
       will-change: opacity;   /* GPU‑accelerate this property */
       opacity: 1;
-      box-sizing: border-box;
     }
+
+    #bookmarkControls {
+    position: absolute;
+    top: calc( /* search‑bar bottom */ 4rem + 0.5rem ); /* adjust to sit just under the bar */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 20;
+    }
+    .toggle-arrow,
+    .toggle-add {
+      position: relative;
+      /* keep your 1.8rem glass‑circle styles here */
+    }
+
 
     /* ── Glassy circular controls ── */
     .toggle-arrow,
@@ -1089,6 +1101,8 @@
       transition: background 0.2s ease, transform 0.2s ease;
       z-index: 20;
     }
+    
+    
 
     /* Position them side‑by‑side, centered as before */
     .toggle-arrow {
@@ -2393,27 +2407,39 @@ function enableDragAndDrop() {
 
 
     function setTileSize(size) {
-      const tiles = document.querySelectorAll(".tile");
-      const grid = document.getElementById('bookmarkGrid');
-      const slider = document.getElementById('tileSizeSlider');
-      const tileSizeLabel = document.getElementById('tileSizeLabel');
-      let width = parseInt(size);
-      tiles.forEach(tile => {
-        tile.style.width = `${width}px`;
-        tile.style.fontSize = `${Math.max(9, Math.min(15, width / 10))}px`;
-        const img = tile.querySelector("img");
-        if (img) {
-          img.style.width = `${width * 0.8}px`;
-          img.style.height = `${width * 0.8}px`;
-        }
-      });
-      grid.classList.remove('tile-xsmall', 'tile-small', 'tile-medium', 'tile-large');
-      const percentage = ((width - 40) / (120 - 40)) * 100;
-      slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
-      slider.value = width;
-      tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
-      localStorage.setItem("tileSize", width);
+  const tiles         = document.querySelectorAll(".tile");
+  const grid          = document.querySelector('.grid');
+  const slider        = document.getElementById('tileSizeSlider');
+  const tileSizeLabel = document.getElementById('tileSizeLabel');
+    let width         = parseInt(size);
+
+  // 1) Resize tiles & icons
+  tiles.forEach(tile => {
+    tile.style.width     = `${width}px`;
+    tile.style.fontSize  = `${Math.max(9, Math.min(15, width / 10))}px`;
+    const img = tile.querySelector("img");
+    if (img) {
+      img.style.width  = `${width * 0.8}px`;
+      img.style.height = `${width * 0.8}px`;
     }
+  });
+
+  // 2) Update slider UI
+  grid.classList.remove('tile-xsmall', 'tile-small', 'tile-medium', 'tile-large');
+  const percentage = ((width - 40) / (120 - 40)) * 100;
+  slider.style.background = 
+    `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
+  slider.value = width;
+  tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
+
+  // 3) Dynamically adjust vertical gap to 10% of tile size (min 4px)
+  const verticalGap = Math.max(4, Math.round(width * 0.1));
+  grid.style.rowGap = verticalGap + 'px';
+
+  // 4) Persist
+  localStorage.setItem("tileSize", width);
+}
+
 
     document.getElementById("importInput").addEventListener("change", function(event) {
         const file = event.target.files[0];
