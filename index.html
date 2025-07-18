@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>HomePage Pro</title>
 
 <!-- PWA Manifest -->
@@ -154,20 +154,11 @@
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: hidden;
       transition: background-color 0.5s ease-in-out; 
     }
     body.dark-mode {
         background-color: #121212;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding-bottom: 100px;
     }
 
     .clock-wrapper {
@@ -285,21 +276,6 @@
 
     .search-bar-form svg:hover, .search-bar-form .material-icons:hover {
       color: #007bff;
-    }
-
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--grid-gap, 20px);
-      justify-content: center;
-      padding-bottom: 100px;
-      width: 100%;
-      max-width: 1500px;
-      margin: 0 auto;
-      overflow-y: auto;
-      height: auto;
-      margin-top: 20px;
-      min-height: 0;
     }
 
     .tile {
@@ -514,14 +490,11 @@
     }
 
     .tile img.rounded-rect {
-      border-radius: 29%;
+      width: 75px;        /* narrower than it is tall */
+      height: 90px;       /* taller than width */
+      object-fit: cover;
+      border-radius: 65% / 90%;
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .bookmarks-container {
-      position: relative;
-      overflow: visible !important;
-      z-index: 1;
     }
 
     #sidebar-toggle-btn {
@@ -970,9 +943,7 @@
       z-index: 10;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     }
-    .grid, .tile, .scrollable-bookmarks, .bookmarks-container, .container {
-      overflow: visible !important;
-    }
+    
     @media (hover: none) and (pointer: coarse) {
     .tile:not(.add-tile):hover {
       transform: none;
@@ -980,10 +951,6 @@
       background: none;
       }
     } 
-    body, html, .container, .bookmarks-container {
-      user-select: none;
-      -webkit-user-select: none;
-    }
 
     input, textarea {
       user-select: text;
@@ -1050,31 +1017,102 @@
     .coin .tails {
       transform: rotateY(180deg) translateZ(1px);
     }
-    /* Bookmark collapse toggle */
-    .toggle-arrow {
-      position: absolute;
-      top: -1rem;            /* tweak to sit just below the search bar */
-      left: 48%;            /* align with your tiles */
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      font-size: 1.15rem;     /* small but tappable */
-      color: currentColor;    /* matches your dark/light text color */
-      opacity: 0.3;
-      transition: transform 0.3s ease;
-      z-index: 10;
+
+
+
+    #bookmarksWrapper {
+      position: relative;
+      z-index: 1;
+      flex: 1 1 auto;
+      overflow: hidden;
     }
 
-    #bookmarkGrid {
-      overflow: hidden;
-      transition: max-height 0.4s ease, opacity 0.4s ease;
-      max-height: 1000px;     /* large enough for your grid */
+
+    body, html, .container, .bookmarks-container {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      /* padding-bottom: 100px; ← gone */
+    }
+
+
+     .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--grid-gap, 20px);
+      justify-content: center;
+      width: 100%;
+      max-width: 1500px;
+      margin: 0 auto;
+      height: auto;
+      margin-top: 20px;
+      min-height: 0;
+    }
+      #bookmarkGrid {
+      position: relative;
+      height: 100%;  
+      padding-top: 1.5rem; 
+      padding-bottom: 3rem;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+        /* fade only—no height changes */
+      transition: opacity 0.2s ease-out;
+      will-change: opacity;   /* GPU‑accelerate this property */
       opacity: 1;
+      box-sizing: border-box;
+    }
+
+    /* ── Glassy circular controls ── */
+    .toggle-arrow,
+    .toggle-add {
+      position: absolute;
+      width: 1.25rem;                    /* same width/height */
+      height: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.1);  /* translucent white */
+      backdrop-filter: blur(6px);
+      opacity: 0.4;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 40%;
+      cursor: pointer;
+      color: currentColor;              /* matches light/dark text */
+      font-size: 1rem;                /* icon size */
+      line-height: 1;
+      transition: background 0.2s ease, transform 0.2s ease;
+      z-index: 20;
+    }
+
+    /* Position them side‑by‑side, centered as before */
+    .toggle-arrow {
+      top: -0.01rem;  /* adjust to just under search bar */
+      left: calc(50% - 1rem); 
+    }
+    .toggle-add {
+      top: -0.01rem;
+      left: calc(50% + 1rem);
+    }
+
+    /* Hover gives a stronger glass look */
+    .toggle-arrow:hover,
+    .toggle-add:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+
+    /* Use a “heavy” plus glyph so it’s thick */
+    .toggle-add {
+      font-weight: 900;
     }
 
     .collapsed #bookmarkGrid {
-      max-height: 0;
       opacity: 0;
       pointer-events: none;
     }
@@ -1083,58 +1121,50 @@
       transform: rotate(-180deg);
     }
 
-        /* + button: same look & feel, just below the arrow */
-    .toggle-add {
-      position: absolute;
-      top: -1.25rem;           /* tweak this to sit just under the arrow */
-      left: 52%;
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      font-size: 1.25rem;
-      font-weight: 900;
-      text-shadow: 0 0 1px currentColor;
-      color: currentColor;
-      opacity: 0.3;
-      transition: color 0.2s ease;
-      z-index: 20;
-    }
-
         /* Hide the + when bookmarks are hidden */
     .collapsed .toggle-add {
       display: none;
     }
 
-    /* Hover effect for clarity */
-    .toggle-add:hover,
-    .toggle-arrow:hover {
-      opacity: 2;
-      color: #1E90FF;           /* or whatever your highlight color is */
+  
+        /* Hide all native “×” clear buttons on search inputs */
+    /* WebKit / Blink */
+    #searchInput::-webkit-search-cancel-button,
+    #searchInput::-webkit-search-decoration,
+    #searchInput::-webkit-search-results-button,
+    #searchInput::-webkit-search-results-decoration {
+      -webkit-appearance: none;
+      appearance: none;
+      display: none;
     }
 
+    /* Firefox (if ever shows one) */
+    #searchInput::-moz-search-cancel-button {
+      display: none;
+    }
 
-    /* Hide all native “×” clear buttons on search inputs */
-/* WebKit / Blink */
-#searchInput::-webkit-search-cancel-button,
-#searchInput::-webkit-search-decoration,
-#searchInput::-webkit-search-results-button,
-#searchInput::-webkit-search-results-decoration {
-  -webkit-appearance: none;
-  appearance: none;
-  display: none;
-}
+    /* IE / Edge */
+    #searchInput::-ms-clear,
+    #searchInput::-ms-reveal {
+      display: none;
+    }
 
-/* Firefox (if ever shows one) */
-#searchInput::-moz-search-cancel-button {
-  display: none;
-}
+    /* In glass mode, gently push the icon down without affecting centering */
+    body.glass-mode .tile img {
+      /* remove any margin tweaks you added before */
+      margin: 0;                 
+      /* apply a pure vertical shift */
+      transform: translateY(5px); /* tweak the 4px for just the right gap */
+    }
 
-/* IE / Edge */
-#searchInput::-ms-clear,
-#searchInput::-ms-reveal {
-  display: none;
-}
+    /* Ensure search & modal inputs never trigger zoom-on-focus */
+    .search-bar-form input,
+    .modal-content input,
+    .modal-content textarea {
+      font-size: 16px !important;
+      -webkit-text-size-adjust: 100%;
+    }
+
 
   </style>
 </head>
@@ -2309,7 +2339,7 @@ function enableDragAndDrop() {
         if (style === "squircle") {
           img.style.borderRadius = "20%";
         } else if (style === "rounded-rect") {
-          img.style.borderRadius = "35%";
+          img.style.borderRadius = "65%/90%";
         } else {
           img.style.borderRadius = "50%";
         }
@@ -2496,12 +2526,17 @@ function enableDragAndDrop() {
   const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
 
   if (isFullURL || isDomainURL) {
-    // Prepend https:// if they didn’t type it
-    const dest = isFullURL ? query : `https://${query}`;
-    // Open in same tab (just like browser address bar)
+  // Prepend https:// if they didn’t type it
+  const dest = isFullURL ? query : `https://${query}`;
+
+  // Open in new tab or same tab per the setting
+  if (newTabLinks) {
+    window.open(dest, '_blank');
+  } else {
     window.location.href = dest;
-    return;
   }
+  return;
+}
 
   // 2) Otherwise, do a normal search via the chosen engine
   const engineName = localStorage.getItem('searchEngine') || 'Google';
