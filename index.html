@@ -231,7 +231,7 @@
       display: flex;
       align-items: center;
       background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(4px);
       border-radius: 24px;
       padding: 10px 15px;
       margin-bottom: 20px;
@@ -1214,7 +1214,6 @@
       -webkit-text-size-adjust: 100%;
     }
 
-
   </style>
 </head>
 <body tabindex="-1">
@@ -1344,7 +1343,7 @@
     </div>
     <div class="toolbar-option" onclick="toggleGreeting()">👤 Toggle Greeting</div>
     <div class="toolbar-option" onclick="askUserName()">✏️ Change Name</div>
-    <div class="toolbar-option" onclick="toggleMinimalistMode()">🧘 Minimalist Mode</div>
+    <div class="toolbar-option" onclick="toggleMinimalistMode()">🧘 Minimalist Mode</div>    
     <div class="toolbar-option" id="newTabLinksOption" onclick="toggleNewTabLinks()">🔗 Open Links in New Tab</div>
     <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()">🔄 Rearrange Bookmarks</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
@@ -1352,7 +1351,8 @@
     <div class="toolbar-option" onclick="resetAllSettings()">🗑️ Reset All Settings</div>
     <div class="toolbar-option" onclick="openAboutModal()">🧾 About This Page</div>
     <div class="toolbar-option" onclick="flipCoin(); toggleSidebar();">🪙 Flip a Coin</div>
-    <input type="file" id="importInput" accept="application/json">
+
+    <input type="file" id="importInput" accept=".json,application/json,.html,.htm,text/html">
   </div>
 
   <script>
@@ -1361,6 +1361,8 @@
     let bookmarks = [];
     let glassMode = false;
     let newTabLinks = localStorage.getItem("newTabLinks") === "true";
+
+
 
     const gradients = [
         { name: 'Default', value: '' },
@@ -2058,6 +2060,7 @@
         if (e.key === "Enter") window.location.href = bookmark.url;
       });
 
+
       const img = document.createElement("img");
       try {
         img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
@@ -2479,25 +2482,75 @@ function enableDragAndDrop() {
 }
 
 
-    document.getElementById("importInput").addEventListener("change", function(event) {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (Array.isArray(data)) {
-            localStorage.setItem("bookmarks", JSON.stringify(data));
-            loadBookmarks();
-          } else {
-            showToast("Invalid bookmark file format.");
+    document.getElementById("importInput").addEventListener("change", async function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const text = await file.text();
+  let imported = [];
+
+  try {
+    // 1) HTML bookmark export?
+    if (file.name.match(/\.(html?|htm)$/i) || text.trim().startsWith("<!DOCTYPE")) {
+      const dom = new DOMParser().parseFromString(text, "text/html");
+      dom.querySelectorAll("a[href]").forEach(a => {
+        imported.push({
+          name: a.textContent.trim() || a.href,
+          url: a.href,
+          icon: ""
+        });
+      });
+    }
+    // 2) JSON export?
+    else {
+      const data = JSON.parse(text);
+
+      // Firefox JSON schema?
+      if (data.roots && data.roots.bookmarkBar) {
+        function recurse(node) {
+          if (node.children) {
+            node.children.forEach(recurse);
+          } else if (node.uri) {
+            imported.push({ name: node.title, url: node.uri, icon: "" });
           }
-        } catch (error) {
-          console.error("Import error:", error);
-          showToast("Failed to import bookmarks: " + error.message);
         }
-      };
-      reader.readAsText(file);
-    });
+        recurse(data.roots.bookmarkBar);
+        recurse(data.roots.other);
+        recurse(data.roots.mobile);
+      }
+      // Your own simple array
+      else if (Array.isArray(data)) {
+        imported = data.map(b => ({
+          name: b.name,
+          url: b.url,
+          icon: b.icon || ""
+        }));
+      }
+      else {
+        throw new Error("Unrecognized JSON format");
+      }
+    }
+
+    // 3) Merge (no duplicates), save & reload
+    if (imported.length === 0) {
+      showToast("No bookmarks found in that file.");
+    } else {
+      const seen = new Set(bookmarks.map(b => b.url));
+      imported.forEach(b => {
+        if (!seen.has(b.url)) bookmarks.push(b);
+      });
+      localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+      loadBookmarks();
+      showToast(`Imported ${imported.length} bookmarks!`);
+    }
+  } catch (err) {
+    console.error("Import failed:", err);
+    showToast("Failed to import bookmarks: " + err.message);
+  } finally {
+    event.target.value = ""; // reset so same file can be re‑used
+  }
+});
+
 
     document.getElementById("videoInput").addEventListener("change", async function (event) {
         const file = event.target.files[0];
@@ -2927,7 +2980,6 @@ function enableDragAndDrop() {
 
       // …your other bindings (search, clear icon, etc.)…
     });
-
 
 
    if ("serviceWorker" in navigator) {
