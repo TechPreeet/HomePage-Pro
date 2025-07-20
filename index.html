@@ -9,7 +9,7 @@
 
 <meta name="theme-color" content="#050f26">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <link rel="icon" href="icons/icon-72.png" sizes="72x72" type="image/png">
 <link rel="icon" href="icons/icon-96.png" sizes="96x96" type="image/png">
@@ -46,13 +46,28 @@
         padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* --- FIX: Make body focusable without a visible outline --- */
     body:focus {
         outline: none;
     }
 
     .hidden {
       display: none;
+    }
+
+    @keyframes tileFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .tile {
+        animation: tileFadeIn 0.5s ease-out forwards;
+        opacity: 0;
     }
 
     .tile.dragging {
@@ -114,25 +129,6 @@
       }
     }
 
-
-    body.minimalist {
-      background: linear-gradient(135deg, rgba(100, 100, 100, 0.4), rgba(60, 60, 60, 0.4)) !important;
-      background-color: #2a2a2a !important;
-      background-image: none !important;
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center;
-    }
-
-    body.minimalist #videoBg {
-      display: none !important;
-    }
-
-    body.minimalist * {
-      animation: none !important;
-      transition: none !important;
-    }
-
     html, body {
       height: 100%;
       margin: 0;
@@ -151,22 +147,22 @@
       max-width: 550px;
       display: flex;
       align-items: center;
-      background: rgba(255, 255, 255, 0.1); /* Original translucent background */
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(2.5px);
       border-radius: 24px;
       padding: 10px 15px;
       margin-bottom: 20px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2); /* Original border */
+      border: 1px solid rgba(255, 255, 255, 0.2);
       transition: box-shadow 0.3s ease;
       position: sticky;
-      top: 20px; /* How far from top it sticks */
+      top: 20px;
       z-index: 100;
     }
 
     body.dark-mode .search-bar-form {
       color: var(--icon-color-dark, #ddd);
-      background: rgba(30, 30, 30, 0.3); /* Restored original dark mode color */
+      background: rgba(30, 30, 30, 0.3);
     }
 
     .search-bar-form:hover {
@@ -391,7 +387,7 @@
     }
 
     .floating-menu div:hover {
-      background: #444;
+      background: var(--accent-color);
     }
     .tile {
       position: relative;
@@ -440,6 +436,9 @@
         #sidebar-toggle-btn:hover .hamburger-icon span {
             background: var(--accent-color);
         }
+    }
+    #sidebar-toggle-btn:active .hamburger-icon span {
+        background: var(--accent-color);
     }
     #sidebar-toggle-btn .hamburger-icon {
         width: 24px;
@@ -520,22 +519,27 @@
     }
 
     #sidebar-profile-section {
-      padding: 10px;
+      padding: 15px;
       margin-bottom: 20px;
       text-align: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: 3px solid var(--accent-color);
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-family: 'Georgia', serif;
     }
 
     #sidebar-greeting {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 500;
       margin-right: 20px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
+      color: var(--accent-color);
     }
 
     #sidebar-clock {
-      font-size: 22px;
+      font-size: 32px;
       font-weight: 600;
+      text-shadow: 0 0 8px rgba(0,0,0,0.5);
     }
 
     #sidebar-clock .ampm {
@@ -546,13 +550,14 @@
 
     #sidebar-date {
       font-size: 14px;
-      opacity: 0.8;
+      opacity: 0.9;
       margin-top: 6px;
     }
 
     #sidebar-weatherContainer {
         font-size: 16px;
         margin-top: 10px;
+        opacity: 0.9;
     }
 
     .toolbar-option {
@@ -562,7 +567,7 @@
       white-space: nowrap;
       font-size: 14px;
       font-weight: 500;
-      transition: background 0.2s ease, transform 0.2s ease;
+      transition: all 0.2s ease;
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -594,7 +599,7 @@
     }
 
     .collapsible-content.open {
-        max-height: 500px; /* Large enough to fit content */
+        max-height: 500px;
     }
 
     .search-engine-icon {
@@ -636,6 +641,7 @@
     .toolbar-option:hover {
       background: var(--accent-color);
       transform: scale(1.02);
+      box-shadow: 0 0 15px -2px var(--accent-color);
     }
     
     #tileSizeSlider, #gradientSlider {
@@ -721,6 +727,10 @@
       opacity: 0;
     }
 
+    .modal.hidden {
+      display: none;
+    }
+
     .modal:not(.hidden) {
       pointer-events: auto;
       opacity: 1;
@@ -737,12 +747,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: transform 0.3s ease;
-      transform: scale(0.9);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      transform: scale(0.95);
+      opacity: 0;
     }
 
     .modal:not(.hidden) .modal-content {
       transform: scale(1);
+      opacity: 1;
     }
 
     .modal-content input {
@@ -764,14 +776,11 @@
       margin: 10px 0;
       padding: 8px;
       border-radius: 5px;
+      transition: background 0.2s ease;
     }
 
     .modal-content button:hover {
       background: var(--accent-color);
-    }
-
-    .modal.hidden {
-      display: none;
     }
 
     #toast-notification {
@@ -1313,7 +1322,6 @@
     <div id="tileSizeSliderContainer">
       <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
     </div>
-    <div class="toolbar-option" onclick="toggleMinimalistMode()" tabindex="0">🧘 Minimalist Mode</div>    
     <div class="toolbar-option" id="newTabLinksOption" onclick="toggleNewTabLinks()" tabindex="0">🔗 Open Links in New Tab</div>
     <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()" tabindex="0">🔄 Rearrange Bookmarks</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()" tabindex="0">📤 Export Bookmarks</div>
@@ -1913,21 +1921,6 @@
       document.getElementById("sidebar-weatherContainer").textContent = message;
     }
 
-    function toggleMinimalistMode() {
-        const body = document.body;
-        const isMinimal = body.classList.toggle("minimalist");
-        localStorage.setItem("minimalistMode", isMinimal);
-        if (isMinimal) {
-            if (body.classList.contains("glass-mode")) {
-                body.classList.remove("glass-mode");
-                localStorage.setItem("glassMode", false);
-            }
-            body.style.backgroundImage = '';
-        } else {
-            loadBackgrounds();
-        }
-    }
-
     function toggleGreeting() {
       const current = localStorage.getItem("showGreeting") === "true";
       localStorage.setItem("showGreeting", !current);
@@ -2092,6 +2085,7 @@
       if (newTabLinks) a.target = "_blank";
       a.dataset.index = index;
       a.tabIndex = 0;
+      a.style.animationDelay = `${index * 0.03}s`;
 
       if ('ontouchstart' in window) {
         let pressTimer = null;
@@ -2685,7 +2679,7 @@ function enableDragAndDrop() {
     function initSearchEngineSelector() {
         const header = document.getElementById('searchEngineHeader');
         const content = document.getElementById('searchEngineContent');
-        content.innerHTML = ''; // Clear previous options
+        content.innerHTML = '';
 
         Object.keys(searchEngines).forEach(name => {
             const engine = searchEngines[name];
@@ -2914,8 +2908,8 @@ function enableDragAndDrop() {
       const savedGradient = localStorage.getItem("gradientIndex") || 0;
       applyGradientBackground(savedGradient);
       
-      if (localStorage.getItem("minimalistMode") !== "true") {
-          await loadBackgrounds();
+      if (localStorage.getItem("minimalistMode") === "true") {
+        document.body.classList.add("minimalist");
       }
       
       rearrangeMode = localStorage.getItem("rearrangeMode") === "true";
@@ -2941,10 +2935,7 @@ function enableDragAndDrop() {
       if (localStorage.getItem("hideLabels") === "true") {
         document.body.classList.add("hide-labels");
       }
-      if (localStorage.getItem("minimalistMode") === "true") {
-        document.body.classList.add("minimalist");
-      }
-        
+      
       if (!isTouchDevice()) {
         document.getElementById('searchInput').focus();
       }
