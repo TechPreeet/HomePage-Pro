@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>HomePage Pro</title>
 
 <link rel="manifest" href="manifest.json">
@@ -39,6 +39,12 @@
       pointer-events: auto !important;
     }
 
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
 
     /* --- FIX: Make body focusable without a visible outline --- */
     body:focus {
@@ -189,7 +195,7 @@
     }
 
     .search-bar-form svg:hover, .search-bar-form .material-icons:hover {
-      color: #007bff;
+      color: var(--accent-color);
     }
 
     .tile {
@@ -412,8 +418,8 @@
 
     #sidebar-toggle-btn {
         position: fixed;
-        top: 15px;
-        right: 15px;
+        top: calc(15px + env(safe-area-inset-top));
+        right: calc(15px + env(safe-area-inset-right));
         width: 40px;
         height: 40px;
         background: transparent;
@@ -430,6 +436,9 @@
     @media (hover: hover) {
         #sidebar-toggle-btn:hover {
             background: rgba(50, 50, 50, 0.2);
+        }
+        #sidebar-toggle-btn:hover .hamburger-icon span {
+            background: var(--accent-color);
         }
     }
     #sidebar-toggle-btn .hamburger-icon {
@@ -485,7 +494,8 @@
       transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
       overflow-y: auto;
       padding: 20px;
-      padding-top: 20px;
+      padding-top: calc(20px + env(safe-area-inset-top));
+      padding-bottom: calc(20px + env(safe-area-inset-bottom));
       box-sizing: border-box;
     }
     #settings-sidebar.open {
@@ -554,6 +564,8 @@
       font-weight: 500;
       transition: background 0.2s ease, transform 0.2s ease;
       border-radius: 8px;
+      display: flex;
+      align-items: center;
     }
 
     .toolbar-option-header {
@@ -566,6 +578,7 @@
     .toolbar-option-header::after {
         content: ' ▾';
         float: right;
+        margin-left: auto;
         transition: transform 0.3s ease-in-out;
     }
 
@@ -582,6 +595,41 @@
 
     .collapsible-content.open {
         max-height: 500px; /* Large enough to fit content */
+    }
+
+    .search-engine-icon {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        border-radius: 4px;
+    }
+
+    #currentSearchEngine {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    #accentColorOption {
+        justify-content: space-between;
+    }
+    #accentColorPicker {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 40px;
+        height: 25px;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+    }
+    #accentColorPicker::-webkit-color-swatch {
+        border-radius: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    #accentColorPicker::-moz-color-swatch {
+        border-radius: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
 
@@ -719,7 +767,7 @@
     }
 
     .modal-content button:hover {
-      background: #007bff;
+      background: var(--accent-color);
     }
 
     .modal.hidden {
@@ -1106,7 +1154,7 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-     body.dark-mode .search-results-container {
+    body.dark-mode .search-results-container {
       background: rgba(30, 30, 30, 0.3); /* Restored original dark mode color */
     }
 
@@ -1253,6 +1301,10 @@
     <div id="gradientSliderContainer">
         <input type="range" id="gradientSlider" min="0" max="15" value="0" class="toolbar-option" oninput="setGradientBackground(this.value)">
     </div>
+    <div class="toolbar-option" id="accentColorOption">
+        <label for="accentColorPicker">🎨 Accent Color</label>
+        <input type="color" id="accentColorPicker" oninput="setAccentColor(this.value)">
+    </div>
     <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()" tabindex="0">🧊 Toggle Glass Mode</div>
     <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()" tabindex="0">🌙 Toggle Dark Mode</div>
     <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()" tabindex="0">🌀 Toggle Icon Style</div>
@@ -1300,12 +1352,30 @@
     ];
 
     const searchEngines = {
-        'Google': 'https://www.google.com/search?q=',
-        'DuckDuckGo': 'https://duckduckgo.com/?q=',
-        'Bing': 'https://www.bing.com/search?q=',
-        'Yahoo': 'https://search.yahoo.com/search?p=',
-        'Brave': 'https://search.brave.com/search?q=',
-        'Perplexity': 'https://www.perplexity.ai/search?q='
+        'Google': {
+            url: 'https://www.google.com/search?q=',
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=google.com'
+        },
+        'DuckDuckGo': {
+            url: 'https://duckduckgo.com/?q=',
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=duckduckgo.com'
+        },
+        'Bing': {
+            url: 'https://www.bing.com/search?q=',
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=bing.com'
+        },
+        'Yahoo': {
+            url: 'https://search.yahoo.com/search?p=',
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=yahoo.com'
+        },
+        'Brave': {
+            url: 'https://search.brave.com/search?q=',
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=brave.com'
+        },
+        'Perplexity': {
+            url: 'https://www.perplexity.ai/search?q=',
+            icon: 'https://www.google.com/s2/favicons?sz=64&domain=perplexity.ai'
+        }
     };
 
     function showMenuOptions(tile, bookmark, index) {
@@ -1718,6 +1788,11 @@
         const slider = document.getElementById('gradientSlider');
         slider.value = index;
         setGradientBackground(index);
+    }
+
+    function setAccentColor(color) {
+        document.documentElement.style.setProperty('--accent-color', color);
+        localStorage.setItem('accentColor', color);
     }
 
     function openAboutModal() {
@@ -2583,10 +2658,9 @@ function enableDragAndDrop() {
       }
 
       const engineName = localStorage.getItem('searchEngine') || 'Google';
-      const baseURL    = searchEngines[engineName];
+      const baseURL    = searchEngines[engineName].url;
       let searchURL  = baseURL + encodeURIComponent(query);
       
-      // PWA FIX: Add parameter to prevent Google search from opening native app on iOS
       if (engineName === 'Google') {
         searchURL += '&udm=14';
       }
@@ -2601,7 +2675,10 @@ function enableDragAndDrop() {
     
     function setSearchEngine(name) {
         localStorage.setItem('searchEngine', name);
-        document.getElementById('currentSearchEngine').textContent = `Search Engine: ${name}`;
+        const engine = searchEngines[name];
+        const currentEngineSpan = document.getElementById('currentSearchEngine');
+        
+        currentEngineSpan.innerHTML = `<img src="${engine.icon}" class="search-engine-icon" alt="${name} logo"> <span>${name}</span>`;
         document.getElementById('searchInput').placeholder = `Search with ${name}...`;
     }
 
@@ -2611,11 +2688,12 @@ function enableDragAndDrop() {
         content.innerHTML = ''; // Clear previous options
 
         Object.keys(searchEngines).forEach(name => {
+            const engine = searchEngines[name];
             const option = document.createElement('div');
             option.className = 'toolbar-option search-engine-option';
-            option.textContent = name;
             option.dataset.engine = name;
             option.tabIndex = 0;
+            option.innerHTML = `<img src="${engine.icon}" class="search-engine-icon" alt="${name} logo"> <span>${name}</span>`;
             
             option.addEventListener('click', () => {
                 setSearchEngine(name);
@@ -2757,6 +2835,7 @@ function enableDragAndDrop() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        showToast("Bookmarks exported successfully!");
       } catch (error) {
         console.error("Export error:", error);
         showToast("Failed to export bookmarks: " + error.message);
@@ -2824,6 +2903,10 @@ function enableDragAndDrop() {
       setInterval(updateClock, 1000);
       glassMode = localStorage.getItem("glassMode") === "true";
       applyGlassMode();
+
+      const savedAccentColor = localStorage.getItem('accentColor') || '#007bff';
+      document.documentElement.style.setProperty('--accent-color', savedAccentColor);
+      document.getElementById('accentColorPicker').value = savedAccentColor;
       
       const savedSize = localStorage.getItem("tileSize") || 90;
       setTileSize(savedSize);
@@ -2890,6 +2973,7 @@ function enableDragAndDrop() {
         function setupCollapsible(headerId, contentId) {
             const header = document.getElementById(headerId);
             const content = document.getElementById(contentId);
+            if (!header || !content) return;
             header.addEventListener('click', () => {
                 header.classList.toggle('open');
                 content.classList.toggle('open');
