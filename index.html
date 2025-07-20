@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>HomePage Pro</title>
 
-<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
 
 <meta name="theme-color" content="#050f26">
@@ -21,7 +20,6 @@
 <link rel="icon" href="icons/icon-384.png" sizes="384x384" type="image/png">
 <link rel="icon" href="icons/icon-512.png" sizes="512x512" type="image/png">
 
-<!-- Apple Touch Icons -->
 <link rel="apple-touch-icon" href="icons/icon-120.png" sizes="120x120">
 <link rel="apple-touch-icon" href="icons/icon-152.png" sizes="152x152">
 <link rel="apple-touch-icon" href="icons/icon-167.png" sizes="167x167">
@@ -58,7 +56,7 @@
       z-index: 10;
     }
 
-    .tile:not(.add-tile):hover {
+    .tile:not(.add-tile):hover, .tile:focus-visible {
       transform: scale(1.1);
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
       background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.4));
@@ -79,11 +77,9 @@
     }
 
     body.glass-mode .tile,
-    body.glass-mode .clock-wrapper,
     body.glass-mode .search-bar-form {
       border: 1px solid rgba(255, 255, 255, 0.15);
       box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
-      /* BUG FIX & UI UPDATE: Further reduced blur */
       backdrop-filter: blur(6px) saturate(120%);
       background: rgba(255, 255, 255, 0.12);
       color: var(--text-color);
@@ -92,7 +88,6 @@
     }
 
     body.dark-mode.glass-mode .tile,
-    body.dark-mode.glass-mode .clock-wrapper,
     body.dark-mode.glass-mode .search-bar-form {
       background: rgba(30, 30, 30, 0.3);
       border-color: rgba(100, 100, 100, 0.3);
@@ -100,7 +95,6 @@
 
     @media (max-width: 768px) {
     body.glass-mode .tile,
-    body.glass-mode .clock-wrapper,
     body.glass-mode .search-bar-form {
       backdrop-filter: none;
       background: rgba(255, 255, 255, 0.1);
@@ -108,7 +102,6 @@
     }
     @media (hover: hover) and (pointer: fine) {
       body.glass-mode .tile:hover,
-      body.glass-mode .clock-wrapper:hover,
       body.glass-mode .search-bar-form:hover {
       transform: scale(1.05);
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
@@ -123,20 +116,6 @@
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center;
-    }
-
-    body.minimalist .clock-wrapper {
-      background: transparent !important;
-      box-shadow: none !important;
-      border: none !important;
-      pointer-events: none;
-    }
-
-    body.minimalist #clock,
-    body.minimalist #date,
-    body.minimalist #weatherContainer,
-    body.minimalist #greeting {
-      display: none !important;
     }
 
     body.minimalist #videoBg {
@@ -155,74 +134,10 @@
       background-color: var(--bg-color);
       color: var(--text-color);
       overflow: hidden;
-      transition: background-color 0.5s ease-in-out; 
+      transition: background-color 0.5s ease-in-out;
     }
     body.dark-mode {
         background-color: #121212;
-    }
-
-    .clock-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      margin: 50px auto 25px auto;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(1px);
-      /* BUG FIX & UI UPDATE: Increased border radius */
-      border-radius: 36px;
-      z-index: 1;
-      min-height: 22vh;
-      width: 90%;
-      max-width: 480px;
-      box-sizing: border-box;
-    }
-
-    @media (max-width: 430px) and (min-height: 600px) {
-      .clock-wrapper {
-        margin-top: 70px; 
-      }
-    }
-
-    @media (max-width: 600px) {
-      .clock-wrapper {
-        padding: 16px;
-        max-width: 90%;
-      }
-    }
-.clock-wrapper {
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.clock-wrapper.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  height: 0;
-  overflow: hidden;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-    .clock {
-      font-size: 42px;
-      font-weight: 600;
-      text-align: center;
-      margin-bottom: 6px;
-    }
-
-    .ampm {
-      font-size: 24px;
-      vertical-align: super;
-      margin-left: 5px;
-    }
-
-    .date {
-      font-size: 22px;
-      opacity: 1;
-      font-weight: 400;
-      margin-top: 8px;
     }
 
     .search-bar-form {
@@ -230,23 +145,22 @@
       max-width: 550px;
       display: flex;
       align-items: center;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.1); /* Original translucent background */
       backdrop-filter: blur(2.5px);
       border-radius: 24px;
       padding: 10px 15px;
       margin-bottom: 20px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2); /* Original border */
       transition: box-shadow 0.3s ease;
-    }
-
-    .search-bar-form {
-      color: var(--icon-color, #555);
-      position: relative;
+      position: sticky;
+      top: 20px; /* How far from top it sticks */
+      z-index: 100;
     }
 
     body.dark-mode .search-bar-form {
       color: var(--icon-color-dark, #ddd);
+      background: rgba(30, 30, 30, 0.3); /* Restored original dark mode color */
     }
 
     .search-bar-form:hover {
@@ -261,7 +175,7 @@
       font-size: 16px;
       outline: none;
     }
-    
+
     .search-bar-form input::placeholder {
         color: var(--text-color);
         opacity: 0.7;
@@ -337,14 +251,6 @@
 
       .tile.xsmall {
         width: 40px;
-      }
-
-      .clock {
-        font-size: 36px;
-      }
-
-      .ampm {
-        font-size: 18px;
       }
 
       .grid {
@@ -428,6 +334,13 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       text-align: center;
       padding: 4px 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.2;
+      max-height: calc(1.2em * 2);
     }
 
     .tile .menu {
@@ -490,8 +403,8 @@
     }
 
     .tile img.rounded-rect {
-      width: 75px;        /* narrower than it is tall */
-      height: 90px;       /* taller than width */
+      width: 75px;
+      height: 90px;
       object-fit: cover;
       border-radius: 65% / 90%;
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
@@ -514,7 +427,6 @@
         border: none;
         transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    /* BUG FIX & UI UPDATE: Changed hover to only work on devices that support hover */
     @media (hover: hover) {
         #sidebar-toggle-btn:hover {
             background: rgba(50, 50, 50, 0.2);
@@ -573,7 +485,7 @@
       transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
       overflow-y: auto;
       padding: 20px;
-      padding-top: 50px;
+      padding-top: 20px;
       box-sizing: border-box;
     }
     #settings-sidebar.open {
@@ -597,6 +509,42 @@
         pointer-events: auto;
     }
 
+    #sidebar-profile-section {
+      padding: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #sidebar-greeting {
+      font-size: 16px;
+      font-weight: 500;
+      margin-right: 20px;
+      margin-bottom: 10px;
+    }
+
+    #sidebar-clock {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    #sidebar-clock .ampm {
+        font-size: 50%;
+        vertical-align: super;
+        margin-left: 4px;
+    }
+
+    #sidebar-date {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-top: 6px;
+    }
+
+    #sidebar-weatherContainer {
+        font-size: 16px;
+        margin-top: 10px;
+    }
+
     .toolbar-option {
       margin: 10px 0;
       padding: 10px;
@@ -608,26 +556,40 @@
       border-radius: 8px;
     }
 
+    .toolbar-option-header {
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 8px;
+      margin-top: 15px;
+    }
+
+    .toolbar-option-header::after {
+        content: ' ▾';
+        float: right;
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .toolbar-option-header.open::after {
+        transform: rotate(180deg);
+    }
+
+    .collapsible-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+        padding-left: 10px;
+    }
+
+    .collapsible-content.open {
+        max-height: 500px; /* Large enough to fit content */
+    }
+
+
     .toolbar-option:hover {
       background: var(--accent-color);
       transform: scale(1.02);
     }
     
-    .toolbar-option select {
-        width: 100%;
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 5px;
-        padding: 5px;
-        font-size: 14px;
-    }
-
-    .toolbar-option select:focus {
-        outline: none;
-        border-color: var(--accent-color);
-    }
-
     #tileSizeSlider, #gradientSlider {
       width: 90%;
       margin: 5px 0;
@@ -885,27 +847,6 @@
       z-index: 1;
     }
 
-    #clock .seconds {
-      font-size: inherit;
-      opacity: 0.6;
-    }
-
-    #clock .ampm {
-      font-size: 0.35em;
-      vertical-align: super;
-      opacity: 0.6;
-      margin-left: 6px;
-    }
-
-    #greeting {
-      opacity: 0;
-      transition: opacity 2.7s ease;
-    }
-
-    #greeting.visible {
-      opacity: 1;
-    }
-
     @keyframes spinOnce {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -987,9 +928,7 @@
       margin: 20px auto;
       transform-style: preserve-3d;
       cursor: pointer;
-      /* start “flat” */
       transform: rotateY(0deg);
-      /* enable smooth JS‑driven flips */
       transition: transform 2s ease-in-out;
     }
 
@@ -1009,209 +948,186 @@
       box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
 
-    /* Heads face: front */
     .coin .heads {
       transform: rotateY(0deg) translateZ(1px);
     }
-    /* Tails face: “behind” */
     .coin .tails {
       transform: rotateY(180deg) translateZ(1px);
     }
 
-    body, html, .container, .bookmarks-container {
+    body, html, .container {
       user-select: none;
       -webkit-user-select: none;
     }
 
-    /* Top‑level container */
     .container {
       display: flex;
       flex-direction: column;
-      align-items: center;  /* ensure header centered */
       height: 100vh;
       margin: 0;
       padding: 0;
-      overflow: hidden;     /* lock page scroll */
+      overflow: hidden;
     }
 
-    /* Search bar stays in the middle */
-    .search-bar-form {
-      margin: 0 auto 1rem;  /* centered with bottom margin */
-    }
-
-    /* The wrapper under the header scrolls */
     #bookmarksWrapper {
       flex: 1 1 auto;
       width: 100%;
-      padding-top: 2.5rem;
       padding-bottom: 4rem;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    /* The grid inside has padding on the sides and just wraps */
-    #bookmarkGrid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--grid-gap, 20px);   /* your existing horizontal & vertical gap */
-      justify-content: center;
-      width: 100%;
-      padding: 0 1rem 1rem;          /* ← 1rem side padding + bottom padding */
-      box-sizing: border-box;
-        /* fade only—no height changes */
-      transition: opacity 0.2s ease-out;
-      will-change: opacity;   /* GPU‑accelerate this property */
-      opacity: 1;
+    #bookmarksWrapper .spacer {
+        height: 30vh;
+        flex-shrink: 0; /* Prevents the spacer from shrinking */
     }
 
     #bookmarkControls {
-    position: absolute;
-    top: calc( /* search‑bar bottom */ 4rem + 0.5rem ); /* adjust to sit just under the bar */
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 0.5rem;
-    z-index: 20;
-    }
-
-
-    /* ── Glassy circular controls: reuse for refresh ── */
-    .toggle-refresh {
-      /* same size & style as .toggle-arrow/.toggle-add */
-      position: absolute;
-      width: 1.25rem;
-      height: 1.25rem;
       display: flex;
-      align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.1);
-      backdrop-filter: blur(6px);
-      opacity: 0.3;
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 40%;
-      cursor: pointer;
-      color: currentColor;
-      font-size: 1.8rem;
-      font-weight: 700;
-      line-height: 3;
-      transition: background 0.2s ease, transform 0.2s ease;
-      z-index: 20;
-      /* nudge the glyph up by 2px */
-      transform: translateY(-0.9px);
-    }
-    .toggle-arrow,
-    .toggle-add {
+      gap: 2.5rem; /* Space between buttons */
+      margin-bottom: 1.5rem;
+      width: 100%;
       position: relative;
-      /* keep your 1.8rem glass‑circle styles here */
     }
-
-
-    /* ── Glassy circular controls ── */
+    
     .toggle-arrow,
-    .toggle-add {
-      position: absolute;
-      width: 1.25rem;                    /* same width/height */
-      height: 1.25rem;
+    .toggle-add,
+    .toggle-refresh {
+      position: relative;
+      width: 1.75rem;
+      height: 1.75rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.1);  /* translucent white */
+      background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(6px);
-      opacity: 0.3;
+      opacity: 0.5;
       border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 40%;
       cursor: pointer;
-      color: currentColor;              /* matches light/dark text */
-      font-size: 1rem;                /* icon size */
+      color: currentColor;
+      font-size: 1rem;
       line-height: 1;
-      transition: background 0.2s ease, transform 0.2s ease;
+      transition: all 0.2s ease;
       z-index: 20;
     }
     
-    
-
-    /* position all three side‑by‑side */
     .toggle-add {
-      top: -0.01rem;
-      left: calc(50% - 2rem);  /* left button */
-    }
-    .toggle-arrow {
-      top: -0.01rem;
-      left: 50%;               /* center button */
-      transform: translateX(50% - 1rem);
-    }
-    .toggle-refresh {
-      top: -0.01rem;
-      left: calc(50% + 2rem);  /* right button */
+        font-weight: 900;
     }
 
-        /* hover effect */
+    .toggle-refresh {
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
     .toggle-arrow:hover,
     .toggle-add:hover,
     .toggle-refresh:hover {
-      background: rgba(255,255,255,0.2);
+      opacity: 1;
       transform: scale(1.15);
     }
 
-    /* Use a “heavy” plus glyph so it’s thick */
-    .toggle-add {
-      font-weight: 900;
+    #bookmarkGrid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--grid-gap, 20px);
+      justify-content: center;
+      width: 100%;
+      max-width: 1400px;
+      padding: 0 1rem 1rem;
+      box-sizing: border-box;
+      transition: opacity 0.2s ease-out;
+      will-change: opacity;
+      opacity: 1;
     }
 
     .collapsed #bookmarkGrid {
       opacity: 0;
       pointer-events: none;
+      max-height: 0;
     }
 
     .collapsed .toggle-arrow {
       transform: rotate(-180deg);
     }
 
-        /* Hide the + when bookmarks are hidden */
-    .collapsed .toggle-add {
-      display: none;
-    }
-
-    .collapsed .toggle-refresh {
+    .collapsed #addBookmarkBtn,
+    .collapsed #refreshBtn {
       display: none;
     }
   
-        /* Hide all native “×” clear buttons on search inputs */
-    /* WebKit / Blink */
-    #searchInput::-webkit-search-cancel-button,
-    #searchInput::-webkit-search-decoration,
-    #searchInput::-webkit-search-results-button,
-    #searchInput::-webkit-search-results-decoration {
-      -webkit-appearance: none;
-      appearance: none;
+    #searchInput::-webkit-search-cancel-button {
+      display: none;
+    }
+    #searchInput::-ms-clear {
       display: none;
     }
 
-    /* Firefox (if ever shows one) */
-    #searchInput::-moz-search-cancel-button {
-      display: none;
-    }
-
-    /* IE / Edge */
-    #searchInput::-ms-clear,
-    #searchInput::-ms-reveal {
-      display: none;
-    }
-
-    /* In glass mode, gently push the icon down without affecting centering */
     body.glass-mode .tile img {
-      /* remove any margin tweaks you added before */
       margin: 0;                 
-      /* apply a pure vertical shift */
-      transform: translateY(5px); /* tweak the 4px for just the right gap */
+      transform: translateY(5px);
     }
 
-    /* Ensure search & modal inputs never trigger zoom-on-focus */
     .search-bar-form input,
     .modal-content input,
     .modal-content textarea {
       font-size: 16px !important;
       -webkit-text-size-adjust: 100%;
+    }
+
+    *:focus-visible {
+        outline: 2px solid var(--accent-color) !important;
+        outline-offset: 2px;
+        border-radius: 3px;
+    }
+    
+    #searchInput:focus-visible {
+      outline: none !important;
+    }
+
+    .search-results-container {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+     body.dark-mode .search-results-container {
+      background: rgba(30, 30, 30, 0.3); /* Restored original dark mode color */
+    }
+
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      cursor: pointer;
+      color: white;
+      text-decoration: none;
+    }
+
+    .search-result-item:hover, .search-result-item:focus-visible {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .search-result-item img {
+      width: 30px;
+      height: 30px;
+      margin-right: 15px;
+      border-radius: 5px;
     }
 
   </style>
@@ -1254,54 +1170,43 @@
   <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
   <div class="container">
-    <div class="clock-wrapper">
-      <div class="clock" id="clock"></div>
-      <div class="date" id="date"></div>
-      <div id="weatherContainer" style="font-size: 18px; margin-top: 10px; display: none;"></div>
-      <div id="greeting" style="font-size: 20px; margin-top: 10px; text-align: center; display: none; max-width: 100%; word-wrap: break-word;"></div>
-    </div>
-
-    <form class="search-bar-form" action="javascript:void(0);" onsubmit="performSearch()">
-      <input
-        type="search"
-        id="searchInput"
-        placeholder="Search the web..."
-        autocomplete="off"
-        spellcheck="false"
-        autocorrect="off"
-        autocapitalize="off"
-        oninput="handleSearchInput()"
-      />
-      <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
-        xmlns="http://www.w3.org/2000/svg"
-        height="24" width="24" fill="currentColor">
-        <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
-      </svg>
-      <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
-        xmlns="http://www.w3.org/2000/svg"
-        height="24" width="24" fill="currentColor"
-        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
-        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-      </svg>
-          </form>
-
-            <div id="bookmarksWrapper" style="position: relative;">
-        <!-- Collapse/expand arrow -->
-        <button id="toggleBookmarks" class="toggle-arrow" aria-label="Hide bookmarks">▼</button>
-
-        <!-- “+” to add a new bookmark -->
-        <button id="addBookmarkBtn" class="toggle-add" aria-label="Add bookmark">＋</button>
-
-        <!-- New: “⟳” to refresh the page -->
-        <button id="refreshBtn" class="toggle-refresh" aria-label="Refresh">⟳</button>
-
-        <!-- Your existing bookmarks grid -->
+    <div id="bookmarksWrapper">
+        <div class="spacer"></div>
+        <form class="search-bar-form" action="javascript:void(0);" onsubmit="performSearch()">
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="Search the web..."
+            autocomplete="off"
+            spellcheck="false"
+            autocorrect="off"
+            autocapitalize="off"
+            oninput="handleSearchInput()"
+          />
+          <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
+            xmlns="http://www.w3.org/2000/svg"
+            height="24" width="24" fill="currentColor">
+            <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
+          </svg>
+          <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
+            xmlns="http://www.w3.org/2000/svg"
+            height="24" width="24" fill="currentColor"
+            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+          <div id="searchResults" class="search-results-container"></div>
+        </form>
+        
+        <div id="bookmarkControls">
+            <button id="addBookmarkBtn" class="toggle-add" aria-label="Add bookmark">＋</button>
+            <button id="toggleBookmarks" class="toggle-arrow" aria-label="Hide bookmarks">▼</button>
+            <button id="refreshBtn" class="toggle-refresh" aria-label="Refresh">⟳</button>
+        </div>
+        
         <div class="grid" id="bookmarkGrid">
-          <!-- …tiles… -->
-        </div>
-      </div>
-
-        </div>
+          </div>
+    </div>
+  </div>
 
   <div id="bookmarkModal" class="modal hidden">
     <div class="modal-content">
@@ -1316,41 +1221,54 @@
   </div>
 
   <div id="settings-sidebar">
-    <div class="toolbar-option" id="addBookmarkBtn" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();">📝 Add Bookmark</div>
-    <div class="toolbar-option">
-        <select id="searchEngineSelect" onchange="setSearchEngine(this.value)" title="Change Search Engine"></select>
+    <div id="sidebar-profile-section">
+        <div id="sidebar-greeting"></div>
+        <div id="sidebar-clock"></div>
+        <div id="sidebar-date"></div>
+        <div id="sidebar-weatherContainer"></div>
     </div>
-    <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()">🖼️ Change Background</div>
-    <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()">🎥 Set Video Background</div>
-    <div class="toolbar-option" aria-label="Remove Wallpaper" onclick="removeWallpaper()">🚫 Remove Wallpaper</div>
+    <div class="toolbar-option" id="addBookmarkBtnSidebar" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();" tabindex="0">📝 Add Bookmark</div>
+    
+    <div class="toolbar-option toolbar-option-header" id="searchEngineHeader" tabindex="0">
+        <span id="currentSearchEngine"></span>
+    </div>
+    <div class="collapsible-content" id="searchEngineContent">
+        </div>
+
+    <div class="toolbar-option toolbar-option-header" id="clockSettingsHeader" tabindex="0">🕰️ Clock & Greeting</div>
+    <div class="collapsible-content" id="clockSettingsContent">
+        <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()" tabindex="0">🕒 Toggle Clock Format</div>
+        <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()" tabindex="0">⏱️ Toggle Clock Seconds</div>
+        <div class="toolbar-option" onclick="toggleWeather()" tabindex="0">🌦️ Toggle Weather Widget</div>
+        <div class="toolbar-option" onclick="toggleGreeting()" tabindex="0">👤 Toggle Greeting</div>
+        <div class="toolbar-option" onclick="askUserName()" tabindex="0">✏️ Change Name</div>
+    </div>
+
+    <div class="toolbar-option" aria-label="Change Background" onclick="document.getElementById('bgInput').click()" tabindex="0">🖼️ Change Background</div>
+    <div class="toolbar-option" aria-label="Set Video Background" onclick="document.getElementById('videoInput').click()" tabindex="0">🎥 Set Video Background</div>
+    <div class="toolbar-option" aria-label="Remove Wallpaper" onclick="removeWallpaper()" tabindex="0">🚫 Remove Wallpaper</div>
     <input type="file" id="bgInput" accept="image/*,.heic,.heif,.webp,.avif" />
     <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mov,.hevc">
     <div class="toolbar-option" id="gradientLabel">Background Color</div>
     <div id="gradientSliderContainer">
-        <input type="range" id="gradientSlider" min="0" max="9" value="0" class="toolbar-option" oninput="setGradientBackground(this.value)">
+        <input type="range" id="gradientSlider" min="0" max="15" value="0" class="toolbar-option" oninput="setGradientBackground(this.value)">
     </div>
-    <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()">🧊 Toggle Glass Mode</div>
-    <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()">🌙 Toggle Dark Mode</div>
-    <div class="toolbar-option" aria-label="Toggle Clock & Weather Visibility" onclick="toggleClockWrapperVisibility()">🕰️ Toggle Clock & Weather</div>
-    <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()">🕒 Toggle Clock Format</div>
-    <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()">⏱️ Toggle Clock Seconds</div>
-    <div class="toolbar-option" onclick="toggleWeather()">🌦️ Toggle Weather Widget</div>
-    <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()">🌀 Toggle Icon Style</div>
-    <div class="toolbar-option" onclick="toggleLabels()">🔤 Toggle Bookmark Labels</div>
+    <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()" tabindex="0">🧊 Toggle Glass Mode</div>
+    <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()" tabindex="0">🌙 Toggle Dark Mode</div>
+    <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()" tabindex="0">🌀 Toggle Icon Style</div>
+    <div class="toolbar-option" onclick="toggleLabels()" tabindex="0">🔤 Toggle Bookmark Labels</div>
     <div class="toolbar-option" id="tileSizeLabel">Resize Bookmark Tiles</div>
     <div id="tileSizeSliderContainer">
       <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
     </div>
-    <div class="toolbar-option" onclick="toggleGreeting()">👤 Toggle Greeting</div>
-    <div class="toolbar-option" onclick="askUserName()">✏️ Change Name</div>
-    <div class="toolbar-option" onclick="toggleMinimalistMode()">🧘 Minimalist Mode</div>    
-    <div class="toolbar-option" id="newTabLinksOption" onclick="toggleNewTabLinks()">🔗 Open Links in New Tab</div>
-    <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()">🔄 Rearrange Bookmarks</div>
-    <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()">📤 Export Bookmarks</div>
-    <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()">📥 Import Bookmarks</div>
-    <div class="toolbar-option" onclick="resetAllSettings()">🗑️ Reset All Settings</div>
-    <div class="toolbar-option" onclick="openAboutModal()">🧾 About This Page</div>
-    <div class="toolbar-option" onclick="flipCoin(); toggleSidebar();">🪙 Flip a Coin</div>
+    <div class="toolbar-option" onclick="toggleMinimalistMode()" tabindex="0">🧘 Minimalist Mode</div>    
+    <div class="toolbar-option" id="newTabLinksOption" onclick="toggleNewTabLinks()" tabindex="0">🔗 Open Links in New Tab</div>
+    <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()" tabindex="0">🔄 Rearrange Bookmarks</div>
+    <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()" tabindex="0">📤 Export Bookmarks</div>
+    <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()" tabindex="0">📥 Import Bookmarks</div>
+    <div class="toolbar-option" onclick="resetAllSettings()" tabindex="0">🗑️ Reset All Settings</div>
+    <div class="toolbar-option" onclick="openAboutModal()" tabindex="0">🧾 About This Page</div>
+    <div class="toolbar-option" onclick="flipCoin(); toggleSidebar();" tabindex="0">🪙 Flip a Coin</div>
 
     <input type="file" id="importInput" accept=".json,application/json,.html,.htm,text/html">
   </div>
@@ -1362,19 +1280,23 @@
     let glassMode = false;
     let newTabLinks = localStorage.getItem("newTabLinks") === "true";
 
-
-
     const gradients = [
         { name: 'Default', value: '' },
         { name: 'Sunrise', value: 'linear-gradient(to right, #ff9966, #ff5e62)' },
         { name: 'Ocean', value: 'linear-gradient(to right, #43cea2, #185a9d)' },
-        { name: 'Twilight', value: 'linear-gradient(to right, #ee0979, #ff6a00)' },
-        { name: 'Emerald', value: 'linear-gradient(to right, #00c9ff, #92fe9d)' },
+        { name: 'Grapefruit', value: 'linear-gradient(to right, #ffafbd, #ffc3a0)' },
+        { name: 'Deep Space', value: 'linear-gradient(to right, #000000, #434343)' },
+        { name: 'Mojito', value: 'linear-gradient(to right, #1d976c, #93f9b9)' },
         { name: 'Amethyst', value: 'linear-gradient(to right, #9d50bb, #6e48aa)' },
-        { name: 'Sunset', value: 'linear-gradient(to right, #ff7e5f, #feb47b)' },
-        { name: 'Cosmic', value: 'linear-gradient(to right, #1d2b64, #f8cdda)' },
+        { name: 'Midnight', value: 'linear-gradient(to right, #2c3e50, #4ca1af)' },
         { name: 'Pastel', value: 'linear-gradient(to right, #a1c4fd, #c2e9fb)' },
         { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
+        { name: 'Cloudy Sky', value: 'linear-gradient(to right, #d7d2cc, #304352)' },
+        { name: 'Lush', value: 'linear-gradient(to right, #56ab2f, #a8e063)' },
+        { name: 'Royal', value: 'linear-gradient(to right, #141e30, #243b55)' },
+        { name: 'Mauve', value: 'linear-gradient(to right, #42275a, #734b6d)' },
+        { name: 'Cherry', value: 'linear-gradient(to right, #eb3349, #f45c43)' },
+        { name: 'Serenity', value: 'linear-gradient(to right, #2980b9, #6dd5fa, #ffffff)' },
     ];
 
     const searchEngines = {
@@ -1401,6 +1323,7 @@
       actions.forEach(action => {
         const opt = document.createElement("div");
         opt.innerHTML = `${icons[action]} ${action}`;
+        opt.tabIndex = 0;
         
         opt.onclick = async (e) => {
           e.preventDefault();
@@ -1501,6 +1424,11 @@
 
     document.addEventListener("click", function (e) {
       const isTileOrSettings = e.target.closest(".tile, .settings-panel, .toolbar-option");
+      const searchResults = document.getElementById('searchResults');
+      if (!e.target.closest('.search-bar-form') && !e.target.closest('.search-results-container')) {
+          searchResults.style.display = 'none';
+      }
+
       if (rearrangeMode && !isTileOrSettings) {
         rearrangeMode = false;
         localStorage.setItem("rearrangeMode", rearrangeMode);
@@ -1527,7 +1455,7 @@
     let toastTimeout;
     function showToast(message) {
         const toast = document.getElementById('toast-notification');
-        toast.textContent = message;
+        toast.innerHTML = `<span>${message}</span>`;
         toast.classList.add('show');
 
         clearTimeout(toastTimeout);
@@ -1535,6 +1463,61 @@
         toastTimeout = setTimeout(() => {
             toast.classList.remove('show');
         }, 3000);
+    }
+
+    let confirmationToastTimeout;
+    function showConfirmationToast(message, onConfirm) {
+        const toast = document.getElementById('toast-notification');
+        toast.innerHTML = ''; // Clear previous content
+
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+        toast.appendChild(messageSpan);
+
+        const buttonWrapper = document.createElement('div');
+        buttonWrapper.style.marginTop = '10px';
+
+        const confirmButton = document.createElement('button');
+        confirmButton.textContent = 'Yes, Reset';
+        confirmButton.style.marginRight = '10px';
+        confirmButton.style.padding = '5px 10px';
+        confirmButton.style.border = 'none';
+        confirmButton.style.borderRadius = '5px';
+        confirmButton.style.cursor = 'pointer';
+        confirmButton.style.background = '#ff4d4d';
+        confirmButton.style.color = 'white';
+
+
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Cancel';
+        cancelButton.style.padding = '5px 10px';
+        cancelButton.style.border = '1px solid #ccc';
+        cancelButton.style.borderRadius = '5px';
+        cancelButton.style.cursor = 'pointer';
+        cancelButton.style.background = 'transparent';
+        cancelButton.style.color = 'white';
+
+
+        confirmButton.onclick = () => {
+            onConfirm();
+            toast.classList.remove('show');
+        };
+
+        cancelButton.onclick = () => {
+            toast.classList.remove('show');
+        };
+
+        buttonWrapper.appendChild(confirmButton);
+        buttonWrapper.appendChild(cancelButton);
+        toast.appendChild(buttonWrapper);
+
+        toast.classList.add('show');
+
+        clearTimeout(confirmationToastTimeout);
+
+        confirmationToastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 5000); // 5 seconds to decide
     }
 
     document.addEventListener("keydown", function(e) {
@@ -1727,7 +1710,7 @@
         localStorage.setItem("gradientIndex", gradientIndex);
 
         const slider = document.getElementById('gradientSlider');
-        const percentage = (gradientIndex / (gradients.length - 1)) * 100;
+        const percentage = (gradients.length <= 1) ? 100 : (gradientIndex / (gradients.length - 1)) * 100;
         slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
     }
 
@@ -1767,8 +1750,9 @@
         timeHTML += `:<span class="seconds">${seconds}</span>`;
       }
       timeHTML += ampm ? `<span class="ampm">${ampm}</span>` : '';
-      document.getElementById("clock").innerHTML = timeHTML;
-      document.getElementById("date").textContent = now.toLocaleDateString(undefined, {
+      
+      document.getElementById("sidebar-clock").innerHTML = timeHTML;
+      document.getElementById("sidebar-date").textContent = now.toLocaleDateString(undefined, {
         weekday: 'short',
         month: 'short',
         day: 'numeric',
@@ -1798,7 +1782,7 @@
     }
 
     function applyWeatherToggle(enabled) {
-      const container = document.getElementById("weatherContainer");
+      const container = document.getElementById("sidebar-weatherContainer");
       if (enabled) {
         container.style.display = "block";
         fetchWeather();
@@ -1820,8 +1804,9 @@
     }
 
     async function fetchWeather() {
+      const container = document.getElementById("sidebar-weatherContainer");
       if (!navigator.geolocation) {
-        displayWeatherFallback("Geolocation is not supported by your browser.");
+        displayWeatherFallback("Geolocation is not supported.");
         return;
       }
       navigator.geolocation.getCurrentPosition(async (position) => {
@@ -1830,7 +1815,7 @@
           const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
           const response = await fetch(url);
           if (!response.ok) {
-              throw new Error(`API request failed with status ${response.status}`);
+              throw new Error(`API request failed: ${response.status}`);
           }
           const data = await response.json();
           const weather = data.current_weather;
@@ -1838,10 +1823,10 @@
           const icon = getWeatherEmoji(weather.weathercode);
           const wind = Math.round(weather.windspeed);
           const text = `${icon} ${temp}°C | Wind: ${wind} km/h`;
-          document.getElementById("weatherContainer").textContent = text;
+          container.textContent = text;
         } catch (err) {
           console.error("Weather fetch error:", err);
-          displayWeatherFallback("Could not load weather data.");
+          displayWeatherFallback("Weather data unavailable.");
         }
       }, (error) => {
           console.error("Geolocation error:", error);
@@ -1850,7 +1835,7 @@
     }
 
     function displayWeatherFallback(message) {
-      document.getElementById("weatherContainer").textContent = message;
+      document.getElementById("sidebar-weatherContainer").textContent = message;
     }
 
     function toggleMinimalistMode() {
@@ -1875,7 +1860,7 @@
     }
 
     function applyGreetingToggle(enabled) {
-      const greeting = document.getElementById("greeting");
+      const greeting = document.getElementById("sidebar-greeting");
       if (enabled) {
         let name = localStorage.getItem("profileName");
         if (!name) {
@@ -1884,14 +1869,7 @@
         }
         greeting.textContent = generateFriendlyGreeting(name);
         greeting.style.display = "block";
-        greeting.classList.remove("visible");
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            greeting.classList.add("visible");
-          });
-        });
       } else {
-        greeting.classList.remove("visible");
         greeting.style.display = "none";
       }
     }
@@ -1900,10 +1878,8 @@
       const name = prompt("What’s your name?");
       if (name) {
         localStorage.setItem("profileName", name);
-        const greeting = document.getElementById("greeting");
         if (localStorage.getItem("showGreeting") === "true") {
-          greeting.textContent = generateFriendlyGreeting(name);
-          greeting.style.display = "block";
+            applyGreetingToggle(true);
         }
       }
     }
@@ -1912,13 +1888,13 @@
       const hour = new Date().getHours();
       let message = "";
       if (hour >= 5 && hour < 12) {
-        message = `🌞 Good morning, ${name}! Have a bright start.`;
+        message = `🌞 Good morning, ${name}!`;
       } else if (hour >= 12 && hour < 17) {
-        message = `☕ Good afternoon, ${name}! Keep up the great work.`;
+        message = `☕ Good afternoon, ${name}!`;
       } else if (hour >= 17 && hour < 21) {
-        message = `🌇 Good evening, ${name}! Hope you're winding down nicely.`;
+        message = `🌇 Good evening, ${name}!`;
       } else {
-        message = `🌙 Good night, ${name}! Time to recharge.`;
+        message = `🌙 Good night, ${name}!`;
       }
       return message;
     }
@@ -1938,28 +1914,12 @@
       const option = document.getElementById("newTabLinksOption");
       option.textContent = `🔗 Open Links in New Tab ${newTabLinks ? "✅" : "❌"}`;
     }
-
-    function animatePlaceholderText() {
-      const input = document.getElementById("searchInput");
-      const text = "Search the web...";
-      input.placeholder = "";
-      let index = 0;
-      const speed = 60;
-      function typeNext() {
-        if (index <= text.length) {
-          input.placeholder = text.slice(0, index++);
-          setTimeout(typeNext, speed);
-        }
-      }
-      typeNext();
-    }
-
+    
     function resetAllSettings() {
-      const confirmReset = confirm("Are you sure you want to reset everything?\nThis will remove all bookmarks and settings.");
-      if (confirmReset) {
+      showConfirmationToast("Are you sure you want to reset everything?", () => {
         localStorage.clear();
         location.reload();
-      }
+      });
     }
 
     function handleSearchInput() {
@@ -1967,6 +1927,8 @@
         const micIcon = document.getElementById("micIcon");
         const clearIcon = document.getElementById("clearIcon");
         const query = input.value.trim().toLowerCase();
+        const bookmarksWrapper = document.getElementById('bookmarksWrapper');
+        const searchResultsContainer = document.getElementById('searchResults');
 
         if (query !== "") {
           micIcon.style.display = "none";
@@ -1974,22 +1936,53 @@
         } else {
           micIcon.style.display = "block";
           clearIcon.style.display = "none";
+          searchResultsContainer.style.display = 'none';
         }
 
-        const tiles = document.querySelectorAll(".tile");
-
-        tiles.forEach(tile => {
-          const label = tile.querySelector(".bookmark-label");
-          const name = label?.innerText.toLowerCase() || "";
-
-          tile.style.display = name.includes(query) ? "" : "none";
+        const matchingBookmarks = bookmarks.filter(bookmark => {
+            const name = bookmark.name.toLowerCase();
+            return name.includes(query);
         });
-      }
+        
+        const tiles = document.querySelectorAll(".tile");
+        tiles.forEach(tile => {
+            const label = tile.querySelector(".bookmark-label");
+            const name = label?.innerText.toLowerCase() || "";
+            tile.style.display = name.includes(query) ? "" : "none";
+        });
+        
+        if (bookmarksWrapper.classList.contains('collapsed') && query) {
+            searchResultsContainer.innerHTML = '';
+            if (matchingBookmarks.length > 0) {
+                matchingBookmarks.forEach(bookmark => {
+                    const item = document.createElement('a');
+                    item.href = bookmark.url;
+                    item.className = 'search-result-item';
+                    item.tabIndex = 0;
+                    if (newTabLinks) item.target = "_blank";
 
-      clearIcon.addEventListener("click", () => {
-        input.value = "";
-        handleSearchInput();
-      });
+                    const img = document.createElement("img");
+                    try {
+                        img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
+                    } catch (e) {
+                        img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
+                    }
+
+                    const name = document.createElement("span");
+                    name.textContent = bookmark.name;
+
+                    item.appendChild(img);
+                    item.appendChild(name);
+                    searchResultsContainer.appendChild(item);
+                });
+                searchResultsContainer.style.display = 'block';
+            } else {
+                searchResultsContainer.style.display = 'none';
+            }
+        } else {
+            searchResultsContainer.style.display = 'none';
+        }
+      }
 
     function copyToClipboard(text) {
         if (navigator.clipboard) {
@@ -2015,7 +2008,7 @@
             document.body.removeChild(textArea);
         }
     }
-
+    
     function createBookmarkElement(bookmark, index) {
       const a = document.createElement("a");
       a.draggable = rearrangeMode;
@@ -2057,7 +2050,7 @@
       });
 
       a.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") window.location.href = bookmark.url;
+        if (e.key === "Enter") window.location.href = a.href;
       });
 
 
@@ -2091,7 +2084,7 @@
 
       const deleteBtn = document.createElement("div");
       deleteBtn.className = "delete-btn";
-      deleteBtn.innerHTML = "&#8722;";
+      deleteBtn.innerHTML = "−";
       deleteBtn.title = "Delete Bookmark";
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
@@ -2273,11 +2266,14 @@ function enableDragAndDrop() {
 
     function submitBookmark() {
       const name = document.getElementById("bookmarkName").value.trim();
-      const url = document.getElementById("bookmarkUrl").value.trim();
+      let url = document.getElementById("bookmarkUrl").value.trim();
       const icon = document.getElementById("bookmarkIcon").value.trim();
       if (!url || !name) {
         showToast("Please enter both a name and URL.");
         return;
+      }
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
       }
       bookmarks.push({ url, name, icon });
       localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
@@ -2329,7 +2325,6 @@ function enableDragAndDrop() {
       overlay.classList.toggle('open');
       toggleBtn.classList.toggle('open');
 
-            // — FIX: if we’ve just closed the sidebar, clear any leftover button background
       if (!sidebar.classList.contains('open')) {
           toggleBtn.style.background = 'transparent';
         }
@@ -2356,17 +2351,14 @@ function enableDragAndDrop() {
 
     function applyGlassMode() {
       const body = document.body;
-      const clockWrapper = document.querySelector(".clock-wrapper");
       const searchBar = document.querySelector(".search-bar-form");
       const tiles = document.querySelectorAll(".tile:not(.add-tile)");
       if (glassMode) {
         body.classList.add("glass-mode");
-        clockWrapper.classList.add("glass-clock");
         searchBar.classList.add("glass-tile");
         tiles.forEach(tile => tile.classList.add("glass-tile"));
       } else {
         body.classList.remove("glass-mode");
-        clockWrapper.classList.remove("glass-clock");
         searchBar.classList.remove("glass-tile");
         tiles.forEach(tile => tile.classList.remove("glass-tile"));
       }
@@ -2401,155 +2393,98 @@ function enableDragAndDrop() {
       });
     }
 
-    let clockWrapperVisible = true;
-
-    function toggleClockWrapperVisibility() {
-      const clockWrapper = document.querySelector('.clock-wrapper');
-      const searchBar = document.querySelector('.search-bar-form');
-      const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
-
-      clockWrapperVisible = !clockWrapperVisible;
-
-      if (clockWrapperVisible) {
-        clockWrapper.classList.remove('hidden');
-        searchBar.style.marginTop = '';
-        toolbarOption.classList.add('active');
-      } else {
-        clockWrapper.classList.add('hidden');
-        searchBar.style.marginTop = '20px';
-        toolbarOption.classList.remove('active');
-      }
-
-      localStorage.setItem('clockWrapperVisible', clockWrapperVisible);
-    }
-
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const saved = localStorage.getItem('clockWrapperVisible');
-
-      if (saved !== null) {
-        clockWrapperVisible = saved === 'true';
-
-        const clockWrapper = document.querySelector('.clock-wrapper');
-        const searchBar = document.querySelector('.search-bar-form');
-        const toolbarOption = document.querySelector('.toolbar-option[aria-label="Toggle Clock & Weather Visibility"]');
-
-        if (clockWrapperVisible) {
-          clockWrapper.classList.remove('hidden');
-          searchBar.style.marginTop = '';
-          toolbarOption.classList.add('active');
-        } else {
-          clockWrapper.classList.add('hidden');
-          searchBar.style.marginTop = '20px';
-          toolbarOption.classList.remove('active');
-        }
-      }
-    });
-
-
     function setTileSize(size) {
-  const tiles         = document.querySelectorAll(".tile");
-  const grid          = document.querySelector('.grid');
-  const slider        = document.getElementById('tileSizeSlider');
-  const tileSizeLabel = document.getElementById('tileSizeLabel');
-    let width         = parseInt(size);
+      const tiles         = document.querySelectorAll(".tile");
+      const grid          = document.querySelector('.grid');
+      const slider        = document.getElementById('tileSizeSlider');
+      const tileSizeLabel = document.getElementById('tileSizeLabel');
+      let width         = parseInt(size);
 
-  // 1) Resize tiles & icons
-  tiles.forEach(tile => {
-    tile.style.width     = `${width}px`;
-    tile.style.fontSize  = `${Math.max(9, Math.min(15, width / 10))}px`;
-    const img = tile.querySelector("img");
-    if (img) {
-      img.style.width  = `${width * 0.8}px`;
-      img.style.height = `${width * 0.8}px`;
+      tiles.forEach(tile => {
+        tile.style.width     = `${width}px`;
+        tile.style.fontSize  = `${Math.max(9, Math.min(15, width / 10))}px`;
+        const img = tile.querySelector("img");
+        if (img) {
+          img.style.width  = `${width * 0.8}px`;
+          img.style.height = `${width * 0.8}px`;
+        }
+      });
+
+      const percentage = ((width - 40) / (120 - 40)) * 100;
+      slider.style.background = 
+        `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
+      slider.value = width;
+      tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
+
+      const verticalGap = Math.max(4, Math.round(width * 0.1));
+      grid.style.rowGap = verticalGap + 'px';
+
+      localStorage.setItem("tileSize", width);
     }
-  });
-
-  // 2) Update slider UI
-  grid.classList.remove('tile-xsmall', 'tile-small', 'tile-medium', 'tile-large');
-  const percentage = ((width - 40) / (120 - 40)) * 100;
-  slider.style.background = 
-    `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
-  slider.value = width;
-  tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
-
-  // 3) Dynamically adjust vertical gap to 10% of tile size (min 4px)
-  const verticalGap = Math.max(4, Math.round(width * 0.1));
-  grid.style.rowGap = verticalGap + 'px';
-
-  // 4) Persist
-  localStorage.setItem("tileSize", width);
-}
 
 
     document.getElementById("importInput").addEventListener("change", async function(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+      const file = event.target.files[0];
+      if (!file) return;
 
-  const text = await file.text();
-  let imported = [];
+      const text = await file.text();
+      let imported = [];
 
-  try {
-    // 1) HTML bookmark export?
-    if (file.name.match(/\.(html?|htm)$/i) || text.trim().startsWith("<!DOCTYPE")) {
-      const dom = new DOMParser().parseFromString(text, "text/html");
-      dom.querySelectorAll("a[href]").forEach(a => {
-        imported.push({
-          name: a.textContent.trim() || a.href,
-          url: a.href,
-          icon: ""
-        });
-      });
-    }
-    // 2) JSON export?
-    else {
-      const data = JSON.parse(text);
-
-      // Firefox JSON schema?
-      if (data.roots && data.roots.bookmarkBar) {
-        function recurse(node) {
-          if (node.children) {
-            node.children.forEach(recurse);
-          } else if (node.uri) {
-            imported.push({ name: node.title, url: node.uri, icon: "" });
+      try {
+        if (file.name.match(/\.(html?|htm)$/i) || text.trim().startsWith("<!DOCTYPE")) {
+          const dom = new DOMParser().parseFromString(text, "text/html");
+          dom.querySelectorAll("a[href]").forEach(a => {
+            imported.push({
+              name: a.textContent.trim() || a.href,
+              url: a.href,
+              icon: ""
+            });
+          });
+        }
+        else {
+          const data = JSON.parse(text);
+          if (data.roots && data.roots.bookmarkBar) {
+            function recurse(node) {
+              if (node.children) {
+                node.children.forEach(recurse);
+              } else if (node.uri) {
+                imported.push({ name: node.title, url: node.uri, icon: "" });
+              }
+            }
+            recurse(data.roots.bookmarkBar);
+            recurse(data.roots.other);
+            recurse(data.roots.mobile);
+          }
+          else if (Array.isArray(data)) {
+            imported = data.map(b => ({
+              name: b.name,
+              url: b.url,
+              icon: b.icon || ""
+            }));
+          }
+          else {
+            throw new Error("Unrecognized JSON format");
           }
         }
-        recurse(data.roots.bookmarkBar);
-        recurse(data.roots.other);
-        recurse(data.roots.mobile);
-      }
-      // Your own simple array
-      else if (Array.isArray(data)) {
-        imported = data.map(b => ({
-          name: b.name,
-          url: b.url,
-          icon: b.icon || ""
-        }));
-      }
-      else {
-        throw new Error("Unrecognized JSON format");
-      }
-    }
 
-    // 3) Merge (no duplicates), save & reload
-    if (imported.length === 0) {
-      showToast("No bookmarks found in that file.");
-    } else {
-      const seen = new Set(bookmarks.map(b => b.url));
-      imported.forEach(b => {
-        if (!seen.has(b.url)) bookmarks.push(b);
-      });
-      localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-      loadBookmarks();
-      showToast(`Imported ${imported.length} bookmarks!`);
-    }
-  } catch (err) {
-    console.error("Import failed:", err);
-    showToast("Failed to import bookmarks: " + err.message);
-  } finally {
-    event.target.value = ""; // reset so same file can be re‑used
-  }
-});
+        if (imported.length === 0) {
+          showToast("No bookmarks found in that file.");
+        } else {
+          const seen = new Set(bookmarks.map(b => b.url));
+          imported.forEach(b => {
+            if (!seen.has(b.url)) bookmarks.push(b);
+          });
+          localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+          loadBookmarks();
+          showToast(`Imported ${imported.length} bookmarks!`);
+        }
+      } catch (err) {
+        console.error("Import failed:", err);
+        showToast("Failed to import bookmarks: " + err.message);
+      } finally {
+        event.target.value = "";
+      }
+    });
 
 
     document.getElementById("videoInput").addEventListener("change", async function (event) {
@@ -2618,76 +2553,90 @@ function enableDragAndDrop() {
           resizeAndStoreImage(file);
     }
     });
-    // ────────────────────────────────────────────────────────────────
-    // Shortcut helper: kick off voice search when launched with ?action=voice
+
     function startVoiceSearch() {
-      // Try clicking your mic icon if it exists:
       const micBtn = document.getElementById('micIcon');
       if (micBtn) {
         micBtn.click();
         return;
       }
-      // Or, if you have a separate trigger function, call it:
       if (typeof triggerMic === 'function') {
         triggerMic();
       }
     }
-    // ────────────────────────────────────────────────────────────────
 
     function performSearch() {
-  const query = document.getElementById("searchInput").value.trim();
-  if (!query) return;
+      const query = document.getElementById("searchInput").value.trim();
+      if (!query) return;
 
-  // 1) Detect if this is a URL (with http(s):// or looks like domain.tld[/...])
-  const isFullURL   = /^(https?:\/\/)/i.test(query);
-  const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
+      const isFullURL   = /^(https?:\/\/)/i.test(query);
+      const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
 
-  if (isFullURL || isDomainURL) {
-  // Prepend https:// if they didn’t type it
-  const dest = isFullURL ? query : `https://${query}`;
+      if (isFullURL || isDomainURL) {
+          const dest = isFullURL ? query : `https://${query}`;
+          if (newTabLinks) {
+            window.open(dest, '_blank');
+          } else {
+            window.location.href = dest;
+          }
+          return;
+      }
 
-  // Open in new tab or same tab per the setting
-  if (newTabLinks) {
-    window.open(dest, '_blank');
-  } else {
-    window.location.href = dest;
-  }
-  return;
-}
+      const engineName = localStorage.getItem('searchEngine') || 'Google';
+      const baseURL    = searchEngines[engineName];
+      let searchURL  = baseURL + encodeURIComponent(query);
+      
+      // PWA FIX: Add parameter to prevent Google search from opening native app on iOS
+      if (engineName === 'Google') {
+        searchURL += '&udm=14';
+      }
 
-  // 2) Otherwise, do a normal search via the chosen engine
-  const engineName = localStorage.getItem('searchEngine') || 'Google';
-  const baseURL    = searchEngines[engineName];
-  const searchURL  = baseURL + encodeURIComponent(query);
-
-  if (newTabLinks) {
-    window.open(searchURL, '_blank');
-  } else {
-    window.location.href = searchURL;
-  }
-}
+      if (newTabLinks) {
+        window.open(searchURL, '_blank');
+      } else {
+        window.location.href = searchURL;
+      }
+    }
 
     
     function setSearchEngine(name) {
-        const searchInput = document.getElementById('searchInput');
         localStorage.setItem('searchEngine', name);
-        searchInput.placeholder = `Search with ${name}...`;
-        
-        const select = document.getElementById('searchEngineSelect');
-        select.value = name;
+        document.getElementById('currentSearchEngine').textContent = `Search Engine: ${name}`;
+        document.getElementById('searchInput').placeholder = `Search with ${name}...`;
     }
 
     function initSearchEngineSelector() {
-        const select = document.getElementById('searchEngineSelect');
+        const header = document.getElementById('searchEngineHeader');
+        const content = document.getElementById('searchEngineContent');
+        content.innerHTML = ''; // Clear previous options
+
         Object.keys(searchEngines).forEach(name => {
-            const option = document.createElement('option');
-            option.value = name;
+            const option = document.createElement('div');
+            option.className = 'toolbar-option search-engine-option';
             option.textContent = name;
-            select.appendChild(option);
+            option.dataset.engine = name;
+            option.tabIndex = 0;
+            
+            option.addEventListener('click', () => {
+                setSearchEngine(name);
+                header.classList.remove('open');
+                content.classList.remove('open');
+            });
+
+            option.addEventListener('keydown', (e) => {
+                if(e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    option.click();
+                }
+            });
+
+            content.appendChild(option);
         });
+
         const savedEngine = localStorage.getItem('searchEngine') || 'Google';
         setSearchEngine(savedEngine);
     }
+
 
       function flipCoin(isReflip = false) {
         const modal         = document.getElementById('coinFlipModal');
@@ -2698,7 +2647,6 @@ function enableDragAndDrop() {
         coinContainer.innerHTML = '';
         resultText.textContent   = 'Flipping...';
 
-        // build the coin
         const coin = document.createElement('div');
         coin.className = 'coin';
         const heads = document.createElement('div');
@@ -2710,14 +2658,11 @@ function enableDragAndDrop() {
         coin.append(heads, tails);
         coinContainer.appendChild(coin);
 
-        // give the browser a moment to register the starting transform
         requestAnimationFrame(() => {
           const result        = Math.random() < 0.5 ? 'Heads' : 'Tails';
-          // 5 full spins = 1800° (heads), +180° = 1980° (tails)
           const finalRotation = result === 'Heads' ? 1800 : 1980;
           coin.style.transform = `rotateY(${finalRotation}deg)`;
 
-          // after the 2s transition...
           setTimeout(() => {
             resultText.textContent = `It's ${result}!`;
           }, 2000);
@@ -2868,6 +2813,12 @@ function enableDragAndDrop() {
         }
     }
 
+    function isTouchDevice() {
+      return (('ontouchstart' in window) ||
+         (navigator.maxTouchPoints > 0) ||
+         (navigator.msMaxTouchPoints > 0));
+    }
+
     window.onload = async function() {
       updateClock();
       setInterval(updateClock, 1000);
@@ -2911,6 +2862,10 @@ function enableDragAndDrop() {
         document.body.classList.add("minimalist");
       }
         
+      if (!isTouchDevice()) {
+        document.getElementById('searchInput').focus();
+      }
+
       document.body.style.pointerEvents = "auto";
     };
 
@@ -2920,21 +2875,36 @@ function enableDragAndDrop() {
       }
     });
 
-    // After window.onload registration (or inside it), add:
     window.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
       const action = params.get('action');
       if (action === 'add') {
-      // opens the Add Bookmark modal
           addBookmark();                           
         } else if (action === 'flip') {
-          // opens the Flip-a-Coin modal
           flipCoin();                              
         }
         else if (action === 'voice') {
           startVoiceSearch();
         }
-  });
+        
+        function setupCollapsible(headerId, contentId) {
+            const header = document.getElementById(headerId);
+            const content = document.getElementById(contentId);
+            header.addEventListener('click', () => {
+                header.classList.toggle('open');
+                content.classList.toggle('open');
+            });
+            header.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    header.click();
+                }
+            });
+        }
+        
+        setupCollapsible('clockSettingsHeader', 'clockSettingsContent');
+        setupCollapsible('searchEngineHeader', 'searchEngineContent');
+    });
 
 
     document.getElementById('refreshBtn').addEventListener('click', () => {
@@ -2943,42 +2913,39 @@ function enableDragAndDrop() {
 
 
      document.addEventListener('DOMContentLoaded', () => {
-  const wrapper   = document.getElementById('bookmarksWrapper');
-  const toggleBtn = document.getElementById('toggleBookmarks');
-  const addBtn    = document.getElementById('addBookmarkBtn');
+      const wrapper   = document.getElementById('bookmarksWrapper');
+      const toggleBtn = document.getElementById('toggleBookmarks');
+      const addBtn    = document.getElementById('addBookmarkBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
 
-  // ── Restore collapse state on load ──
-  const saved = localStorage.getItem('bookmarksCollapsed') === 'true';
-  wrapper.classList.toggle('collapsed', saved);
-  addBtn.style.display = saved ? 'none' : '';
-  toggleBtn.setAttribute(
-    'aria-label',
-    saved ? 'Show bookmarks' : 'Hide bookmarks'
-  );
+      const saved = localStorage.getItem('bookmarksCollapsed') === 'true';
+      wrapper.classList.toggle('collapsed', saved);
+      
+      const isInitiallyCollapsed = wrapper.classList.contains('collapsed');
+      addBtn.style.display = isInitiallyCollapsed ? 'none' : '';
+      refreshBtn.style.display = isInitiallyCollapsed ? 'none' : '';
+      
+      toggleBtn.setAttribute('aria-label', isInitiallyCollapsed ? 'Show bookmarks' : 'Hide bookmarks');
+      if (isInitiallyCollapsed) {
+          toggleBtn.style.transform = 'rotate(-180deg)';
+      }
 
-      // ── Collapse/expand on arrow click ──
+
       toggleBtn.addEventListener('click', () => {
-        // Capture the new state
         const isCollapsed = wrapper.classList.toggle('collapsed');
-
-        // Update aria-label
-        toggleBtn.setAttribute(
-          'aria-label',
-          isCollapsed ? 'Show bookmarks' : 'Hide bookmarks'
-        );
-        // Show/hide the + button
+        toggleBtn.setAttribute('aria-label', isCollapsed ? 'Show bookmarks' : 'Hide bookmarks');
+        toggleBtn.style.transform = isCollapsed ? 'rotate(-180deg)' : '';
         addBtn.style.display = isCollapsed ? 'none' : '';
-
-        // Persist for next load
+        refreshBtn.style.display = isCollapsed ? 'none' : '';
+        if (!isCollapsed) {
+            document.getElementById('searchResults').style.display = 'none';
+        }
         localStorage.setItem('bookmarksCollapsed', isCollapsed);
       });
 
-      // ── Open Add Bookmark modal ──
       addBtn.addEventListener('click', () => {
         addBookmark();
       });
-
-      // …your other bindings (search, clear icon, etc.)…
     });
 
 
