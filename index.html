@@ -64,9 +64,6 @@
       padding-right:  constant(safe-area-inset-right);
       padding-bottom: constant(safe-area-inset-bottom);
       padding-left:   constant(safe-area-inset-left);
-    
-     /* ensure it spans full height under those insets */
-      min-height: calc(100% - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     }
 
     html, body {
@@ -469,10 +466,12 @@
         }
     }
 
-            /* on touch “active” or when focused, light up too */
+            * accent on hover, focus, active **or** our JS “touch” class */
+        #sidebar-toggle-btn:hover .hamburger-icon span,
         #sidebar-toggle-btn:active .hamburger-icon span,
-        #sidebar-toggle-btn:focus .hamburger-icon span {
-            background: var(--accent-color);
+        #sidebar-toggle-btn:focus .hamburger-icon span,
+        #sidebar-toggle-btn.active-touch .hamburger-icon span {
+          background: var(--accent-color);
     }
 
         #sidebar-toggle-btn {
@@ -1061,7 +1060,7 @@
     .container {
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: 100%;
       margin: 0;
       padding: 0;
       overflow: hidden;
@@ -1378,7 +1377,18 @@
     
     // allow CSS :active to fire immediately on iOS/Android (sidebar-toggle-btn)
     document.addEventListener('touchstart', function(){}, {passive: true});
-
+      // → just below that, add:
+      const sidebarBtn = document.querySelector('#sidebar-toggle-btn');
+      if (sidebarBtn) {
+        sidebarBtn.addEventListener('pointerdown', () => {
+          sidebarBtn.classList.add('active-touch');
+        });
+        ['pointerup','pointercancel','pointerleave'].forEach(evt => {
+          sidebarBtn.addEventListener(evt, () => {
+            sidebarBtn.classList.remove('active-touch');
+          });
+        });
+      }
 
     let rearrangeMode = false;
     let bookmarks = [];
