@@ -20,7 +20,7 @@
            maximum-scale=1.0,
            user-scalable=no,
            viewport-fit=cover"
-/> 
+/>
 
 <link rel="icon" href="icons/icon-72.png" sizes="72x72" type="image/png">
 <link rel="icon" href="icons/icon-96.png" sizes="96x96" type="image/png">
@@ -469,6 +469,7 @@
     }
 
         #sidebar-toggle-btn {
+        touch-action: manipulation;      /* ensures pointerdown fires immediately */
             -webkit-tap-highlight-color: transparent;  /* no gray/yellow flash */
             outline: none;                              /* no default focus ring */
     }
@@ -2999,20 +3000,28 @@ function enableDragAndDrop() {
       }
     });
 
-        // allow :active to fire on the very first tap
-    document.addEventListener('touchstart', ()=>{}, {passive:true});
+        // allow CSS :active to fire on first tap
+document.addEventListener('touchstart', ()=>{}, {passive:true});
 
-    const sidebarBtn = document.querySelector('#sidebar-toggle-btn');
-    if (sidebarBtn) {
-      sidebarBtn.addEventListener('pointerdown', () => {
-        sidebarBtn.classList.add('active-touch');
-      });
-      ['pointerup','pointercancel','pointerleave'].forEach(evt => {
-        sidebarBtn.addEventListener(evt, () => {
-          sidebarBtn.classList.remove('active-touch');
-        });
-      });
-    }
+const sidebarBtn = document.querySelector('#sidebar-toggle-btn');
+if (sidebarBtn) {
+  // add the flash class on press
+  sidebarBtn.addEventListener('pointerdown', () => {
+    sidebarBtn.classList.add('active-touch');
+  });
+  // on release, remove it AND blur so focus‑styles go away immediately
+  sidebarBtn.addEventListener('pointerup',   e => {
+    sidebarBtn.classList.remove('active-touch');
+    sidebarBtn.blur();
+  });
+  // also clean up on cancel/leave
+  ['pointercancel','pointerleave'].forEach(evt => {
+    sidebarBtn.addEventListener(evt, () => {
+      sidebarBtn.classList.remove('active-touch');
+    });
+  });
+}
+
 
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -3101,4 +3110,3 @@ function enableDragAndDrop() {
   </script>
 </body>
 </html>
-
