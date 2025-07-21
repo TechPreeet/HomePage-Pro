@@ -64,8 +64,25 @@
       padding-right:  constant(safe-area-inset-right);
       padding-bottom: constant(safe-area-inset-bottom);
       padding-left:   constant(safe-area-inset-left);
+    
+     /* ensure it spans full height under those insets */
+      min-height: calc(100% - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     }
 
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow: hidden;
+      transition: background-color 0.5s ease-in-out;
+    }
+    body.dark-mode {
+        background-color: #121212;
+    }
     /* Make your wallpaper fill edge‑to‑edge */
     body {
       background-repeat:   no-repeat;
@@ -154,21 +171,6 @@
       transform: scale(1.05);
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
       }
-    }
-
-    html, body {
-      height: 100%;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      overflow: hidden;
-      transition: background-color 0.5s ease-in-out;
-    }
-    body.dark-mode {
-        background-color: #121212;
     }
 
     .search-bar-form {
@@ -1374,6 +1376,10 @@
 
   <script>
     
+    // allow CSS :active to fire immediately on iOS/Android (sidebar-toggle-btn)
+    document.addEventListener('touchstart', function(){}, {passive: true});
+
+
     let rearrangeMode = false;
     let bookmarks = [];
     let glassMode = false;
@@ -2990,15 +2996,6 @@ function enableDragAndDrop() {
         e.preventDefault();
       }
     });
-
-    const sidebarBtn = document.querySelector('#sidebar-toggle-btn');
-      if (sidebarBtn) {
-        sidebarBtn.addEventListener('click', e => {
-          // your existing toggle logic runs first...
-          e.currentTarget.blur();   // ← immediately remove focus
-    });
-  }
-
 
     window.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
