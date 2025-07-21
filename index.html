@@ -7,13 +7,11 @@
 
 <link rel="manifest" href="manifest.json">
 
-<meta name="theme-color" content="#050f26">
+<meta name="theme-color" content="#ffffff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<!-- Let your content show behind the notch -->
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<!-- Extend viewport into the safe‑area -->
 <meta name="viewport"
   content="width=device-width,
            initial-scale=1.0,
@@ -103,6 +101,12 @@
             opacity: 1;
             transform: translateY(0);
         }
+    }
+
+    /* FIX: Apply animation only when not in rearrange mode */
+    #bookmarkGrid:not(.rearrange-active):not(.no-animation) .tile {
+        animation: tileFadeIn 0.2s ease-out forwards;
+        opacity: 0; /* Make invisible only for the animation */
     }
 
     .tile.dragging {
@@ -450,8 +454,19 @@
         justify-content: center;
         border: none;
         transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        outline: none;
     }
-    @media (hover: hover) {
+
+    /* FIX: Refactored hover/active states for sidebar button */
+    #sidebar-toggle-btn:active .hamburger-icon span,
+    #sidebar-toggle-btn.active-touch .hamburger-icon span,
+    #sidebar-toggle-btn:focus-visible .hamburger-icon span {
+        background: var(--accent-color);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
         #sidebar-toggle-btn:hover {
             background: rgba(50, 50, 50, 0.2);
         }
@@ -459,21 +474,6 @@
             background: var(--accent-color);
         }
     }
-
-          /* accent on hover, focus, active **or** our JS “touch” class */
-    #sidebar-toggle-btn:hover .hamburger-icon span,
-    #sidebar-toggle-btn:active .hamburger-icon span,
-    #sidebar-toggle-btn:focus .hamburger-icon span,
-    #sidebar-toggle-btn.active-touch .hamburger-icon span {
-      background: var(--accent-color);
-    }
-
-        #sidebar-toggle-btn {
-        touch-action: manipulation;      /* ensures pointerdown fires immediately */
-            -webkit-tap-highlight-color: transparent;  /* no gray/yellow flash */
-            outline: none;                              /* no default focus ring */
-    }
-
 
     #sidebar-toggle-btn .hamburger-icon {
         width: 24px;
@@ -741,7 +741,7 @@
       z-index: 10;
       box-shadow: 0 8px 32px rgba(0,123,255,0.25);
     }
-    .tile:not(.add-tile):hover {
+    .rearrange-active .tile:not(.add-tile):hover {
       transform: scale(1.12);
       box-shadow: 0 8px 24px rgba(0,123,255,0.18);
     }
@@ -1564,14 +1564,32 @@
     }
 
     function applyRearrangeMode() {
-      const grid = document.getElementById("bookmarkGrid");
-      if (rearrangeMode) {
-        grid.classList.add("rearrange-active");
-      } else {
-        grid.classList.remove("rearrange-active");
-      }
-      loadBookmarks();
-    }
+  const grid = document.getElementById("bookmarkGrid");
+  const tiles = grid.querySelectorAll('.tile:not(.add-tile)');
+
+  // This logic now applies styles directly to the existing tiles
+  // instead of reloading them from scratch.
+  if (rearrangeMode) {
+    // Entering rearrange mode
+    grid.classList.add("rearrange-active");
+    tiles.forEach(tile => {
+      tile.draggable = true;
+      tile.classList.add('rearrange-wiggle');
+      const deleteBtn = tile.querySelector('.delete-btn');
+      if (deleteBtn) deleteBtn.style.display = 'flex';
+    });
+  } else {
+    // Exiting rearrange mode
+    grid.classList.remove("rearrange-active");
+    tiles.forEach(tile => {
+      tile.draggable = false;
+      tile.classList.remove('rearrange-wiggle');
+      const deleteBtn = tile.querySelector('.delete-btn');
+      if (deleteBtn) deleteBtn.style.display = 'none';
+    });
+  }
+  // By removing the call to loadBookmarks() here, we prevent the reload and fix the animation issue.
+}
 
     let toastTimeout;
     function showToast(message) {
@@ -1770,6 +1788,7 @@
           document.body.classList.remove("bg-image-active");
           localStorage.setItem("videoUrl", url);
           localStorage.setItem("hasVideo", "true");
+          updateThemeColor(); // FIX: Update status bar color
 
           try {
             const db = await openDB();
@@ -1810,6 +1829,7 @@
         applyGradientBackground(0);
         document.getElementById('gradientSlider').value = 0;
 
+        updateThemeColor(); // FIX: Update status bar color
         if(showAlertMsg) showToast("Wallpaper has been removed.");
     }
 
@@ -1833,6 +1853,7 @@
         const slider = document.getElementById('gradientSlider');
         const percentage = (gradients.length <= 1) ? 100 : (gradientIndex / (gradients.length - 1)) * 100;
         slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
+        updateThemeColor(); // FIX: Update status bar color
     }
 
     function applyGradientBackground(index) {
@@ -2128,6 +2149,8 @@
       if (newTabLinks) a.target = "_blank";
       a.dataset.index = index;
       a.tabIndex = 0;
+      
+      // FIX: Apply animation delay via inline style so it works with the CSS rule
       a.style.animationDelay = `${index * 0.03}s`;
 
       if ('ontouchstart' in window) {
@@ -2442,6 +2465,20 @@ function enableDragAndDrop() {
         }
     }
 
+    // FIX: New function to dynamically update the Android status bar color
+    function updateThemeColor() {
+        const metaThemeColor = document.querySelector("meta[name=theme-color]");
+        if (!metaThemeColor) return;
+
+        let color = document.body.classList.contains('dark-mode') ? "#121212" : "#ffffff";
+
+        if (document.body.classList.contains('video-active') || document.body.classList.contains('bg-image-active')) {
+            color = "transparent";
+        }
+        
+        metaThemeColor.setAttribute("content", color);
+    }
+
     function toggleDarkMode() {
       const isDark = localStorage.getItem("dark-mode") === "true";
       const newDark = !isDark;
@@ -2459,6 +2496,7 @@ function enableDragAndDrop() {
         document.documentElement.style.setProperty("--bg-color", "white");
         document.documentElement.style.setProperty("--text-color", "#000000");
       }
+      updateThemeColor(); // Update status bar color on mode change
     }
 
     function applyGlassMode() {
@@ -2613,6 +2651,7 @@ function enableDragAndDrop() {
             try {
                 await storeVideo(file);
                 localStorage.setItem("hasVideo", "true");
+                updateThemeColor(); // FIX: Update status bar color
             } catch (error) {
                 console.error("Failed to store video:", error.message, error.stack);
             }
@@ -2647,6 +2686,7 @@ function enableDragAndDrop() {
                 document.body.style.backgroundImage = `url('${dataUrl}')`;
                 document.body.classList.add("bg-image-active");
                 localStorage.setItem("bgImage", dataUrl);
+                updateThemeColor(); // FIX: Update status bar color
                 showToast("Wallpaper set!");
             }
             img.src = e.target.result;
@@ -2678,41 +2718,44 @@ function enableDragAndDrop() {
     }
 
     function performSearch() {
-      const query = document.getElementById("searchInput").value.trim();
-      if (!query) return;
+        const query = document.getElementById("searchInput").value.trim();
+        if (!query) return;
 
-      const isFullURL   = /^(https?:\/\/)/i.test(query);
-      const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
+        const isFullURL   = /^(https?:\/\/)/i.test(query);
+        const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
 
-      if (isFullURL || isDomainURL) {
-          const dest = isFullURL ? query : `https://${query}`;
-          if (newTabLinks) {
-            window.open(dest, '_blank');
-          } else {
-            window.location.href = dest;
-          }
-          return;
-      }
+        if (isFullURL || isDomainURL) {
+            const dest = isFullURL ? query : `https://${query}`;
+            if (newTabLinks) {
+                window.open(dest, '_blank');
+            } else {
+                window.location.href = dest;
+            }
+            return;
+        }
 
-      const engineName = localStorage.getItem('searchEngine') || 'Google';
-      const baseURL    = searchEngines[engineName].url;
-      let searchURL  = baseURL + encodeURIComponent(query);
-      
-      if (engineName === 'Google') {
-  searchURL += '&udm=14&igu=1';
-}
+        const engineName = localStorage.getItem('searchEngine') || 'Google';
+        const baseURL    = searchEngines[engineName].url;
+        let searchURL    = baseURL + encodeURIComponent(query);
+        
+        if (engineName === 'Google') {
+            searchURL += '&udm=14&igu=1';
+        }
 
-         if (newTabLinks) {
-      // always open new tab if user asked for it
-      window.open(searchURL, '_blank');
-    } else if (isIosPwa()) {
-      // on iOS PWA, stay in the same webview
-      window.open(searchURL, '_self');
-    } else {
-      // on desktops & Android, navigate normally
-      window.location.href = searchURL;
+        if (newTabLinks) {
+            window.open(searchURL, '_blank');
+        } else if (isIosPwa()) {
+            // FIX: This method is more reliable for staying in an iOS PWA
+            const a = document.createElement('a');
+            a.href = searchURL;
+            a.target = '_self';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        } else {
+            window.location.href = searchURL;
+        }
     }
-  }
 
     
     function setSearchEngine(name) {
@@ -2791,6 +2834,8 @@ function enableDragAndDrop() {
 
     let recognition = null;
     let handleCancelClick;
+    // FIX: Add a timer to automatically stop recognition on pause (for iOS)
+    let speechEndTimeout = null;
 
     function startVoiceSearch() {
       if (!('webkitSpeechRecognition' in window)) {
@@ -2807,7 +2852,7 @@ function enableDragAndDrop() {
       recognition = new webkitSpeechRecognition();
       recognition.lang = "en-US";
       recognition.interimResults = true;
-      recognition.continuous = false;
+      recognition.continuous = true; // Use continuous and manage the end manually
       const searchInput = document.getElementById("searchInput");
       const micIcon = document.getElementById("micIcon");
       const container = document.querySelector('.container');
@@ -2829,7 +2874,9 @@ function enableDragAndDrop() {
       };
 
       recognition.onresult = (event) => {
+        clearTimeout(speechEndTimeout); // Reset timer on new result
         let interimTranscript = "";
+        finalTranscript = ""; // Reset final transcript each time
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const transcript = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
@@ -2840,6 +2887,13 @@ function enableDragAndDrop() {
         }
         searchInput.value = finalTranscript + interimTranscript;
         handleSearchInput();
+
+        // Set a timer to stop if user pauses for 1 second
+        speechEndTimeout = setTimeout(() => {
+          if(recognition && recognition._isStarted) {
+            recognition.stop();
+          }
+        }, 1000);
       };
 
       recognition.onerror = (event) => {
@@ -2849,12 +2903,14 @@ function enableDragAndDrop() {
       };
 
       recognition.onend = () => {
+        clearTimeout(speechEndTimeout); // Clear timer on end
         recognition._isStarted = false;
         const engineName = localStorage.getItem('searchEngine') || 'Google';
         searchInput.placeholder = `Search with ${engineName}...`;
         micIcon.style.color = "";
         container.removeEventListener('click', handleCancelClick);
-        if (finalTranscript.trim()) {
+        // Use the value from the input field as final transcript might not be set correctly
+        if (searchInput.value.trim()) {
           performSearch();
         }
       };
@@ -2932,6 +2988,7 @@ function enableDragAndDrop() {
         } else if (gradientIndex > 0) {
             applyGradientBackground(gradientIndex);
         }
+        updateThemeColor(); // Set initial theme color
     }
 
     function isTouchDevice() {
@@ -2956,7 +3013,6 @@ function enableDragAndDrop() {
       const savedGradient = localStorage.getItem("gradientIndex") || 0;
       applyGradientBackground(savedGradient);
 
-      // Restore the last image/video wallpaper
       await loadBackgrounds(); 
       
       if (localStorage.getItem("minimalistMode") === "true") {
@@ -3000,29 +3056,22 @@ function enableDragAndDrop() {
       }
     });
 
-        // allow CSS :active to fire on first tap
-document.addEventListener('touchstart', ()=>{}, {passive:true});
+    // FIX: Refined logic for sidebar button touch state
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebarBtn = document.querySelector('#sidebar-toggle-btn');
+        if (sidebarBtn) {
+            const removeActiveClass = () => {
+                sidebarBtn.classList.remove('active-touch');
+            };
 
-const sidebarBtn = document.querySelector('#sidebar-toggle-btn');
-if (sidebarBtn) {
-  // add the flash class on press
-  sidebarBtn.addEventListener('pointerdown', () => {
-    sidebarBtn.classList.add('active-touch');
-  });
-  // on release, remove it AND blur so focus‑styles go away immediately
-  sidebarBtn.addEventListener('pointerup',   e => {
-    sidebarBtn.classList.remove('active-touch');
-    sidebarBtn.blur();
-  });
-  // also clean up on cancel/leave
-  ['pointercancel','pointerleave'].forEach(evt => {
-    sidebarBtn.addEventListener(evt, () => {
-      sidebarBtn.classList.remove('active-touch');
+            sidebarBtn.addEventListener('pointerdown', () => {
+                sidebarBtn.classList.add('active-touch');
+            });
+            sidebarBtn.addEventListener('pointerup', removeActiveClass);
+            sidebarBtn.addEventListener('pointerleave', removeActiveClass);
+            sidebarBtn.addEventListener('pointercancel', removeActiveClass);
+        }
     });
-  });
-}
-
-
 
     window.addEventListener('DOMContentLoaded', () => {
       const params = new URLSearchParams(window.location.search);
