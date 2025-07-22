@@ -5,9 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
   <title>HomePage Pro</title>
 
+  <!-- iPhone 15 Pro Max (428×926 @3x) -->
+<link rel="apple-touch-startup-image"
+      href="/splash/iphone-15-pro-max.png"
+      media="(device-width: 428px) and (device-height: 926px)
+             and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+<!-- repeat for landscape orientations if you care -->
+
 <link rel="manifest" href="manifest.json">
 
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#1a1a1a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -2706,16 +2714,6 @@ function enableDragAndDrop() {
     }
     });
 
-    function startVoiceSearch() {
-      const micBtn = document.getElementById('micIcon');
-      if (micBtn) {
-        micBtn.click();
-        return;
-      }
-      if (typeof triggerMic === 'function') {
-        triggerMic();
-      }
-    }
 
     function performSearch() {
         const query = document.getElementById("searchInput").value.trim();
