@@ -2086,7 +2086,6 @@
           document.body.classList.remove("bg-image-active");
           localStorage.setItem("videoUrl", url);
           localStorage.setItem("hasVideo", "true");
-          updateThemeColor(); // FIX: Update status bar color
 
           try {
             const db = await openDB();
@@ -2127,7 +2126,6 @@
         applyGradientBackground(0);
         document.getElementById('gradientSlider').value = 0;
 
-        updateThemeColor(); // FIX: Update status bar color
         if(showAlertMsg) showToast("Wallpaper has been removed.");
     }
 
@@ -2151,7 +2149,6 @@
         const slider = document.getElementById('gradientSlider');
         const percentage = (gradients.length <= 1) ? 100 : (gradientIndex / (gradients.length - 1)) * 100;
         slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
-        updateThemeColor(); // FIX: Update status bar color
     }
 
     function applyGradientBackground(index) {
@@ -2335,10 +2332,18 @@
     }
 
     function toggleNewTabLinks() {
-      newTabLinks = !newTabLinks;
-      localStorage.setItem("newTabLinks", newTabLinks);
-      updateNewTabLinksOption();
+  newTabLinks = !newTabLinks;
+  localStorage.setItem('newTabLinks', newTabLinks);
+  // update all existing tiles right away:
+  document.querySelectorAll('a.tile').forEach(a => {
+    if (newTabLinks) {
+      a.setAttribute('target', '_blank');
+    } else {
+      a.removeAttribute('target');
     }
+  });
+}
+
 
     function updateNewTabLinksOption() {
       const option = document.getElementById("newTabLinksOption");
@@ -2495,6 +2500,11 @@
         img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
       }
       img.draggable = false;
+
+      // restore last‑saved icon style (default to "round")
+      const savedStyle = localStorage.getItem("iconStyle") || "round";
+      img.classList.add(savedStyle);
+
       
       const name = document.createElement("div");
       name.className = "bookmark-label";
@@ -2797,7 +2807,6 @@ function enableDragAndDrop() {
         document.documentElement.style.setProperty("--bg-color", "white");
         document.documentElement.style.setProperty("--text-color", "#000000");
       }
-      updateThemeColor(); // Update status bar color on mode change
     }
 
     function applyGlassMode() {
@@ -2832,17 +2841,11 @@ function enableDragAndDrop() {
     }
 
     function applyIconStyle(style) {
-      const allIcons = document.querySelectorAll(".tile img");
-      allIcons.forEach(img => {
-        if (style === "squircle") {
-          img.style.borderRadius = "20%";
-        } else if (style === "rounded-rect") {
-          img.style.borderRadius = "65%/90%";
-        } else {
-          img.style.borderRadius = "50%";
-        }
-      });
-    }
+   document.querySelectorAll(".tile img").forEach(img => {
+     img.classList.remove("round","squircle","rounded-rect");
+     img.classList.add(style);
+   });
+ }
 
     function setTileSize(size) {
       const tiles         = document.querySelectorAll(".tile");
@@ -2952,7 +2955,6 @@ function enableDragAndDrop() {
             try {
                 await storeVideo(file);
                 localStorage.setItem("hasVideo", "true");
-                updateThemeColor(); // FIX: Update status bar color
             } catch (error) {
                 console.error("Failed to store video:", error.message, error.stack);
             }
@@ -2987,7 +2989,6 @@ function enableDragAndDrop() {
                 document.body.style.backgroundImage = `url('${dataUrl}')`;
                 document.body.classList.add("bg-image-active");
                 localStorage.setItem("bgImage", dataUrl);
-                updateThemeColor(); // FIX: Update status bar color
                 showToast("Wallpaper set!");
             }
             img.src = e.target.result;
@@ -3066,9 +3067,12 @@ function enableDragAndDrop() {
   const input = document.getElementById('searchInput');
   if (input) input.placeholder = `Search ${name}…`;
 
-  // 5) Close the list
-  openEngineChooser();
-}
+    // 5) Close the dropdown
+  const hdr = document.getElementById('searchEngineHeader');
+  const cnt = document.getElementById('searchEngineContent');
+  hdr.classList.remove('open');
+  cnt.classList.remove('open');
+  }
 
 
 
@@ -3123,7 +3127,9 @@ function enableDragAndDrop() {
       recognition = new webkitSpeechRecognition();
       recognition.lang = "en-US";
       recognition.interimResults = true;
-      recognition.continuous = false; // Stop automatically on pause (iOS‑friendly)      const searchInput = document.getElementById("searchInput");
+      recognition.continuous = false; // Stop automatically on pause (iOS‑friendly)
+      recognition.onspeechend = () => recognition.stop();
+      const searchInput = document.getElementById("searchInput");
       const micIcon = document.getElementById("micIcon");
       const container = document.querySelector('.container');
       let finalTranscript = "";
@@ -3172,20 +3178,31 @@ function enableDragAndDrop() {
         }
       };
 
-      recognition.onend = () => {
-        clearTimeout(speechEndTimeout); // Clear timer on end
-        recognition._isStarted = false;
-        const engineName = localStorage.getItem('searchEngine') || 'Google';
-        searchInput.placeholder = `Search with ${engineName}...`;
-        micIcon.style.color = "";
-        container.removeEventListener('click', handleCancelClick);
-        // Use the value from the input field as final transcript might not be set correctly
-        if (searchInput.value.trim()) {
-          performSearch();
-        }
-      };
-      recognition.start();
+      // 3) the fixed onend:
+  recognition.onend = () => {
+    clearTimeout(speechEndTimeout);
+    recognition._isStarted = false;
+
+    // restore placeholder + mic color
+    const eng = localStorage.getItem("searchEngine") || "Google";
+    searchInput.placeholder = `Search with ${eng}…`;
+    micIcon.style.color     = "";
+    container.removeEventListener("click", handleCancelClick);
+
+    // if there's text, run performSearch
+    if (searchInput.value.trim()) {
+      performSearch();
+
+      // and if newTabLinks is on, clear the bar immediately
+      if (newTabLinks) {
+        searchInput.value = "";
+        handleSearchInput();
+      }
     }
+  };
+
+  recognition.start();
+}
 
     function exportBookmarks() {
       try {
@@ -3296,13 +3313,6 @@ function enableDragAndDrop() {
       enableDragAndDrop();
       applyDarkMode(localStorage.getItem("dark-mode") === "true");
       loadBookmarks();
-      
-      const savedIconStyle = localStorage.getItem("iconStyle") || "round";
-      applyIconStyle(savedIconStyle);
-      const weatherEnabled = localStorage.getItem("showWeather") === "true";
-      applyWeatherToggle(weatherEnabled);
-      const greetingEnabled = localStorage.getItem("showGreeting") === "true";
-      applyGreetingToggle(greetingEnabled);
       
       initSearchEngineSelector();
       
@@ -3431,15 +3441,50 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // ─── Initialize Switch States ───
-document.getElementById('darkModeSwitch').checked = document.body.classList.contains('dark-mode');
-document.getElementById('glassModeSwitch').checked = glassMode;
-document.getElementById('labelsSwitch').checked = document.body.classList.contains('hide-labels');
-document.getElementById('newTabLinksSwitch').checked = newTabLinks;
-document.getElementById('clockSecondsSwitch').checked = showSeconds;
-document.getElementById('weatherSwitch').checked = localStorage.getItem('showWeather') === 'true';
-document.getElementById('greetingSwitch').checked = localStorage.getItem('showGreeting') !== 'false'; 
-// (adjust key names if you used something else)
+    window.addEventListener('DOMContentLoaded', () => {
+  // ⏰ Clock & seconds
+  updateClock();  
+  document.getElementById('clockSecondsSwitch').checked =
+    (localStorage.getItem('showSeconds') === 'true');
+
+  // ☁️ Weather
+  const weatherOn = localStorage.getItem('showWeather') === 'true';
+  document.getElementById('weatherSwitch').checked = weatherOn;
+  applyWeatherToggle(weatherOn);
+
+  // 👋 Greeting
+  const greetOn = localStorage.getItem('showGreeting') === 'true';
+  document.getElementById('greetingSwitch').checked = greetOn;
+  applyGreetingToggle(greetOn);
+
+  // 🪩 Glass Mode
+  const glassOn = localStorage.getItem('glassMode') === 'true';
+  glassMode = glassOn;  // sync the module‑level var
+  document.getElementById('glassModeSwitch').checked = glassOn;
+  applyGlassMode();
+
+  // 🏷️ Bookmark Labels
+  const labelsHidden = localStorage.getItem('hideLabels') === 'true';
+  document.getElementById('labelsSwitch').checked = labelsHidden;
+  if (labelsHidden) {
+    document.body.classList.add('hide-labels');
+  } else {
+    document.body.classList.remove('hide-labels');
+  }
+
+  // 🌀 Icon Style
+  
+
+  // 🔗 Open Links in New Tab
+  const newTab = localStorage.getItem('newTabLinks') === 'true';
+  document.getElementById('newTabLinksSwitch').checked = newTab;
+});
+// …after restoring switch state…
+document.querySelectorAll('a.tile').forEach(a => {
+  if (newTabLinks) a.setAttribute('target','_blank');
+  else a.removeAttribute('target');
+});
+
 
 
    if ('serviceWorker' in navigator) {
