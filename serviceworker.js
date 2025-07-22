@@ -1,62 +1,100 @@
-const CACHE_NAME = 'homepagepro-v2'; // Increment the version
-// Add your new CSS and JS files to this list
+// Increment your version here
+const CACHE_NAME = 'homepagepro-v3';
+
+// Add all your static assets here
 const STATIC_ASSETS = [
+  '/',
   'index.html',
   'style.css',
   'script.js',
   'manifest.json',
-  'icons/icon-512.png',
-  'icons/icon-192.png'
+  'icons/icon-72.png',
+  'icons/icon-96.png',
+  'icons/icon-128.png',
+  'icons/icon-144.png',
+  'icons/icon-152.png',
+  'icons/icon-192.png',
+  'icons/icon-384.png',
+  'icons/icon-512.png'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      console.log('Opened cache');
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('🔨 Precaching assets');
+        return cache.addAll(STATIC_ASSETS);
+      })
+      .then(() => self.skipWaiting())         // activate worker immediately
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    // delete any old caches that don't match our current name
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => key !== CACHE_NAME && caches.delete(key))
+      )
+    ).then(() => self.clients.claim())       // take control of pages ASAP
   );
 });
 
 self.addEventListener('fetch', event => {
-  // For navigation requests (like the main HTML page), use Stale-While-Revalidate
-  if (event.request.mode === 'navigate') {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // 1) App shell: stale-while-revalidate for navigations
+  if (request.mode === 'navigate') {
     event.respondWith(
-      caches.open(CACHE_NAME).then(cache => {
-        return cache.match(event.request).then(response => {
-          const fetchPromise = fetch(event.request).then(networkResponse => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
-          // Return cached version immediately, while fetching update in background
-          return response || fetchPromise;
+      caches.match('index.html').then(cached => {
+        const network = fetch(request).then(res => {
+          caches.open(CACHE_NAME).then(cache =>
+            cache.put('index.html', res.clone())
+          );
+          return res;
+        });
+        return cached || network;
+      })
+    );
+    return;
+  }
+
+  // 2) Cache-first for your static assets
+  if (STATIC_ASSETS.includes(url.pathname) || STATIC_ASSETS.includes(url.pathname + '/')) {
+    event.respondWith(
+      caches.match(request).then(cached => {
+        return cached || fetch(request).then(res => {
+          caches.open(CACHE_NAME).then(cache =>
+            cache.put(request, res.clone())
+          );
+          return res;
         });
       })
     );
     return;
   }
 
-  // For other requests (CSS, JS, images), use a Cache First strategy
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      // If it's in the cache, return it. Otherwise, fetch from network.
-      return response || fetch(event.request);
-    })
-  );
-});
-
-// Clean up old caches
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
+  // 3) Runtime caching example (e.g. weather API)
+  if (url.origin === 'https://api.openweathermap.org') {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(cache =>
+        cache.match(request).then(cached => {
+          const network = fetch(request).then(res => {
+            cache.put(request, res.clone());
+            return res;
+          });
+          return cached || network;
         })
-      );
-    })
+      )
+    );
+    return;
+  }
+
+  // 4) Network-first for everything else, fallback to cache
+  event.respondWith(
+    fetch(request)
+      .then(res => res)
+      .catch(() => caches.match(request))
   );
 });
