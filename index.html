@@ -3,6 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+
+  
+      <!-- ── INSERT HERE ── -->
+        <script>
+          ;(function(){
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            // remove any existing theme-color tags
+            document.querySelectorAll('meta[name="theme-color"]')
+              .forEach(m => m.remove());
+
+            const m = document.createElement('meta');
+            m.name    = 'theme-color';
+            m.content = isAndroid
+              ? 'rgba(0,0,0,0)'               // transparent on Android
+              : '#YOUR_DEFAULT_THEME_COLOR'; // fallback on desktop
+            document.head.appendChild(m);
+          })();
+        </script>
+        <!-- ── END INSERT ── -->
+
+
   <title>HomePage Pro</title>
 
   <!-- iPhone 15 Pro Max (428×926 @3x) -->
@@ -15,7 +36,7 @@
 
 <link rel="manifest" href="manifest.json">
 
-<meta name="theme-color" content="#1a1a1a">
+<meta name="theme-color" content="#050f26">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -127,7 +148,7 @@
     .tile:not(.add-tile):hover, .tile:focus-visible {
       transform: scale(1.1);
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-      background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.4));
+      background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), var(--accent-color));
       transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
@@ -605,7 +626,6 @@
 
     .toolbar-option {
       margin: 10px 0;
-      padding: 10px;
       cursor: pointer;
       white-space: nowrap;
       font-size: 14px;
@@ -613,7 +633,9 @@
       transition: all 0.2s ease;
       border-radius: 8px;
       display: flex;
+      justify-content: space-between;
       align-items: center;
+      padding: 8px 12px; /* adjust for your spacing */
     }
 
     .toolbar-option-header {
@@ -679,6 +701,16 @@
         border-radius: 5px;
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
+
+    /* place in your <style> below the .toolbar-option rules */
+.toolbar-option.search-engine-option {
+  justify-content: flex-start;  /* left‑align contents */
+}
+.search-engine-option .search-engine-icon {
+  margin-right: 0.25em;         /* ~ single‑letter space */
+  width: 20px; height: 20px;    /* match your sizing */
+}
+
 
 
     .toolbar-option:hover {
@@ -1125,12 +1157,27 @@
         font-weight: 700;
     }
 
-    .toggle-arrow:hover,
-    .toggle-add:hover,
-    .toggle-refresh:hover {
-      opacity: 1;
-      transform: scale(1.15);
+    /* Hover only on desktops (pointer: fine) */
+    @media (pointer: fine) {
+      .toggle-arrow:hover,
+      .toggle-add:hover,
+      .toggle-refresh:hover {
+        opacity: 1;
+        background-color: var(--accent-color);
+        transform: scale(1.15);
+      }
     }
+
+    /* Remove any touch :active styling so nothing sticks on touch */
+    .toggle-arrow:active,
+    .toggle-add:active,
+    .toggle-refresh:active {
+      /* override to no effect on touch */
+      background-color: transparent !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
 
     #bookmarkGrid {
       display: flex;
@@ -1229,6 +1276,67 @@
       margin-right: 15px;
       border-radius: 5px;
     }
+
+    /* ─── iOS‑style switch ─── */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+  /* new: white outline */
+  border: 1px solid rgb(255, 255, 255);
+  box-sizing: border-box;
+}
+.switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 2px; bottom: 2px;
+  background-color: white;
+  transition: .2s;
+  border-radius: 50%;
+}
+/* checked state */
+.switch input:checked + .slider {
+  background-color: var(--accent-color);
+}
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+}
+/* Dark‑Mode switch default (off) = white */
+#darkModeSwitch + .slider {
+  background-color: #ccc;
+}
+/* Dark‑Mode switch on = black */
+#darkModeSwitch:checked + .slider {
+  background-color: black !important;
+}
+
+/* colon & AM/PM accent */
+#sidebar-clock .colon,
+#sidebar-clock .ampm {
+  color: var(--accent-color);
+}
+
+/* Accent‑color on modal close buttons */
+.close-icon:hover {
+  color: var(--accent-color);
+}
+
 
   </style>
 </head>
@@ -1329,18 +1437,149 @@
     </div>
     <div class="toolbar-option" id="addBookmarkBtnSidebar" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();" tabindex="0">📝 Add Bookmark</div>
     
-    <div class="toolbar-option toolbar-option-header" id="searchEngineHeader" tabindex="0">
-        <span id="currentSearchEngine"></span>
-    </div>
-    <div class="collapsible-content" id="searchEngineContent">
-        </div>
+    <!-- ─── Search Engine Selector ─── -->
+<div
+  class="toolbar-option toolbar-option-header"
+  id="searchEngineHeader"
+  tabindex="0"
+  role="button"
+>
+  <span id="currentSearchEngine">
+    <img
+      src="https://www.google.com/s2/favicons?sz=64&domain=google.com"
+      class="search-engine-icon"
+      alt="Google logo"
+    />
+    <span>Google</span>
+  </span>
+  <span class="arrow"></span>
+</div>
+
+<div class="collapsible-content" id="searchEngineContent">
+  <div
+    class="toolbar-option search-engine-option"
+    data-engine="Google"
+    tabindex="0"
+    onclick="setSearchEngine('Google')"
+  >
+    <img
+      src="https://www.google.com/s2/favicons?sz=64&domain=google.com"
+      class="search-engine-icon"
+      alt="Google logo"
+    />
+    <span>Google</span>
+  </div>
+  <div
+    class="toolbar-option search-engine-option"
+    data-engine="DuckDuckGo"
+    tabindex="0"
+    onclick="setSearchEngine('DuckDuckGo')"
+  >
+    <img
+      src="https://www.google.com/s2/favicons?sz=64&domain=duckduckgo.com"
+      class="search-engine-icon"
+      alt="DuckDuckGo logo"
+    />
+    <span>DuckDuckGo</span>
+  </div>
+  <div
+    class="toolbar-option search-engine-option"
+    data-engine="Bing"
+    tabindex="0"
+    onclick="setSearchEngine('Bing')"
+  >
+    <img
+      src="https://www.google.com/s2/favicons?sz=64&domain=bing.com"
+      class="search-engine-icon"
+      alt="Bing logo"
+    />
+    <span>Bing</span>
+  </div>
+  <div
+    class="toolbar-option search-engine-option"
+    data-engine="Yahoo"
+    tabindex="0"
+    onclick="setSearchEngine('Yahoo')"
+  >
+    <img
+      src="https://www.google.com/s2/favicons?sz=64&domain=yahoo.com"
+      class="search-engine-icon"
+      alt="Yahoo logo"
+    />
+    <span>Yahoo</span>
+  </div>
+  <div
+    class="toolbar-option search-engine-option"
+    data-engine="Brave"
+    tabindex="0"
+    onclick="setSearchEngine('Brave')"
+  >
+    <img
+      src="https://www.google.com/s2/favicons?sz=64&domain=brave.com"
+      class="search-engine-icon"
+      alt="Brave logo"
+    />
+    <span>Brave</span>
+  </div>
+  <div
+    class="toolbar-option search-engine-option"
+    data-engine="Perplexity"
+    tabindex="0"
+    onclick="setSearchEngine('Perplexity')"
+  >
+    <img
+      src="https://www.google.com/s2/favicons?sz=64&domain=perplexity.ai"
+      class="search-engine-icon"
+      alt="Perplexity logo"
+    />
+    <span>Perplexity</span>
+  </div>
+</div>
+
 
     <div class="toolbar-option toolbar-option-header" id="clockSettingsHeader" tabindex="0">🕰️ Clock & Greeting</div>
     <div class="collapsible-content" id="clockSettingsContent">
         <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()" tabindex="0">🕒 Toggle Clock Format</div>
-        <div class="toolbar-option" aria-label="Toggle Clock Seconds" onclick="toggleClockSeconds()" tabindex="0">⏱️ Toggle Clock Seconds</div>
-        <div class="toolbar-option" onclick="toggleWeather()" tabindex="0">🌦️ Toggle Weather Widget</div>
-        <div class="toolbar-option" onclick="toggleGreeting()" tabindex="0">👤 Toggle Greeting</div>
+       
+<!-- Show Clock Seconds -->
+<label class="toolbar-option">
+  ⏱️ Show Clock Seconds
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="clockSecondsSwitch"
+      onchange="toggleClockSeconds()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+      
+<!-- Weather Widget -->
+<label class="toolbar-option">
+  ☁️ Weather Widget
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="weatherSwitch"
+      onchange="toggleWeather()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+       
+<!-- Greeting -->
+<label class="toolbar-option">
+  👋 Greeting
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="greetingSwitch"
+      onchange="toggleGreeting()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+        
         <div class="toolbar-option" onclick="askUserName()" tabindex="0">✏️ Change Name</div>
     </div>
 
@@ -1357,15 +1596,66 @@
         <label for="accentColorPicker">🎨 Accent Color</label>
         <input type="color" id="accentColorPicker" oninput="setAccentColor(this.value)">
     </div>
-    <div class="toolbar-option" aria-label="Toggle Glass Mode" onclick="toggleGlassMode()" tabindex="0">🧊 Toggle Glass Mode</div>
-    <div class="toolbar-option" aria-label="Toggle Dark Mode" onclick="toggleDarkMode()" tabindex="0">🌙 Toggle Dark Mode</div>
+  
+<!-- Glass Mode -->
+<label class="toolbar-option">
+  🪩 Glass Mode
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="glassModeSwitch"
+      onchange="toggleGlassMode()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+  
+<!-- Dark Mode -->
+<label class="toolbar-option">
+  🌙 Dark Mode
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="darkModeSwitch"
+      onchange="toggleDarkMode()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+  
     <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()" tabindex="0">🌀 Toggle Icon Style</div>
-    <div class="toolbar-option" onclick="toggleLabels()" tabindex="0">🔤 Toggle Bookmark Labels</div>
+  
+<!-- Bookmark Labels -->
+<label class="toolbar-option">
+  🏷️ Hide Bookmark Labels
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="labelsSwitch"
+      onchange="toggleLabels()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+  
     <div class="toolbar-option" id="tileSizeLabel">Resize Bookmark Tiles</div>
     <div id="tileSizeSliderContainer">
       <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
     </div>
-    <div class="toolbar-option" id="newTabLinksOption" onclick="toggleNewTabLinks()" tabindex="0">🔗 Open Links in New Tab</div>
+    
+<!-- Open Links in New Tab -->
+<label class="toolbar-option">
+  🔗 Open Links in New Tab
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="newTabLinksSwitch"
+      onchange="toggleNewTabLinks()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+    
     <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()" tabindex="0">🔄 Rearrange Bookmarks</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()" tabindex="0">📤 Export Bookmarks</div>
     <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()" tabindex="0">📥 Import Bookmarks</div>
@@ -1900,9 +2190,9 @@
         hours = hours % 12 || 12;
       }
       const hourStr = is24Hour ? hours.toString().padStart(2, '0') : hours.toString();
-      let timeHTML = `${hourStr}:${minutes}`;
+      let timeHTML = `${hourStr}<span class="colon">:</span>${minutes}`;
       if (showSeconds) {
-        timeHTML += `:<span class="seconds">${seconds}</span>`;
+        timeHTML += `<span class="colon">:</span><span class="seconds">${seconds}</span>`;
       }
       timeHTML += ampm ? `<span class="ampm">${ampm}</span>` : '';
       
@@ -2488,11 +2778,14 @@ function enableDragAndDrop() {
     }
 
     function toggleDarkMode() {
-      const isDark = localStorage.getItem("dark-mode") === "true";
-      const newDark = !isDark;
-      localStorage.setItem("dark-mode", newDark);
-      applyDarkMode(newDark);
-    }
+  // if the switch is ON (checked) → light mode (dark = false)
+  // if the switch is OFF (unchecked) → dark mode (dark = true)
+  const isChecked = document.getElementById('darkModeSwitch').checked;
+  const newDark  = !isChecked;
+  localStorage.setItem('dark-mode', newDark);
+  applyDarkMode(newDark);
+}
+
 
     function applyDarkMode(enabled) {
       if (enabled) {
@@ -2741,62 +3034,42 @@ function enableDragAndDrop() {
         }
 
         if (newTabLinks) {
-            window.open(searchURL, '_blank');
-        } else if (isIosPwa()) {
-            // FIX: This method is more reliable for staying in an iOS PWA
-            const a = document.createElement('a');
-            a.href = searchURL;
-            a.target = '_self';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+          window.open(searchURL, '_blank');
         } else {
-            window.location.href = searchURL;
+          // direct nav—which iOS PWA will handle in‑app and not fire the Google app
+          window.location.href = searchURL;
         }
-    }
+      }
 
     
     function setSearchEngine(name) {
-        localStorage.setItem('searchEngine', name);
-        const engine = searchEngines[name];
-        const currentEngineSpan = document.getElementById('currentSearchEngine');
-        
-        currentEngineSpan.innerHTML = `<img src="${engine.icon}" class="search-engine-icon" alt="${name} logo"> <span>${name}</span>`;
-        document.getElementById('searchInput').placeholder = `Search with ${name}...`;
-    }
+  // 1) Save choice
+  localStorage.setItem('searchEngine', name);
 
-    function initSearchEngineSelector() {
-        const header = document.getElementById('searchEngineHeader');
-        const content = document.getElementById('searchEngineContent');
-        content.innerHTML = '';
+  // 2) Icon lookup
+  const icons = {
+    Google:       'https://www.google.com/s2/favicons?sz=64&domain=google.com',
+    DuckDuckGo:   'https://www.google.com/s2/favicons?sz=64&domain=duckduckgo.com',
+    Bing:         'https://www.google.com/s2/favicons?sz=64&domain=bing.com',
+    Yahoo:        'https://www.google.com/s2/favicons?sz=64&domain=yahoo.com',
+    Brave:        'https://www.google.com/s2/favicons?sz=64&domain=brave.com',
+    Perplexity:   'https://www.google.com/s2/favicons?sz=64&domain=perplexity.ai'
+  };
+  const url = icons[name] || icons.Google;
 
-        Object.keys(searchEngines).forEach(name => {
-            const engine = searchEngines[name];
-            const option = document.createElement('div');
-            option.className = 'toolbar-option search-engine-option';
-            option.dataset.engine = name;
-            option.tabIndex = 0;
-            option.innerHTML = `<img src="${engine.icon}" class="search-engine-icon" alt="${name} logo"> <span>${name}</span>`;
-            
-            option.addEventListener('click', () => {
-                setSearchEngine(name);
-                header.classList.remove('open');
-                content.classList.remove('open');
-            });
+  // 3) Update header
+  document.getElementById('currentSearchEngine').innerHTML =
+    `<img src="${url}" class="search-engine-icon" alt="${name} logo">
+     <span>${name}</span>`;
 
-            option.addEventListener('keydown', (e) => {
-                if(e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    option.click();
-                }
-            });
+  // 4) (Optional) update your search‑input placeholder, if you have one
+  const input = document.getElementById('searchInput');
+  if (input) input.placeholder = `Search ${name}…`;
 
-            content.appendChild(option);
-        });
+  // 5) Close the list
+  openEngineChooser();
+}
 
-        const savedEngine = localStorage.getItem('searchEngine') || 'Google';
-        setSearchEngine(savedEngine);
-    }
 
 
       function flipCoin(isReflip = false) {
@@ -2850,8 +3123,7 @@ function enableDragAndDrop() {
       recognition = new webkitSpeechRecognition();
       recognition.lang = "en-US";
       recognition.interimResults = true;
-      recognition.continuous = true; // Use continuous and manage the end manually
-      const searchInput = document.getElementById("searchInput");
+      recognition.continuous = false; // Stop automatically on pause (iOS‑friendly)      const searchInput = document.getElementById("searchInput");
       const micIcon = document.getElementById("micIcon");
       const container = document.querySelector('.container');
       let finalTranscript = "";
@@ -3103,6 +3375,19 @@ function enableDragAndDrop() {
         setupCollapsible('searchEngineHeader', 'searchEngineContent');
     });
 
+    window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('searchEngine') || 'Google';
+  setSearchEngine(saved);
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const savedDark = localStorage.getItem('dark-mode') === 'true';
+  // apply whatever you had last
+  applyDarkMode(savedDark);
+  // but make the toggle CLOSED when dark, OPEN when light
+  document.getElementById('darkModeSwitch').checked = !savedDark;
+});
+
 
     document.getElementById('refreshBtn').addEventListener('click', () => {
       location.reload();
@@ -3146,13 +3431,30 @@ function enableDragAndDrop() {
     });
 
 
-   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("serviceWorker.js")
-        .then(reg => console.log("✅ Service worker registered"))
-        .catch(err => console.error("Service worker failed", err));
-    });
-  }
+    // ─── Initialize Switch States ───
+document.getElementById('darkModeSwitch').checked = document.body.classList.contains('dark-mode');
+document.getElementById('glassModeSwitch').checked = glassMode;
+document.getElementById('labelsSwitch').checked = document.body.classList.contains('hide-labels');
+document.getElementById('newTabLinksSwitch').checked = newTabLinks;
+document.getElementById('clockSecondsSwitch').checked = showSeconds;
+document.getElementById('weatherSwitch').checked = localStorage.getItem('showWeather') === 'true';
+document.getElementById('greetingSwitch').checked = localStorage.getItem('showGreeting') !== 'false'; 
+// (adjust key names if you used something else)
+
+
+   if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js', { scope: '/' })
+      .then(registration => {
+        console.log('✅ Service worker registered:', registration.scope);
+      })
+      .catch(error => {
+        console.error('❌ Service worker registration failed:', error);
+      });
+  });
+}
+
     
   </script>
 </body>
