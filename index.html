@@ -3055,37 +3055,43 @@ function enableDragAndDrop() {
 
 
     function performSearch() {
-        const query = document.getElementById("searchInput").value.trim();
-        if (!query) return;
+  const searchInput = document.getElementById("searchInput");
+  const query       = searchInput.value.trim();
+  if (!query) return;
 
-        const isFullURL   = /^(https?:\/\/)/i.test(query);
-        const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
+  const isFullURL   = /^(https?:\/\/)/i.test(query);
+  const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
 
-        if (isFullURL || isDomainURL) {
-            const dest = isFullURL ? query : `https://${query}`;
-            if (newTabLinks) {
-                window.open(dest, '_blank');
-            } else {
-                window.location.href = dest;
-            }
-            return;
-        }
+  // 1) URLs go straight
+  if (isFullURL || isDomainURL) {
+    const dest = isFullURL ? query : `https://${query}`;
+    if (newTabLinks) {
+      window.open(dest, '_blank');
+      // ← clear on any new‐tab
+      searchInput.value = "";
+      handleSearchInput();
+    } else {
+      window.location.href = dest;
+    }
+    return;
+  }
 
-        const engineName = localStorage.getItem('searchEngine') || 'Google';
-        const baseURL    = searchEngines[engineName].url;
-        let searchURL    = baseURL + encodeURIComponent(query);
-        
-        if (engineName === 'Google') {
-            searchURL += '&udm=14&igu=1';
-        }
+  // 2) Otherwise do a search
+  const engineName = localStorage.getItem('searchEngine') || 'Google';
+  const baseURL    = searchEngines[engineName].url;
+  const searchURL  = baseURL + encodeURIComponent(query);
+  
+  if (newTabLinks) {
+    window.open(searchURL, '_blank');
+    // ← clear on any new‐tab
+    searchInput.value = "";
+    handleSearchInput();
+  } else {
+    window.location.href = searchURL;
+  }
+}
 
-        if (newTabLinks) {
-          window.open(searchURL, '_blank');
-        } else {
-          // direct nav—which iOS PWA will handle in‑app and not fire the Google app
-          window.location.href = searchURL;
-        }
-      }
+
 
     
     function setSearchEngine(name) {
@@ -3173,6 +3179,7 @@ function enableDragAndDrop() {
       recognition.lang = "en-US";
       recognition.interimResults = true;
       recognition.continuous = false; // Stop automatically on pause (iOS‑friendly)
+     recognition.onspeechend = () => recognition.stop();  // ← here
       recognition.onspeechend = () => recognition.stop();
       const searchInput = document.getElementById("searchInput");
       const micIcon = document.getElementById("micIcon");
@@ -3195,7 +3202,6 @@ function enableDragAndDrop() {
       };
 
       recognition.onresult = (event) => {
-        clearTimeout(speechEndTimeout); // Reset timer on new result
         let interimTranscript = "";
         finalTranscript = ""; // Reset final transcript each time
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -3209,12 +3215,7 @@ function enableDragAndDrop() {
         searchInput.value = finalTranscript + interimTranscript;
         handleSearchInput();
 
-        // Set a timer to stop if user pauses for 3 second
-        speechEndTimeout = setTimeout(() => {
-          if(recognition && recognition._isStarted) {
-            recognition.stop();
-          }
-        }, 3000);
+        
       };
 
       recognition.onerror = (event) => {
@@ -3225,8 +3226,8 @@ function enableDragAndDrop() {
 
       // 3) the fixed onend:
   recognition.onend = () => {
-    clearTimeout(speechEndTimeout);
     recognition._isStarted = false;
+    recognition.onspeechend = () => recognition.stop();  // <-- VAD: stop when user stops talking
 
     // restore placeholder + mic color
     const eng = localStorage.getItem("searchEngine") || "Google";
@@ -3238,12 +3239,10 @@ function enableDragAndDrop() {
     if (searchInput.value.trim()) {
       performSearch();
 
-      // and if newTabLinks is on, clear the bar immediately
-      if (newTabLinks) {
-        searchInput.value = "";
-        handleSearchInput();
-      }
-    }
+      // then clear the bar
+  searchInput.value = "";
+  handleSearchInput();
+}
   };
 
   recognition.start();
