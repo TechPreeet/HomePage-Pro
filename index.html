@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 
   
-      <!-- ── INSERT HERE ── -->
-        <script>
+      <script>
           ;(function(){
             const isAndroid = /Android/i.test(navigator.userAgent);
             // remove any existing theme-color tags
@@ -21,18 +20,12 @@
             document.head.appendChild(m);
           })();
         </script>
-        <!-- ── END INSERT ── -->
+        <title>HomePage Pro</title>
 
-
-  <title>HomePage Pro</title>
-
-  <!-- iPhone 15 Pro Max (428×926 @3x) -->
-<link rel="apple-touch-startup-image"
+  <link rel="apple-touch-startup-image"
       href="/splash/iphone-15-pro-max.png"
       media="(device-width: 428px) and (device-height: 926px)
              and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
-
-<!-- repeat for landscape orientations if you care -->
 
 <link rel="manifest" href="manifest.json">
 
@@ -1464,8 +1457,7 @@
     </div>
     <div class="toolbar-option" id="addBookmarkBtnSidebar" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();" tabindex="0">📝 Add Bookmark</div>
     
-    <!-- ─── Search Engine Selector ─── -->
-<div
+    <div
   class="toolbar-option toolbar-option-header"
   id="searchEngineHeader"
   tabindex="0"
@@ -1516,7 +1508,7 @@
     onclick="setSearchEngine('Bing')"
   >
     <img
-      src="https://www.google.com/s2/favicons?sz=64&domain=bing.com"
+      src="https://www.bing.com/favicon.ico"
       class="search-engine-icon"
       alt="Bing logo"
     />
@@ -1568,7 +1560,6 @@
     <div class="collapsible-content" id="clockSettingsContent">
         <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()" tabindex="0">🕒 Toggle Clock Format</div>
        
-<!-- Show Clock Seconds -->
 <label class="toolbar-option">
   ⏱️ Show Clock Seconds
   <div class="switch">
@@ -1581,7 +1572,6 @@
   </div>
 </label>
       
-<!-- Weather Widget -->
 <label class="toolbar-option">
   ☁️ Weather Widget
   <div class="switch">
@@ -1594,7 +1584,6 @@
   </div>
 </label>
        
-<!-- Greeting -->
 <label class="toolbar-option">
   👋 Greeting
   <div class="switch">
@@ -1624,7 +1613,6 @@
         <input type="color" id="accentColorPicker" oninput="setAccentColor(this.value)">
     </div>
   
-<!-- Glass Mode -->
 <label class="toolbar-option">
   🪩 Glass Mode
   <div class="switch">
@@ -1637,7 +1625,6 @@
   </div>
 </label>
   
-<!-- Dark Mode -->
 <label class="toolbar-option">
   🌙 Dark Mode
   <div class="switch">
@@ -1652,7 +1639,6 @@
   
     <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()" tabindex="0">🌀 Toggle Icon Style</div>
   
-<!-- Bookmark Labels -->
 <label class="toolbar-option">
   🏷️ Hide Bookmark Labels
   <div class="switch">
@@ -1670,7 +1656,6 @@
       <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
     </div>
     
-<!-- Open Links in New Tab -->
 <label class="toolbar-option">
   🔗 Open Links in New Tab
   <div class="switch">
@@ -1741,7 +1726,7 @@ let _firstBookmarkLoad = true;
         },
         'Bing': {
             url: 'https://www.bing.com/search?q=',
-            icon: 'https://www.google.com/s2/favicons?sz=64&domain=bing.com'
+            icon: 'https://www.bing.com/favicon.ico'
         },
         'Yahoo': {
             url: 'https://search.yahoo.com/search?p=',
@@ -3102,7 +3087,7 @@ function enableDragAndDrop() {
   const icons = {
     Google:       'https://www.google.com/s2/favicons?sz=64&domain=google.com',
     DuckDuckGo:   'https://www.google.com/s2/favicons?sz=64&domain=duckduckgo.com',
-    Bing:         'https://www.google.com/s2/favicons?sz=64&domain=bing.com',
+    Bing:         'https://www.bing.com/favicon.ico',
     Yahoo:        'https://www.google.com/s2/favicons?sz=64&domain=yahoo.com',
     Brave:        'https://www.google.com/s2/favicons?sz=64&domain=brave.com',
     Perplexity:   'https://www.google.com/s2/favicons?sz=64&domain=perplexity.ai'
