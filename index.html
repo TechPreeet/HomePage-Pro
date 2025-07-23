@@ -1337,6 +1337,33 @@
   color: var(--accent-color);
 }
 
+/* 1) Turn off Android’s default blue overlay everywhere */
+* {
+  -webkit-tap-highlight-color: transparent !important;
+  tap-highlight-color: transparent !important;
+  }
+  /* 2) On touch‑only devices, also strip focus styles so nothing sticks after lift */
+  @media (hover: none) and (pointer: coarse) {
+    .toolbar-option:focus,
+    .tile:focus,
+    .toggle-arrow:focus,
+    .toggle-add:focus,
+    .toggle-refresh:focus,
+    .floating-menu div:focus {
+      outline: none !important;
+      background: none !important;
+    }
+  }
+   /* 3) Only show your accent flash on :active (finger‑down), never on :focus*/
+  .toolbar-option:active,
+  .tile:active,
+  .toggle-arrow:active,
+  .toggle-add:active,
+  .toggle-refresh:active,
+  .floating-menu div:active {
+    background: var(--accent-color) !important;
+  }
+
 
   </style>
 </head>
@@ -1668,6 +1695,10 @@
 
   <script>
     
+let _firstBookmarkLoad = true;
+
+
+
     // Detect “iOS PWA” (installed to Home Screen, running standalone on iPhone/iPad)
       function isIosPwa() {
         return /iphone|ipad|ipod/i.test(navigator.userAgent) &&
@@ -1726,32 +1757,39 @@
         }
     };
 
-    function showMenuOptions(tile, bookmark, index) {
+        function showMenuOptions(tile, bookmark, index) {
       document.querySelectorAll(".floating-menu").forEach(m => m.remove());
-
       const menu = document.createElement("div");
       menu.className = "floating-menu";
-
       const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab"];
-      const icons = {
-          "Edit": "📝", "Delete": "🗑️", "Share": "🔗",
-          "Copy URL": "📋", "Open in New Tab": "↗️"
-      };
+      const icons = { Edit:"📝", Delete:"🗑️", Share:"🔗", "Copy URL":"📋", "Open in New Tab":"↗️" };
 
       actions.forEach(action => {
         const opt = document.createElement("div");
-        opt.innerHTML = `${icons[action]} ${action}`;
+        opt.innerHTML = `${icons[action]} ${action}`;
         opt.tabIndex = 0;
-        
-        opt.onclick = async (e) => {
-          e.preventDefault();
-          e.stopPropagation();
 
-          if (action === "Delete") {
-            bookmarks.splice(index, 1);
-            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-            loadBookmarks();
-          } else if (action === "Edit") {
+        opt.onclick = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (action === "Delete") {
+        // 1) close the menu immediately
+        menu.remove();
+
+        // 2) notify the user right away
+        showToast("Bookmark deleted");
+
+        // 3) update your data + redraw
+        bookmarks.splice(index, 1);
+        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        loadBookmarks();
+
+        // 4) bail out so we don’t hit the final menu.remove() again
+        return;
+      }
+
+       else if (action === "Edit") {
             const modal = document.getElementById("bookmarkModal");
             const nameInput = document.getElementById("bookmarkName");
             const urlInput = document.getElementById("bookmarkUrl");
@@ -2549,21 +2587,34 @@
     }
 
 
-    function loadBookmarks() {
-      bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-      const grid = document.getElementById("bookmarkGrid");
-      grid.innerHTML = '';
-      bookmarks.forEach((b, i) => {
-        const el = createBookmarkElement(b, i);
-        grid.appendChild(el);
-      });
-      const savedSize = localStorage.getItem("tileSize") || 90;
-      const slider = document.getElementById('tileSizeSlider');
-      slider.value = savedSize;
-      setTileSize(savedSize);
-      applyGlassMode();
-      updateNewTabLinksOption();
-    }
+   function loadBookmarks() {
+  const grid = document.getElementById("bookmarkGrid");
+  bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+  
+  // Clear out the grid
+  grid.innerHTML = "";
+
+  // Populate
+  bookmarks.forEach((b, i) => {
+    const el = createBookmarkElement(b, i);
+    grid.appendChild(el);
+  });
+
+  // After the very first load, permanently disable CSS animation
+  if (_firstBookmarkLoad) {
+    _firstBookmarkLoad = false;
+  } else {
+    grid.classList.add("no-animation");
+  }
+
+  // Now do the rest of your setup (tile size, glass mode, etc.)
+  const savedSize = localStorage.getItem("tileSize") || 90;
+  document.getElementById("tileSizeSlider").value = savedSize;
+  setTileSize(savedSize);
+  applyGlassMode();
+  updateNewTabLinksOption();
+}
+
 
 function enableDragAndDrop() {
   const grid = document.getElementById("bookmarkGrid");
@@ -2773,18 +2824,12 @@ function enableDragAndDrop() {
         }
     }
 
-    // FIX: New function to dynamically update the Android status bar color
+// ── STUB OUT updateThemeColor ──
+// All existing calls will safely no‐op, and
+// your single <meta name="theme-color" content="…">
+// in your HTML will remain untouched.    
     function updateThemeColor() {
-        const metaThemeColor = document.querySelector("meta[name=theme-color]");
-        if (!metaThemeColor) return;
-
-        let color = document.body.classList.contains('dark-mode') ? "#121212" : "#ffffff";
-
-        if (document.body.classList.contains('video-active') || document.body.classList.contains('bg-image-active')) {
-            color = "transparent";
-        }
-        
-        metaThemeColor.setAttribute("content", color);
+      // no‑op stub: do nothing
     }
 
     function toggleDarkMode() {
@@ -3164,12 +3209,12 @@ function enableDragAndDrop() {
         searchInput.value = finalTranscript + interimTranscript;
         handleSearchInput();
 
-        // Set a timer to stop if user pauses for 1 second
+        // Set a timer to stop if user pauses for 3 second
         speechEndTimeout = setTimeout(() => {
           if(recognition && recognition._isStarted) {
             recognition.stop();
           }
-        }, 1000);
+        }, 3000);
       };
 
       recognition.onerror = (event) => {
