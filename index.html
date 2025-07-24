@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 
   
-      <script>
+      <!-- ── INSERT HERE ── -->
+        <script>
           ;(function(){
             const isAndroid = /Android/i.test(navigator.userAgent);
             // remove any existing theme-color tags
@@ -19,13 +20,59 @@
               : '#YOUR_DEFAULT_THEME_COLOR'; // fallback on desktop
             document.head.appendChild(m);
           })();
-        </script>
-        <title>HomePage Pro</title>
+        
 
-  <link rel="apple-touch-startup-image"
+
+    /* ----- Search Bar Fixes ----- */
+    const originalPerformSearch = window.performSearch;
+    window.performSearch = function () {
+        // Clear search UI so cross icon disappears
+        const input = document.getElementById('searchInput');
+        const clearIcon = document.getElementById('clearIcon');
+        if (input) input.value = '';
+        if (clearIcon) clearIcon.style.display = 'none';
+        if (typeof handleSearchInput === 'function') handleSearchInput();
+
+        return originalPerformSearch.apply(this, arguments);
+    };
+
+    /* ----- Voice Search fix for New‑Tab setting ----- */
+    if (typeof startVoiceSearch === 'function') {
+        const originalStartVoice = startVoiceSearch;
+        window.startVoiceSearch = function () {
+            // Wrap original function
+            originalStartVoice.apply(this, arguments);
+
+            // When recognition ends, force a performSearch()
+            if (window.recognition) {
+                recognition.addEventListener('result', () => {
+                    setTimeout(() => {
+                        performSearch();
+                    }, 200);
+                }, { once: true });
+            }
+        };
+    }
+
+    /* ----- Remove lingering active styles on touch devices ----- */
+    document.addEventListener('touchend', () => {
+        document.querySelectorAll('.tile').forEach(el => el.classList.remove('active'));
+    });
+
+
+</script>
+        <!-- ── END INSERT ── -->
+
+
+  <title>HomePage Pro</title>
+
+  <!-- iPhone 15 Pro Max (428×926 @3x) -->
+<link rel="apple-touch-startup-image"
       href="/splash/iphone-15-pro-max.png"
       media="(device-width: 428px) and (device-height: 926px)
              and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+<!-- repeat for landscape orientations if you care -->
 
 <link rel="manifest" href="manifest.json">
 
@@ -1357,10 +1404,49 @@
     background: var(--accent-color) !important;
   }
 
+/* Only if you need to adjust spacing/blur specifically on Android */
+.android-edge #videoBg,
+.android-edge video#videoBg,
+.android-edge .video-background {
+  /* ensure it fills the screen; you likely already have this */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  object-fit: cover;
+}
 
-  </style>
+/* Optional top “blend bar” only for Android – if you still see a hard edge */
+.android-edge .top-blend {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  height: 4px; /* or 0 if not needed */
+  background: rgba(0,0,0,0.35);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ─── Wallpaper blur layer ─── */
+#bgBlurLayer {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+body.bg-blur #bgBlurLayer {
+  opacity: 1;
+}
+
+
+</style>
 </head>
 <body tabindex="-1">
+
+<div class="top-blend"></div>
+
   <div id="aboutModal" class="modal hidden">
     <div class="about-box">
       <span class="close-icon" onclick="closeAboutModal()">✖</span>
@@ -1387,7 +1473,10 @@
   </div>
 
   <video id="videoBg" autoplay muted loop playsinline class="hidden"></video>
-  
+ 
+  <!-- New, sits above wallpaper/video but below everything else -->
+<div id="bgBlurLayer"></div>
+
   <div id="sidebar-toggle-btn" onclick="toggleSidebar()">
       <div class="hamburger-icon">
           <span></span>
@@ -1457,7 +1546,8 @@
     </div>
     <div class="toolbar-option" id="addBookmarkBtnSidebar" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();" tabindex="0">📝 Add Bookmark</div>
     
-    <div
+    <!-- ─── Search Engine Selector ─── -->
+<div
   class="toolbar-option toolbar-option-header"
   id="searchEngineHeader"
   tabindex="0"
@@ -1560,6 +1650,7 @@
     <div class="collapsible-content" id="clockSettingsContent">
         <div class="toolbar-option" aria-label="Toggle Clock Format" onclick="toggleClockFormat()" tabindex="0">🕒 Toggle Clock Format</div>
        
+<!-- Show Clock Seconds -->
 <label class="toolbar-option">
   ⏱️ Show Clock Seconds
   <div class="switch">
@@ -1572,6 +1663,7 @@
   </div>
 </label>
       
+<!-- Weather Widget -->
 <label class="toolbar-option">
   ☁️ Weather Widget
   <div class="switch">
@@ -1584,6 +1676,7 @@
   </div>
 </label>
        
+<!-- Greeting -->
 <label class="toolbar-option">
   👋 Greeting
   <div class="switch">
@@ -1613,6 +1706,7 @@
         <input type="color" id="accentColorPicker" oninput="setAccentColor(this.value)">
     </div>
   
+<!-- Glass Mode -->
 <label class="toolbar-option">
   🪩 Glass Mode
   <div class="switch">
@@ -1625,6 +1719,7 @@
   </div>
 </label>
   
+<!-- Dark Mode -->
 <label class="toolbar-option">
   🌙 Dark Mode
   <div class="switch">
@@ -1636,9 +1731,24 @@
     <span class="slider"></span>
   </div>
 </label>
+
+<!-- Background Blur -->
+<label class="toolbar-option">
+  🌫️ Background Blur
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="bgBlurSwitch"
+      onchange="toggleBgBlur()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+
   
     <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()" tabindex="0">🌀 Toggle Icon Style</div>
   
+<!-- Bookmark Labels -->
 <label class="toolbar-option">
   🏷️ Hide Bookmark Labels
   <div class="switch">
@@ -1656,6 +1766,7 @@
       <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
     </div>
     
+<!-- Open Links in New Tab -->
 <label class="toolbar-option">
   🔗 Open Links in New Tab
   <div class="switch">
@@ -1667,6 +1778,7 @@
     <span class="slider"></span>
   </div>
 </label>
+
     
     <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()" tabindex="0">🔄 Rearrange Bookmarks</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()" tabindex="0">📤 Export Bookmarks</div>
@@ -1717,7 +1829,7 @@ let _firstBookmarkLoad = true;
 
     const searchEngines = {
         'Google': {
-            url: 'https://www.google.com/search?q=',
+            url: 'https://www.google.com/search?igu=1&q=',
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=google.com'
         },
         'DuckDuckGo': {
@@ -1741,6 +1853,21 @@ let _firstBookmarkLoad = true;
             icon: 'https://www.google.com/s2/favicons?sz=64&domain=perplexity.ai'
         }
     };
+
+    (function(){
+  const isAndroidChrome = /Android/i.test(navigator.userAgent) && /Chrome/i.test(navigator.userAgent);
+  if (!isAndroidChrome) return;  // do nothing on iOS/desktop
+
+  // Try to use transparent theme color for Android status bar
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) {
+    metaTheme.setAttribute('content', '#00000000'); // transparent-ish
+  }
+
+  // Optional: add a class so you can tweak CSS only for Android
+  document.body.classList.add('android-edge');
+})();
+
 
         function showMenuOptions(tile, bookmark, index) {
       document.querySelectorAll(".floating-menu").forEach(m => m.remove());
@@ -1924,6 +2051,12 @@ let _firstBookmarkLoad = true;
             toast.classList.remove('show');
         }, 3000);
     }
+// Prevents null.textContent crashes
+function setTextSafe(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
 
     let confirmationToastTimeout;
     function showConfirmationToast(message, onConfirm) {
@@ -2369,9 +2502,14 @@ let _firstBookmarkLoad = true;
 
 
     function updateNewTabLinksOption() {
-      const option = document.getElementById("newTabLinksOption");
-      option.textContent = `🔗 Open Links in New Tab ${newTabLinks ? "✅" : "❌"}`;
-    }
+  // Old text label (may not exist anymore)
+  setTextSafe("newTabLinksOption", `🔗 Open Links in New Tab ${newTabLinks ? "✅" : "❌"}`);
+
+  // New switch UI
+  const sw = document.getElementById("newTabLinksSwitch");
+  if (sw) sw.checked = newTabLinks;
+}
+
     
     function resetAllSettings() {
       showConfirmationToast("Are you sure you want to reset everything?", () => {
@@ -2860,6 +2998,17 @@ function enableDragAndDrop() {
       applyGlassMode();
     }
 
+    function toggleBgBlur() {
+  const enabled = document.getElementById('bgBlurSwitch').checked;
+  localStorage.setItem('bgBlur', enabled);
+  applyBgBlur(enabled);
+}
+
+function applyBgBlur(enabled) {
+  document.body.classList.toggle('bg-blur', enabled);
+}
+
+
     function toggleIconStyle() {
       const styles = ["round", "squircle", "rounded-rect"];
       const current = localStorage.getItem("iconStyle") || "round";
@@ -2898,8 +3047,7 @@ function enableDragAndDrop() {
       slider.style.background = 
         `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
       slider.value = width;
-      tileSizeLabel.textContent = `Resize Bookmark Tiles (${width}px)`;
-
+setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
       const verticalGap = Math.max(4, Math.round(width * 0.1));
       grid.style.rowGap = verticalGap + 'px';
 
@@ -2963,8 +3111,11 @@ function enableDragAndDrop() {
           showToast(`Imported ${imported.length} bookmarks!`);
         }
       } catch (err) {
-        console.error("Import failed:", err);
-        showToast("Failed to import bookmarks: " + err.message);
+  console.error("Import failed:", err);
+  // Only scare user if literally nothing imported
+  if (imported.length === 0) {
+    showToast("Failed to import bookmarks: " + err.message);
+  }
       } finally {
         event.target.value = "";
       }
@@ -3343,7 +3494,7 @@ function enableDragAndDrop() {
       applyDarkMode(localStorage.getItem("dark-mode") === "true");
       loadBookmarks();
       
-      initSearchEngineSelector();
+if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       
       const mic = document.getElementById("micIcon");
       mic.classList.add("animate-mic");
@@ -3515,19 +3666,29 @@ document.querySelectorAll('a.tile').forEach(a => {
 });
 
 
+document.addEventListener('DOMContentLoaded', () => {
+  const blurSaved = localStorage.getItem('bgBlur') === 'true';
+  const blurSwitch = document.getElementById('bgBlurSwitch');
+  if (blurSwitch) blurSwitch.checked = blurSaved;
+  applyBgBlur(blurSaved);
+});
 
-   if ('serviceWorker' in navigator) {
+
+   // Register SW only when served from http/https (not file://)
+if (
+  'serviceWorker' in navigator &&
+  (location.protocol === 'https:' || location.protocol === 'http:')
+) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register('/service-worker.js', { scope: '/' })
-      .then(registration => {
-        console.log('✅ Service worker registered:', registration.scope);
-      })
-      .catch(error => {
-        console.error('❌ Service worker registration failed:', error);
-      });
+      .register('./service-worker.js', { scope: './' })
+      .then(reg => console.log('✅ Service worker registered:', reg.scope))
+      .catch(err => console.error('❌ Service worker registration failed:', err));
   });
+} else {
+  console.log('Skipping SW registration (protocol:', location.protocol, ')');
 }
+
 
     
   </script>
