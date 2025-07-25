@@ -1069,9 +1069,7 @@
       user-select: text;
       -webkit-user-select: text;
     }
-    
   
-
       .coin {
       width: 100px;
       height: 100px;
@@ -1383,6 +1381,27 @@
     background: var(--accent-color) !important;
   }
 
+/* Only if you need to adjust spacing/blur specifically on Android */
+.android-edge #videoBg,
+.android-edge video#videoBg,
+.android-edge .video-background {
+  /* ensure it fills the screen; you likely already have this */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  object-fit: cover;
+}
+
+/* Optional top “blend bar” only for Android – if you still see a hard edge */
+.android-edge .top-blend {
+  position: fixed;
+  top: 0; left: 0; width: 100%;
+  height: 4px; /* or 0 if not needed */
+  background: rgba(0,0,0,0.35);
+  pointer-events: none;
+  z-index: 9999;
+}
+
 /* ─── Wallpaper blur layer ─── */
 #bgBlurLayer {
   position: fixed;
@@ -1397,7 +1416,6 @@
 body.bg-blur #bgBlurLayer {
   opacity: 1;
 }
-
 
 </style>
 </head>
@@ -1417,9 +1435,40 @@ body.bg-blur #bgBlurLayer {
       <p><a href="https://buymeacoffee.com/techpreeet" target="_blank" class="cta-link">☕ Buy Me a Coffee</a></p>
       <p>🌐 <strong>Made with HTML, CSS, JS – no frameworks, no trackers.</strong></p>
       <p style="margin-top: 20px; font-style: italic; font-size: 17px;">❤️ Made with love, caffeine, and late-night debugging.</p>
+
+      <hr style="margin:16px 0; opacity:.2;">
+
+<h3 style="margin:0 0 8px;">✨ Features</h3>
+
+<p class="tagline">
+  🏠 <strong>HomePage‑Pro</strong> is a fully customizable, open‑source browser start page and new‑tab replacement.<br>
+  It’s sleek, responsive, and adapts to any device — giving you instant access to your bookmarks, live widgets, smart search, and more, all in one place.
+</p>
+<p class="tagline-sub">
+  Whether you want to streamline your workflow or craft the perfect landing screen every time you open a tab, <strong>HomePage‑Pro</strong> brings <em>power, style, and speed</em> together.
+</p>
+
+<ul class="about-features">
+  <li>🔍 <strong>Smart Search Bar</strong> — URL detection + voice search</li>
+  <li>🧠 <strong>Search Engine Switcher</strong> — Google, DuckDuckGo, Bing, Brave, Perplexity, etc.</li>
+  <li>↗️ <strong>“Open in New Tab” Toggle</strong> — works for bookmarks & searches</li>
+  <li>📚 <strong>Drag‑and‑Drop Bookmarks</strong> — iOS‑style wiggle edit mode</li>
+  <li>🖼️ <strong>Custom Icons & Labels</strong> — edit, delete, copy URL quickly</li>
+  <li>📤📥 <strong>Export / Import</strong> — move your setup anywhere</li>
+  <li>🎨 <strong>Accent Color, Tile Size, Icon Shape</strong> controls</li>
+  <li>🪩 <strong>Glass Mode</strong> & 🌙 <strong>Dark Mode</strong></li>
+  <li>🌫️ <strong>Blur / Image / Video Backgrounds</strong></li>
+  <li>🕰️ <strong>Clock + Greeting</strong> (12/24h, seconds optional) & optional ☁️ weather</li>
+  <li>🪙 <strong>Coin Flip mini-tool</strong></li>
+  <li>🔔 <strong>Toast Notifications</strong> for friendly feedback</li>
+  <li>📱 <strong>PWA-ready</strong> — installable, full-screen, safe-area aware</li>
+  <li>♿ <strong>Accessibility</strong> — keyboard focus, ESC closes modals, etc.</li>
+</ul>
+
     </div>
   </div>
 
+  
   <div id="toast-notification"></div>
 
   <div id="coinFlipModal" class="modal hidden" onclick="this.classList.add('hidden')">
@@ -1822,6 +1871,8 @@ let _firstBookmarkLoad = true;
     metaTheme.setAttribute('content', '#00000000'); // transparent-ish
   }
 
+  // Optional: add a class so you can tweak CSS only for Android
+  document.body.classList.add('android-edge');
 })();
 
 
