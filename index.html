@@ -7,22 +7,7 @@
   
       <!-- ── INSERT HERE ── -->
         <script>
-          ;(function(){
-            const isAndroid = /Android/i.test(navigator.userAgent);
-            // remove any existing theme-color tags
-            document.querySelectorAll('meta[name="theme-color"]')
-              .forEach(m => m.remove());
-
-            const m = document.createElement('meta');
-            m.name    = 'theme-color';
-            m.content = isAndroid
-              ? 'rgba(0,0,0,0)'               // transparent on Android
-              : '#YOUR_DEFAULT_THEME_COLOR'; // fallback on desktop
-            document.head.appendChild(m);
-          })();
-        
-
-
+          
     /* ----- Search Bar Fixes ----- */
     const originalPerformSearch = window.performSearch;
     window.performSearch = function () {
@@ -933,7 +918,7 @@
       padding: 20px;
       border-radius: 16px;
       max-width: 90vw;
-      width: 90%;
+      width: 70%;
       max-height: 90vh;
       overflow-y: auto;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -1381,26 +1366,6 @@
     background: var(--accent-color) !important;
   }
 
-/* Only if you need to adjust spacing/blur specifically on Android */
-.android-edge #videoBg,
-.android-edge video#videoBg,
-.android-edge .video-background {
-  /* ensure it fills the screen; you likely already have this */
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  object-fit: cover;
-}
-
-/* Optional top “blend bar” only for Android – if you still see a hard edge */
-.android-edge .top-blend {
-  position: fixed;
-  top: 0; left: 0; width: 100%;
-  height: 4px; /* or 0 if not needed */
-  background: rgba(0,0,0,0.35);
-  pointer-events: none;
-  z-index: 9999;
-}
 
 /* ─── Wallpaper blur layer ─── */
 #bgBlurLayer {
@@ -1861,19 +1826,7 @@ let _firstBookmarkLoad = true;
         }
     };
 
-    (function(){
-  const isAndroidChrome = /Android/i.test(navigator.userAgent) && /Chrome/i.test(navigator.userAgent);
-  if (!isAndroidChrome) return;  // do nothing on iOS/desktop
 
-  // Try to use transparent theme color for Android status bar
-  const metaTheme = document.querySelector('meta[name="theme-color"]');
-  if (metaTheme) {
-    metaTheme.setAttribute('content', '#00000000'); // transparent-ish
-  }
-
-  // Optional: add a class so you can tweak CSS only for Android
-  document.body.classList.add('android-edge');
-})();
 
 
         function showMenuOptions(tile, bookmark, index) {
