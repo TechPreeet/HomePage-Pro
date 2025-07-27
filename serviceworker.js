@@ -12,7 +12,7 @@ const PRECACHE_URLS = [
   `${ROOT}`,                 // GitHub Pages often serves index at the folder root
   `${ROOT}index.html`,
   `${ROOT}manifest.json`,
-  `${ROOT}service-worker.js`, // keep THIS file cached too
+  `${ROOT}serviceworker.js`, // keep THIS file cached too
   // Icons
   `${ROOT}icons/icon-72.png`,
   `${ROOT}icons/icon-96.png`,
