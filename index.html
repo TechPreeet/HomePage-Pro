@@ -1785,10 +1785,37 @@ body.bg-blur #bgBlurLayer {
   .slider-container input[type="range"]{ touch-action: pan-x; }
 }
 
+/* Hide hover/focus visuals only while .pre-hover is on <body> */
+.pre-hover .tile:hover,
+.pre-hover .tile:focus-visible{
+  background: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+/* Hide the 3‑dot menu too while .pre-hover is on */
+.pre-hover .tile .menu,
+.pre-hover .tile:hover .menu,
+.pre-hover .tile:focus-visible .menu{
+  opacity:0 !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+/* No transitions/animations during first paint */
+body.preload #settings-sidebar,
+body.preload #sidebar-overlay,
+body.preload #iframe-viewer {
+  transition: none !important;
+}
+
+/* Force them to their hidden state so no jump */
+body.preload #settings-sidebar { transform: translateX(100%) !important; }
+body.preload #iframe-viewer   { transform: translateY(100%) !important; }
+
 
 </style>
 </head>
-<body tabindex="-1">
+<body class="preload" tabindex="-1">
 
 <!-- In-App Browser (iFrame Viewer) -->
 <div id="iframe-viewer" class="hidden">
@@ -3151,6 +3178,10 @@ function setTextSafe(id, text) {
     // --- Main Click Handler ---
 const handleClick = (e) => {
   if (rearrangeMode) return;
+  if (e.currentTarget.dataset.skipClick === '1') {
+  e.currentTarget.dataset.skipClick = '0';
+  return;
+}
 
   e.preventDefault();            // <- stop the anchor/default click
   e.stopPropagation();           // <- stop bubbling to any parent handler
@@ -3190,19 +3221,20 @@ const handleClick = (e) => {
         let longPressDidOccur = false;
 
         a.addEventListener('touchstart', (e) => {
-          if (rearrangeMode) return;
-          longPressDidOccur = false;
-          pressTimer = setTimeout(() => {
-            longPressDidOccur = true;
-            showMenuOptions(a, bookmark, index);
-          }, 500);
-        }, { passive: true });
+  if (rearrangeMode) return;
+  longPressDidOccur = false;
+  pressTimer = setTimeout(() => {
+    longPressDidOccur = true;
+    a.dataset.skipClick = '1';          // (from Part B)
+    showMenuOptions(a, bookmark, index);
+  }, 500);
+}, { passive: false });                  // ← Part C here
 
-        a.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
-        a.addEventListener('touchend', (e) => { 
-            if(longPressDidOccur) e.preventDefault();
-            clearTimeout(pressTimer); 
-        });
+a.addEventListener('touchend', (e) => { 
+  if (longPressDidOccur) e.preventDefault();
+  clearTimeout(pressTimer);
+}, { passive: false });                  // ← and here
+
     }
     
     a.addEventListener('contextmenu', (e) => { e.preventDefault(); showMenuOptions(a, bookmark, index); });
@@ -4618,6 +4650,27 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
     }
   });
 })();
+
+// Add .pre-hover whenever we (re)enter the page, remove it on first move
+(function(){
+  function armFreeze(){
+    document.body.classList.add('pre-hover');
+    const unfreeze = () => {
+      document.body.classList.remove('pre-hover');
+      window.removeEventListener('mousemove', unfreeze, {once:true});
+      window.removeEventListener('pointermove', unfreeze, {once:true});
+    };
+    window.addEventListener('mousemove', unfreeze, {once:true});
+    window.addEventListener('pointermove', unfreeze, {once:true});
+  }
+  window.addEventListener('pageshow', armFreeze);  // coming back from new tab / bfcache
+  window.addEventListener('focus',    armFreeze);  // plain tab switch
+})();
+
+
+window.addEventListener('load', () => {
+  requestAnimationFrame(() => document.body.classList.remove('preload'));
+});
 
 
 
