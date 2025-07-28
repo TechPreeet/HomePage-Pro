@@ -1489,7 +1489,15 @@ body.bg-blur #bgBlurLayer {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     margin-bottom: 15px;
     flex-shrink: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    scrollbar-width: none;          /* Firefox */
 }
+#history-tabs::-webkit-scrollbar{ display:none; }  /* Chrome/Safari */
+
 
 .history-tab {
     background: none;
@@ -1501,6 +1509,9 @@ body.bg-blur #bgBlurLayer {
     opacity: 0.7;
     position: relative;
     transition: opacity 0.2s ease;
+/* Make each tab keep its width instead of shrinking away */
+    flex: 0 0 auto;
+    display: inline-block;
 }
 
 .history-tab:hover {
@@ -4016,6 +4027,9 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
                 document.querySelector('.history-tab.active').classList.remove('active');
                 tab.classList.add('active');
                 renderHistory(tab.dataset.filter);
+
+        document.querySelector('#history-tabs .history-tab.active')
+        ?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
             });
         });
 
