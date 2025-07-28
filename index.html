@@ -408,7 +408,7 @@
     }
 
     .hide-labels .bookmark-label {
-      display: none;
+      opacity:0; visibility:hidden;    
     }
 
     .bookmark-label {
@@ -910,6 +910,11 @@
       font-size: 20px;
       color: white;
       cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    
+    .close-icon:hover {
+        color: var(--accent-color);
     }
 
     .about-box {
@@ -917,7 +922,7 @@
       backdrop-filter: blur(10px);
       padding: 20px;
       border-radius: 16px;
-      border: .5px solid var(--accent-color);
+         border: .5px solid var(--accent-color);
       max-width: 90vw;
       width: 75%;
       max-height: 80vh;
@@ -1021,7 +1026,7 @@
     }
 
     .tile.rearrange-wiggle {
-      animation: wiggle 0.3s ease-in-out infinite;
+      animation: wiggle 0.4s ease-in-out infinite;
     }
 
     .delete-btn {
@@ -1383,6 +1388,197 @@ body.bg-blur #bgBlurLayer {
   opacity: 1;
 }
 
+/* --- Tabs Modal Styles --- */
+.tabs-box {
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 20px;
+  border-radius: 16px;
+  border: .5px solid var(--accent-color);
+  max-width: 90vw;
+  width: 600px; /* A bit wider for tab titles */
+  max-height: 80vh;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  color: white;
+  position: relative;
+  animation: fadeIn 0.4s ease;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs-box h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#tabs-list-container {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+  color: white;
+}
+
+.tab-item:hover, .tab-item:focus-visible {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-item img {
+  width: 20px;
+  height: 20px;
+  margin-right: 15px;
+  border-radius: 4px;
+}
+
+.tab-item-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tab-item-title {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-item-url {
+  font-size: 12px;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* --- History Modal Styles --- */
+#history-content-box {
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 16px;
+    border: .5px solid var(--accent-color);
+    max-width: 90vw;
+    width: 600px; /* Wider for history */
+    max-height: 80vh;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    font-family: 'Georgia', serif;
+    color: white;
+    position: relative;
+    animation: fadeIn 0.4s ease;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+#history-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 15px;
+    flex-shrink: 0;
+}
+
+.history-tab {
+    background: none;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 15px;
+    opacity: 0.7;
+    position: relative;
+    transition: opacity 0.2s ease;
+}
+
+.history-tab:hover {
+    opacity: 1;
+}
+
+.history-tab.active {
+    opacity: 1;
+    font-weight: bold;
+}
+
+.history-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--accent-color);
+}
+
+#history-log-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 10px; /* For scrollbar */
+    margin-bottom: 15px;
+    min-height: 100px; /* Ensure it has some height even when empty */
+}
+
+.history-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+}
+
+.history-entry:last-child {
+    border-bottom: none;
+}
+
+.history-description {
+    flex-grow: 1;
+    word-break: break-word;
+}
+
+.history-timestamp {
+    margin-left: 15px;
+    color: #aaa;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+#history-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+#clear-history-btn {
+    background: transparent;
+    border: 1px solid #d9534f;
+    color: #d9534f;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#clear-history-btn:hover {
+    background-color: #d9534f;
+    color: white;
+}
+
 </style>
 </head>
 <body tabindex="-1">
@@ -1431,6 +1627,38 @@ body.bg-blur #bgBlurLayer {
   <li>♿ <strong>Accessibility</strong> — keyboard focus, ESC closes modals, etc.</li>
 </ul>
 
+    </div>
+  </div>
+
+  <!-- Tabs Modal -->
+  <div id="tabsModal" class="modal hidden">
+    <div class="tabs-box">
+      <span class="close-icon" onclick="closeTabsModal()">✖</span>
+      <h2>❐ Open Tabs</h2>
+      <div id="tabs-list-container">
+        <!-- Tab items will be injected here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- History Modal -->
+  <div id="historyModal" class="modal hidden">
+    <div id="history-content-box">
+        <span class="close-icon" onclick="closeHistoryModal()">✖</span>
+        <h2>📜 Action History</h2>
+        <div id="history-tabs">
+            <button class="history-tab active" data-filter="All">All</button>
+            <button class="history-tab" data-filter="Bookmark">Bookmarks</button>
+            <button class="history-tab" data-filter="Setting">Settings</button>
+            <button class="history-tab" data-filter="Search">Searches</button>
+            <button class="history-tab" data-filter="Voice">Voice</button>
+        </div>
+        <div id="history-log-container">
+            <!-- History items will be injected here -->
+        </div>
+        <div id="history-footer">
+            <button id="clear-history-btn">Clear History</button>
+        </div>
     </div>
   </div>
 
@@ -1488,10 +1716,17 @@ body.bg-blur #bgBlurLayer {
         </form>
         
         <div id="bookmarkControls">
+            <button id="toggleTabsBtn" class="toggle-refresh" aria-label="Show tabs">❐</button>
             <button id="addBookmarkBtn" class="toggle-add" aria-label="Add bookmark">＋</button>
             <button id="toggleBookmarks" class="toggle-arrow" aria-label="Hide bookmarks">▼</button>
             <button id="refreshBtn" class="toggle-refresh" aria-label="Refresh">⟳</button>
-        </div>
+            <button id="toggleHistoryBtn" class="toggle-refresh" aria-label="Show history">
+                    <svg width="32" height="32" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 4C7.58 4 4 7.58 4 12s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="currentColor"/>
+                      <path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586V7z" fill="currentColor"/>
+                    </svg>
+            </button>        
+          </div>
         
         <div class="grid" id="bookmarkGrid">
           </div>
@@ -1676,7 +1911,7 @@ body.bg-blur #bgBlurLayer {
     </div>
     <div class="toolbar-option" id="accentColorOption">
         <label for="accentColorPicker">🎨 Accent Color</label>
-        <input type="color" id="accentColorPicker" oninput="setAccentColor(this.value)">
+        <input type="color" id="accentColorPicker" oninput="previewAccentColor(this.value)" onchange="setAccentColor(this.value)">
     </div>
   
 <!-- Glass Mode -->
@@ -1767,6 +2002,34 @@ body.bg-blur #bgBlurLayer {
     
 let _firstBookmarkLoad = true;
 
+// === Debounce timers ===
+let _gradLogTimer = null;
+let _tileLogTimer = null;
+
+
+    /**
+     * Logs an action to the user's history in localStorage.
+     * @param {string} type - The category of the action (e.g., 'Bookmark', 'Setting', 'Search', 'Voice').
+     * @param {string} description - A human-readable description of the action.
+     */
+    function logHistory(type, description) {
+        try {
+            let history = JSON.parse(localStorage.getItem('historyLog') || '[]');
+            const newEntry = {
+                timestamp: new Date().toISOString(),
+                type: type,
+                description: description
+            };
+            history.push(newEntry);
+            // To prevent the history from growing indefinitely, let's cap it at 200 entries.
+            if (history.length > 200) {
+                history = history.slice(history.length - 200);
+            }
+            localStorage.setItem('historyLog', JSON.stringify(history));
+        } catch (e) {
+            console.error("Failed to log history:", e);
+        }
+    }
 
 
     // Detect “iOS PWA” (installed to Home Screen, running standalone on iPhone/iPad)
@@ -1847,22 +2110,21 @@ let _firstBookmarkLoad = true;
         e.stopPropagation();
 
         if (action === "Delete") {
-        // 1) close the menu immediately
-        menu.remove();
+            // 1) close the menu immediately
+            menu.remove();
 
-        // 2) notify the user right away
-        showToast("Bookmark deleted");
+            // 2) notify the user right away
+            showToast("Bookmark deleted");
+            logHistory('Bookmark', `Deleted bookmark: '${bookmark.name}'`);
 
-        // 3) update your data + redraw
-        bookmarks.splice(index, 1);
-        localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-        loadBookmarks();
+            // 3) update your data + redraw
+            bookmarks.splice(index, 1);
+            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+            loadBookmarks();
 
-        // 4) bail out so we don’t hit the final menu.remove() again
-        return;
-      }
-
-       else if (action === "Edit") {
+            // 4) bail out so we don’t hit the final menu.remove() again
+            return;
+        } else if (action === "Edit") {
             const modal = document.getElementById("bookmarkModal");
             const nameInput = document.getElementById("bookmarkName");
             const urlInput = document.getElementById("bookmarkUrl");
@@ -1886,6 +2148,7 @@ let _firstBookmarkLoad = true;
                 showToast("Please enter both a name and URL.");
                 return;
               }
+              logHistory('Bookmark', `Edited bookmark: '${bookmark.name}' to '${newName}'`);
               bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
               localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
               closeModal();
@@ -1899,6 +2162,7 @@ let _firstBookmarkLoad = true;
                           text: `Check out this link: ${bookmark.name}`,
                           url: bookmark.url,
                       });
+                      logHistory('Bookmark', `Shared link for '${bookmark.name}'`);
                   } catch (err) {
                       console.error("Share failed:", err.message);
                   }
@@ -1907,8 +2171,10 @@ let _firstBookmarkLoad = true;
               }
           } else if (action === "Copy URL") {
               copyToClipboard(bookmark.url);
+              logHistory('Bookmark', `Copied URL for '${bookmark.name}'`);
           } else if (action === "Open in New Tab") {
               window.open(bookmark.url, '_blank');
+              logHistory('Bookmark', `Opened '${bookmark.name}' in new tab`);
           }
   
           
@@ -1947,6 +2213,7 @@ let _firstBookmarkLoad = true;
     function toggleRearrangeMode() {
       rearrangeMode = !rearrangeMode;
       localStorage.setItem("rearrangeMode", rearrangeMode);
+      logHistory('Setting', `Toggled rearrange mode ${rearrangeMode ? 'ON' : 'OFF'}`);
       toggleSidebar();
       updateRearrangeToggleUI();
       applyRearrangeMode();
@@ -2078,6 +2345,8 @@ function setTextSafe(id, text) {
       if (e.key === "Escape") {
         closeModal();
         closeAboutModal();
+        closeHistoryModal();
+        closeTabsModal();
         const sidebar = document.getElementById('settings-sidebar');
         if (sidebar.classList.contains('open')) {
             toggleSidebar();
@@ -2203,6 +2472,7 @@ function setTextSafe(id, text) {
           document.body.classList.remove("bg-image-active");
           localStorage.setItem("videoUrl", url);
           localStorage.setItem("hasVideo", "true");
+          logHistory('Setting', `Set video background from URL`);
 
           try {
             const db = await openDB();
@@ -2243,7 +2513,10 @@ function setTextSafe(id, text) {
         applyGradientBackground(0);
         document.getElementById('gradientSlider').value = 0;
 
-        if(showAlertMsg) showToast("Wallpaper has been removed.");
+        if(showAlertMsg) {
+            showToast("Wallpaper has been removed.");
+            logHistory('Setting', 'Removed wallpaper');
+        }
     }
 
     function setGradientBackground(index) {
@@ -2261,7 +2534,15 @@ function setTextSafe(id, text) {
         }
         
         label.textContent = `Background: ${gradient.name}`;
-        localStorage.setItem("gradientIndex", gradientIndex);
+        // Debounce the log: wait 3s after user stops sliding
+        clearTimeout(_gradLogTimer);
+        _gradLogTimer = setTimeout(() => {
+          if (localStorage.getItem("gradientIndex") !== String(gradientIndex)) {
+            logHistory('Setting', `Set background to gradient: ${gradient.name}`);
+            localStorage.setItem("gradientIndex", gradientIndex);
+          }
+        }, 3000);
+
 
         const slider = document.getElementById('gradientSlider');
         const percentage = (gradients.length <= 1) ? 100 : (gradientIndex / (gradients.length - 1)) * 100;
@@ -2273,10 +2554,16 @@ function setTextSafe(id, text) {
         slider.value = index;
         setGradientBackground(index);
     }
-
-    function setAccentColor(color) {
+    
+    // This function provides the live preview without logging.
+    function previewAccentColor(color) {
         document.documentElement.style.setProperty('--accent-color', color);
+    }
+
+    // This function saves and logs only the final color choice.
+    function setAccentColor(color) {
         localStorage.setItem('accentColor', color);
+        logHistory('Setting', `Changed accent color to ${color}`);
     }
 
     function openAboutModal() {
@@ -2325,18 +2612,21 @@ function setTextSafe(id, text) {
     function toggleClockFormat() {
       is24Hour = !is24Hour;
       localStorage.setItem("clockFormat", is24Hour ? "24" : "12");
+      logHistory('Setting', `Set clock format to ${is24Hour ? '24-hour' : '12-hour'}`);
       updateClock();
     }
 
     function toggleClockSeconds() {
       showSeconds = !showSeconds;
       localStorage.setItem("showSeconds", showSeconds);
+      logHistory('Setting', `${showSeconds ? 'Enabled' : 'Disabled'} clock seconds`);
       updateClock();
     }
 
     function toggleWeather() {
       const current = localStorage.getItem("showWeather") === "true";
       localStorage.setItem("showWeather", !current);
+      logHistory('Setting', `${!current ? 'Enabled' : 'Disabled'} weather widget`);
       applyWeatherToggle(!current);
     }
 
@@ -2400,6 +2690,7 @@ function setTextSafe(id, text) {
     function toggleGreeting() {
       const current = localStorage.getItem("showGreeting") === "true";
       localStorage.setItem("showGreeting", !current);
+      logHistory('Setting', `${!current ? 'Enabled' : 'Disabled'} greeting message`);
       applyGreetingToggle(!current);
     }
 
@@ -2421,6 +2712,7 @@ function setTextSafe(id, text) {
     function askUserName() {
       const name = prompt("What’s your name?");
       if (name) {
+        logHistory('Setting', `Changed user name to '${name}'`);
         localStorage.setItem("profileName", name);
         if (localStorage.getItem("showGreeting") === "true") {
             applyGreetingToggle(true);
@@ -2446,30 +2738,32 @@ function setTextSafe(id, text) {
     function toggleLabels() {
       const hiding = document.body.classList.toggle("hide-labels");
       localStorage.setItem("hideLabels", hiding);
+      logHistory('Setting', `${hiding ? 'Hid' : 'Showed'} bookmark labels`);
     }
 
     function toggleNewTabLinks() {
-  newTabLinks = !newTabLinks;
-  localStorage.setItem('newTabLinks', newTabLinks);
-  // update all existing tiles right away:
-  document.querySelectorAll('a.tile').forEach(a => {
-    if (newTabLinks) {
-      a.setAttribute('target', '_blank');
-    } else {
-      a.removeAttribute('target');
+      newTabLinks = !newTabLinks;
+      localStorage.setItem('newTabLinks', newTabLinks);
+      logHistory('Setting', `Set 'Open in New Tab' to ${newTabLinks}`);
+      // update all existing tiles right away:
+      document.querySelectorAll('a.tile').forEach(a => {
+        if (newTabLinks) {
+          a.setAttribute('target', '_blank');
+        } else {
+          a.removeAttribute('target');
+        }
+      });
     }
-  });
-}
 
 
     function updateNewTabLinksOption() {
-  // Old text label (may not exist anymore)
-  setTextSafe("newTabLinksOption", `🔗 Open Links in New Tab ${newTabLinks ? "✅" : "❌"}`);
+      // Old text label (may not exist anymore)
+      setTextSafe("newTabLinksOption", `🔗 Open Links in New Tab ${newTabLinks ? "✅" : "❌"}`);
 
-  // New switch UI
-  const sw = document.getElementById("newTabLinksSwitch");
-  if (sw) sw.checked = newTabLinks;
-}
+      // New switch UI
+      const sw = document.getElementById("newTabLinksSwitch");
+      if (sw) sw.checked = newTabLinks;
+    }
 
     
     function resetAllSettings() {
@@ -2597,7 +2891,17 @@ function setTextSafe(id, text) {
         a.addEventListener('click', (e) => {
           if (longPressDidOccur) {
             e.preventDefault();
+          } else {
+            if (!rearrangeMode) {
+                logHistory('Bookmark', `Opened '${bookmark.name}'`);
+            }
           }
+        });
+      } else {
+        a.addEventListener('click', (e) => {
+            if (!rearrangeMode) {
+                logHistory('Bookmark', `Opened '${bookmark.name}'`);
+            }
         });
       }
       
@@ -2610,7 +2914,10 @@ function setTextSafe(id, text) {
       });
 
       a.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") window.location.href = a.href;
+        if (e.key === "Enter") {
+            logHistory('Bookmark', `Opened '${bookmark.name}'`);
+            window.location.href = a.href;
+        }
       });
 
 
@@ -2654,6 +2961,7 @@ function setTextSafe(id, text) {
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
         e.preventDefault();
+        logHistory('Bookmark', `Deleted bookmark: '${bookmark.name}'`);
         bookmarks.splice(index, 1);
         localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
         loadBookmarks();
@@ -2730,6 +3038,7 @@ function enableDragAndDrop() {
         const newOrder = tiles.map(tile => bookmarks[Number(tile.dataset.index)]);
         bookmarks = newOrder;
         localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+        logHistory('Bookmark', 'Reordered bookmarks');
         loadBookmarks();
     }
   });
@@ -2804,6 +3113,7 @@ function enableDragAndDrop() {
     const newOrder = tiles.map(tile => bookmarks[Number(tile.dataset.index)]);
     bookmarks = newOrder;
     localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+    logHistory('Bookmark', 'Reordered bookmarks');
     
     touchDraggingTile = null;
     loadBookmarks();
@@ -2855,6 +3165,7 @@ function enableDragAndDrop() {
       }
       bookmarks.push({ url, name, icon });
       localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+      logHistory('Bookmark', `Added new bookmark: '${name}'`);
       closeModal();
       loadBookmarks();
     }
@@ -2917,13 +3228,12 @@ function enableDragAndDrop() {
     }
 
     function toggleDarkMode() {
-  // if the switch is ON (checked) → light mode (dark = false)
-  // if the switch is OFF (unchecked) → dark mode (dark = true)
-  const isChecked = document.getElementById('darkModeSwitch').checked;
-  const newDark  = !isChecked;
-  localStorage.setItem('dark-mode', newDark);
-  applyDarkMode(newDark);
-}
+      const isChecked = document.getElementById('darkModeSwitch').checked;
+      const newDark  = !isChecked;
+      localStorage.setItem('dark-mode', newDark);
+      logHistory('Setting', `Set dark mode to ${newDark ? 'ON' : 'OFF'}`);
+      applyDarkMode(newDark);
+    }
 
 
     function applyDarkMode(enabled) {
@@ -2956,18 +3266,20 @@ function enableDragAndDrop() {
     function toggleGlassMode() {
       glassMode = !glassMode;
       localStorage.setItem("glassMode", glassMode);
+      logHistory('Setting', `Set glass mode to ${glassMode ? 'ON' : 'OFF'}`);
       applyGlassMode();
     }
 
     function toggleBgBlur() {
-  const enabled = document.getElementById('bgBlurSwitch').checked;
-  localStorage.setItem('bgBlur', enabled);
-  applyBgBlur(enabled);
-}
+      const enabled = document.getElementById('bgBlurSwitch').checked;
+      localStorage.setItem('bgBlur', enabled);
+      logHistory('Setting', `Set background blur to ${enabled ? 'ON' : 'OFF'}`);
+      applyBgBlur(enabled);
+    }
 
-function applyBgBlur(enabled) {
-  document.body.classList.toggle('bg-blur', enabled);
-}
+    function applyBgBlur(enabled) {
+      document.body.classList.toggle('bg-blur', enabled);
+    }
 
 
     function toggleIconStyle() {
@@ -2977,6 +3289,7 @@ function applyBgBlur(enabled) {
       const nextIndex = (currentIndex + 1) % styles.length;
       const newStyle = styles[nextIndex];
       localStorage.setItem("iconStyle", newStyle);
+      logHistory('Setting', `Changed icon style to '${newStyle}'`);
       applyIconStyle(newStyle);
     }
 
@@ -3008,12 +3321,20 @@ function applyBgBlur(enabled) {
       slider.style.background = 
         `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
       slider.value = width;
-setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
+      setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
       const verticalGap = Math.max(4, Math.round(width * 0.1));
       grid.style.rowGap = verticalGap + 'px';
-
-      localStorage.setItem("tileSize", width);
-    }
+      
+      // Debounce tile-size logging
+        clearTimeout(_tileLogTimer);
+        const pendingWidth = width;
+        _tileLogTimer = setTimeout(() => {
+          if (localStorage.getItem("tileSize") !== String(pendingWidth)) {
+            logHistory('Setting', `Resized tiles to ${pendingWidth}px`);
+            localStorage.setItem("tileSize", pendingWidth);
+          }
+        }, 3000);
+      }
 
 
     document.getElementById("importInput").addEventListener("change", async function(event) {
@@ -3064,19 +3385,23 @@ setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
           showToast("No bookmarks found in that file.");
         } else {
           const seen = new Set(bookmarks.map(b => b.url));
+          const newCount = imported.filter(b => !seen.has(b.url)).length;
           imported.forEach(b => {
             if (!seen.has(b.url)) bookmarks.push(b);
           });
           localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
           loadBookmarks();
-          showToast(`Imported ${imported.length} bookmarks!`);
+          showToast(`Imported ${newCount} new bookmarks!`);
+          if (newCount > 0) {
+            logHistory('Bookmark', `Imported ${newCount} bookmarks`);
+          }
         }
       } catch (err) {
-  console.error("Import failed:", err);
-  // Only scare user if literally nothing imported
-  if (imported.length === 0) {
-    showToast("Failed to import bookmarks: " + err.message);
-  }
+        console.error("Import failed:", err);
+        // Only scare user if literally nothing imported
+        if (imported.length === 0) {
+          showToast("Failed to import bookmarks: " + err.message);
+        }
       } finally {
         event.target.value = "";
       }
@@ -3094,6 +3419,7 @@ setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
             videoBg.play().catch(error => console.error("Video play error:", error));
             videoBg.classList.remove("hidden");
             document.body.classList.add("video-active");
+            logHistory('Setting', `Set video background from file: ${file.name}`);
             try {
                 await storeVideo(file);
                 localStorage.setItem("hasVideo", "true");
@@ -3132,6 +3458,7 @@ setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
                 document.body.classList.add("bg-image-active");
                 localStorage.setItem("bgImage", dataUrl);
                 showToast("Wallpaper set!");
+                logHistory('Setting', `Set image background from file: ${file.name}`);
             }
             img.src = e.target.result;
         };
@@ -3151,76 +3478,85 @@ setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
     });
 
 
-    function performSearch() {
-  const searchInput = document.getElementById("searchInput");
-  const query       = searchInput.value.trim();
-  if (!query) return;
+    function performSearch(isVoiceSearch = false) {
+      const searchInput = document.getElementById("searchInput");
+      const query       = searchInput.value.trim();
+      if (!query) return;
 
-  const isFullURL   = /^(https?:\/\/)/i.test(query);
-  const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
+      // Log the search action
+      if (!isVoiceSearch) {
+          logHistory('Search', `Searched for: '${query}'`);
+      }
 
-  // 1) URLs go straight
-  if (isFullURL || isDomainURL) {
-    const dest = isFullURL ? query : `https://${query}`;
-    if (newTabLinks) {
-      window.open(dest, '_blank');
-      // ← clear on any new‐tab
-      searchInput.value = "";
-      handleSearchInput();
-    } else {
-      window.location.href = dest;
+      const isFullURL   = /^(https?:\/\/)/i.test(query);
+      const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
+
+      // 1) URLs go straight
+      if (isFullURL || isDomainURL) {
+        const dest = isFullURL ? query : `https://${query}`;
+        if (newTabLinks) {
+          window.open(dest, '_blank');
+          // ← clear on any new‐tab
+          searchInput.value = "";
+          handleSearchInput();
+        } else {
+          window.location.href = dest;
+        }
+        return;
+      }
+
+      // 2) Otherwise do a search
+      const engineName = localStorage.getItem('searchEngine') || 'Google';
+      const baseURL    = searchEngines[engineName].url;
+      const searchURL  = baseURL + encodeURIComponent(query);
+      
+      if (newTabLinks) {
+        window.open(searchURL, '_blank');
+        // ← clear on any new‐tab
+        searchInput.value = "";
+        handleSearchInput();
+      } else {
+        window.location.href = searchURL;
+      }
     }
-    return;
-  }
-
-  // 2) Otherwise do a search
-  const engineName = localStorage.getItem('searchEngine') || 'Google';
-  const baseURL    = searchEngines[engineName].url;
-  const searchURL  = baseURL + encodeURIComponent(query);
-  
-  if (newTabLinks) {
-    window.open(searchURL, '_blank');
-    // ← clear on any new‐tab
-    searchInput.value = "";
-    handleSearchInput();
-  } else {
-    window.location.href = searchURL;
-  }
-}
 
 
 
     
     function setSearchEngine(name) {
-  // 1) Save choice
-  localStorage.setItem('searchEngine', name);
+      // 1) Save choice
+      const oldEngine = localStorage.getItem('searchEngine') || 'Google';
+      if (oldEngine !== name) {
+        logHistory('Setting', `Changed search engine to ${name}`);
+        localStorage.setItem('searchEngine', name);
+      }
 
-  // 2) Icon lookup
-  const icons = {
-    Google:       'https://www.google.com/s2/favicons?sz=64&domain=google.com',
-    DuckDuckGo:   'https://www.google.com/s2/favicons?sz=64&domain=duckduckgo.com',
-    Bing:         'https://www.bing.com/favicon.ico',
-    Yahoo:        'https://www.google.com/s2/favicons?sz=64&domain=yahoo.com',
-    Brave:        'https://www.google.com/s2/favicons?sz=64&domain=brave.com',
-    Perplexity:   'https://www.google.com/s2/favicons?sz=64&domain=perplexity.ai'
-  };
-  const url = icons[name] || icons.Google;
+      // 2) Icon lookup
+      const icons = {
+        Google:       'https://www.google.com/s2/favicons?sz=64&domain=google.com',
+        DuckDuckGo:   'https://www.google.com/s2/favicons?sz=64&domain=duckduckgo.com',
+        Bing:         'https://www.bing.com/favicon.ico',
+        Yahoo:        'https://www.google.com/s2/favicons?sz=64&domain=yahoo.com',
+        Brave:        'https://www.google.com/s2/favicons?sz=64&domain=brave.com',
+        Perplexity:   'https://www.google.com/s2/favicons?sz=64&domain=perplexity.ai'
+      };
+      const url = icons[name] || icons.Google;
 
-  // 3) Update header
-  document.getElementById('currentSearchEngine').innerHTML =
-    `<img src="${url}" class="search-engine-icon" alt="${name} logo">
-     <span>${name}</span>`;
+      // 3) Update header
+      document.getElementById('currentSearchEngine').innerHTML =
+        `<img src="${url}" class="search-engine-icon" alt="${name} logo">
+         <span>${name}</span>`;
 
-  // 4) (Optional) update your search‑input placeholder, if you have one
-  const input = document.getElementById('searchInput');
-  if (input) input.placeholder = `Search ${name}…`;
+      // 4) (Optional) update your search‑input placeholder, if you have one
+      const input = document.getElementById('searchInput');
+      if (input) input.placeholder = `Search ${name}…`;
 
-    // 5) Close the dropdown
-  const hdr = document.getElementById('searchEngineHeader');
-  const cnt = document.getElementById('searchEngineContent');
-  hdr.classList.remove('open');
-  cnt.classList.remove('open');
-  }
+        // 5) Close the dropdown
+      const hdr = document.getElementById('searchEngineHeader');
+      const cnt = document.getElementById('searchEngineContent');
+      hdr.classList.remove('open');
+      cnt.classList.remove('open');
+      }
 
 
 
@@ -3229,7 +3565,10 @@ setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
         const resultText    = document.getElementById('coinFlipResult');
         const coinContainer = document.getElementById('coinContainer');
 
-        if (!isReflip) modal.classList.remove('hidden');
+        if (!isReflip) {
+            modal.classList.remove('hidden');
+            logHistory('Setting', 'Used coin flip tool');
+        }
         coinContainer.innerHTML = '';
         resultText.textContent   = 'Flipping...';
 
@@ -3322,28 +3661,29 @@ setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
       };
 
       // 3) the fixed onend:
-  recognition.onend = () => {
-    recognition._isStarted = false;
-    recognition.onspeechend = () => recognition.stop();  // <-- VAD: stop when user stops talking
+      recognition.onend = () => {
+        recognition._isStarted = false;
+        recognition.onspeechend = () => recognition.stop();  // <-- VAD: stop when user stops talking
 
-    // restore placeholder + mic color
-    const eng = localStorage.getItem("searchEngine") || "Google";
-    searchInput.placeholder = `Search with ${eng}…`;
-    micIcon.style.color     = "";
-    container.removeEventListener("click", handleCancelClick);
+        // restore placeholder + mic color
+        const eng = localStorage.getItem("searchEngine") || "Google";
+        searchInput.placeholder = `Search with ${eng}…`;
+        micIcon.style.color     = "";
+        container.removeEventListener("click", handleCancelClick);
 
-    // if there's text, run performSearch
-    if (searchInput.value.trim()) {
-      performSearch();
+        // if there's text, run performSearch
+        if (searchInput.value.trim()) {
+          logHistory('Voice', `Voice search for: '${searchInput.value.trim()}'`);
+          performSearch(true); // Pass true to indicate it's a voice search
 
-      // then clear the bar
-  searchInput.value = "";
-  handleSearchInput();
-}
-  };
+          // then clear the bar
+          searchInput.value = "";
+          handleSearchInput();
+        }
+      };
 
-  recognition.start();
-}
+      recognition.start();
+    }
 
     function exportBookmarks() {
       try {
@@ -3362,6 +3702,7 @@ setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         showToast("Bookmarks exported successfully!");
+        logHistory('Bookmark', 'Exported bookmarks');
       } catch (error) {
         console.error("Export error:", error);
         showToast("Failed to export bookmarks: " + error.message);
@@ -3424,6 +3765,111 @@ setTextSafe("tileSizeLabel", `Resize Bookmark Tiles (${width}px)`);
          (navigator.maxTouchPoints > 0) ||
          (navigator.msMaxTouchPoints > 0));
     }
+
+    // --- Tabs Modal Functions ---
+    function openTabsModal() {
+        const modal = document.getElementById("tabsModal");
+        modal.classList.remove("hidden");
+        renderTabsList();
+    }
+
+    function closeTabsModal() {
+        const modal = document.getElementById("tabsModal");
+        modal.classList.add("hidden");
+    }
+
+    function renderTabsList() {
+        const container = document.getElementById("tabs-list-container");
+        container.innerHTML = ''; // Clear previous list
+
+        // --- !! IMPORTANT !! ---
+        // This is placeholder data. A real web page cannot access your tabs.
+        // If this were a browser extension, you would replace this with a call
+        // to an API like `chrome.tabs.query({}, (tabs) => { ... });`
+        const placeholderTabs = [
+            { title: "HomePage Pro - Your Dashboard", url: "https://example.com/homepage-pro", favIconUrl: "https://www.google.com/s2/favicons?sz=64&domain=google.com" },
+            { title: "GitHub - TechPreeet/HomePage-Pro", url: "https://github.com/TechPreeet/HomePage-Pro", favIconUrl: "https://www.google.com/s2/favicons?sz=64&domain=github.com" },
+            { title: "Design Inspiration | Awwwards", url: "https://www.awwwards.com/", favIconUrl: "https://www.google.com/s2/favicons?sz=64&domain=awwwards.com" },
+            { title: "Stack Overflow - Where Developers Learn, Share, & Build Careers", url: "https://stackoverflow.com/", favIconUrl: "https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com" }
+        ];
+
+        if (placeholderTabs.length === 0) {
+            container.innerHTML = `<p style="text-align: center; opacity: 0.7;">No other tabs are open.</p>`;
+            return;
+        }
+
+        placeholderTabs.forEach(tab => {
+            const tabElement = document.createElement('a');
+            tabElement.className = 'tab-item';
+            tabElement.href = tab.url; // In a real extension, this would switch to the tab
+            tabElement.target = "_blank"; // For this demo, it opens a new tab
+            tabElement.title = `Click to open ${tab.title}`;
+            
+            tabElement.innerHTML = `
+                <img src="${tab.favIconUrl}" alt="">
+                <div class="tab-item-info">
+                    <span class="tab-item-title">${tab.title}</span>
+                    <span class="tab-item-url">${tab.url}</span>
+                </div>
+            `;
+            container.appendChild(tabElement);
+        });
+    }
+
+    // --- History Modal Functions ---
+    function openHistoryModal() {
+        document.getElementById("historyModal").classList.remove("hidden");
+        renderHistory(); // Render with default 'All' filter
+    }
+
+    function closeHistoryModal() {
+        document.getElementById("historyModal").classList.add("hidden");
+    }
+
+    function renderHistory(filter = 'All') {
+        const container = document.getElementById('history-log-container');
+        const history = JSON.parse(localStorage.getItem('historyLog') || '[]');
+        container.innerHTML = '';
+
+        const filteredHistory = history.filter(entry => {
+            if (filter === 'All') return true;
+            return entry.type === filter;
+        });
+
+        if (filteredHistory.length === 0) {
+            container.innerHTML = `<p style="text-align: center; opacity: 0.7; margin-top: 20px;">No history recorded for this category.</p>`;
+            return;
+        }
+
+        // Reverse to show most recent first
+        filteredHistory.reverse().forEach(entry => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'history-entry';
+
+            const descriptionSpan = document.createElement('span');
+            descriptionSpan.className = 'history-description';
+            descriptionSpan.textContent = entry.description;
+
+            const timestampSpan = document.createElement('span');
+            timestampSpan.className = 'history-timestamp';
+            const date = new Date(entry.timestamp);
+            timestampSpan.textContent = date.toLocaleString();
+            timestampSpan.title = date.toISOString();
+
+            entryDiv.appendChild(descriptionSpan);
+            entryDiv.appendChild(timestampSpan);
+            container.appendChild(entryDiv);
+        });
+    }
+
+    function clearHistory() {
+        if (confirm("Are you sure you want to clear all history? This cannot be undone.")) {
+            localStorage.removeItem('historyLog');
+            renderHistory(); // Re-render to show it's empty
+            showToast("History cleared.");
+        }
+    }
+
 
     window.onload = async function() {
       updateClock();
@@ -3527,17 +3973,17 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
     });
 
     window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('searchEngine') || 'Google';
-  setSearchEngine(saved);
-});
+      const saved = localStorage.getItem('searchEngine') || 'Google';
+      setSearchEngine(saved);
+    });
 
-window.addEventListener('DOMContentLoaded', () => {
-  const savedDark = localStorage.getItem('dark-mode') === 'true';
-  // apply whatever you had last
-  applyDarkMode(savedDark);
-  // but make the toggle CLOSED when dark, OPEN when light
-  document.getElementById('darkModeSwitch').checked = !savedDark;
-});
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedDark = localStorage.getItem('dark-mode') === 'true';
+      // apply whatever you had last
+      applyDarkMode(savedDark);
+      // but make the toggle CLOSED when dark, OPEN when light
+      document.getElementById('darkModeSwitch').checked = !savedDark;
+    });
 
 
     document.getElementById('refreshBtn').addEventListener('click', () => {
@@ -3546,109 +3992,133 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
      document.addEventListener('DOMContentLoaded', () => {
-      const wrapper   = document.getElementById('bookmarksWrapper');
-      const toggleBtn = document.getElementById('toggleBookmarks');
-      const addBtn    = document.getElementById('addBookmarkBtn');
-      const refreshBtn = document.getElementById('refreshBtn');
+        const wrapper     = document.getElementById('bookmarksWrapper');
+        const toggleBtn   = document.getElementById('toggleBookmarks');
+        const addBtn      = document.getElementById('addBookmarkBtn');
+        const refreshBtn  = document.getElementById('refreshBtn');
+        const tabsBtn     = document.getElementById('toggleTabsBtn');
+        const historyBtn  = document.getElementById('toggleHistoryBtn');
 
-      const saved = localStorage.getItem('bookmarksCollapsed') === 'true';
-      wrapper.classList.toggle('collapsed', saved);
-      
-      const isInitiallyCollapsed = wrapper.classList.contains('collapsed');
-      addBtn.style.display = isInitiallyCollapsed ? 'none' : '';
-      refreshBtn.style.display = isInitiallyCollapsed ? 'none' : '';
-      
-      toggleBtn.setAttribute('aria-label', isInitiallyCollapsed ? 'Show bookmarks' : 'Hide bookmarks');
-      if (isInitiallyCollapsed) {
-          toggleBtn.style.transform = 'rotate(-180deg)';
-      }
+        // Setup click listeners for new buttons
+        tabsBtn.addEventListener('click', openTabsModal);
+        historyBtn.addEventListener('click', openHistoryModal);
 
+        // Listeners to close modals by clicking outside
+        document.getElementById('tabsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'tabsModal') closeTabsModal();
+        });
+        document.getElementById('historyModal').addEventListener('click', (e) => {
+            if (e.target.id === 'historyModal') closeHistoryModal();
+        });
+        document.getElementById('clear-history-btn').addEventListener('click', clearHistory);
+        document.querySelectorAll('.history-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelector('.history-tab.active').classList.remove('active');
+                tab.classList.add('active');
+                renderHistory(tab.dataset.filter);
+            });
+        });
 
-      toggleBtn.addEventListener('click', () => {
-        const isCollapsed = wrapper.classList.toggle('collapsed');
-        toggleBtn.setAttribute('aria-label', isCollapsed ? 'Show bookmarks' : 'Hide bookmarks');
-        toggleBtn.style.transform = isCollapsed ? 'rotate(-180deg)' : '';
-        addBtn.style.display = isCollapsed ? 'none' : '';
-        refreshBtn.style.display = isCollapsed ? 'none' : '';
-        if (!isCollapsed) {
-            document.getElementById('searchResults').style.display = 'none';
+        const saved = localStorage.getItem('bookmarksCollapsed') === 'true';
+        wrapper.classList.toggle('collapsed', saved);
+        
+        const isInitiallyCollapsed = wrapper.classList.contains('collapsed');
+        const buttonsToToggle = [addBtn, refreshBtn, tabsBtn, historyBtn];
+        buttonsToToggle.forEach(btn => {
+            if(btn) btn.style.display = isInitiallyCollapsed ? 'none' : '';
+        });
+        
+        toggleBtn.setAttribute('aria-label', isInitiallyCollapsed ? 'Show bookmarks' : 'Hide bookmarks');
+        if (isInitiallyCollapsed) {
+            toggleBtn.style.transform = 'rotate(-180deg)';
         }
-        localStorage.setItem('bookmarksCollapsed', isCollapsed);
-      });
 
-      addBtn.addEventListener('click', () => {
-        addBookmark();
-      });
+        toggleBtn.addEventListener('click', () => {
+            const isCollapsed = wrapper.classList.toggle('collapsed');
+            toggleBtn.setAttribute('aria-label', isCollapsed ? 'Show bookmarks' : 'Hide bookmarks');
+            toggleBtn.style.transform = isCollapsed ? 'rotate(-180deg)' : '';
+            
+            buttonsToToggle.forEach(btn => {
+                if(btn) btn.style.display = isCollapsed ? 'none' : '';
+            });
+
+            if (!isCollapsed) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+            localStorage.setItem('bookmarksCollapsed', isCollapsed);
+            logHistory('Setting', `${isCollapsed ? 'Collapsed' : 'Expanded'} bookmarks section`);
+        });
+
+        addBtn.addEventListener('click', () => {
+            addBookmark();
+        });
     });
 
 
     window.addEventListener('DOMContentLoaded', () => {
-  // ⏰ Clock & seconds
-  updateClock();  
-  document.getElementById('clockSecondsSwitch').checked =
-    (localStorage.getItem('showSeconds') === 'true');
+      // ⏰ Clock & seconds
+      updateClock();  
+      document.getElementById('clockSecondsSwitch').checked =
+        (localStorage.getItem('showSeconds') === 'true');
 
-  // ☁️ Weather
-  const weatherOn = localStorage.getItem('showWeather') === 'true';
-  document.getElementById('weatherSwitch').checked = weatherOn;
-  applyWeatherToggle(weatherOn);
+      // ☁️ Weather
+      const weatherOn = localStorage.getItem('showWeather') === 'true';
+      document.getElementById('weatherSwitch').checked = weatherOn;
+      applyWeatherToggle(weatherOn);
 
-  // 👋 Greeting
-  const greetOn = localStorage.getItem('showGreeting') === 'true';
-  document.getElementById('greetingSwitch').checked = greetOn;
-  applyGreetingToggle(greetOn);
+      // 👋 Greeting
+      const greetOn = localStorage.getItem('showGreeting') === 'true';
+      document.getElementById('greetingSwitch').checked = greetOn;
+      applyGreetingToggle(greetOn);
 
-  // 🪩 Glass Mode
-  const glassOn = localStorage.getItem('glassMode') === 'true';
-  glassMode = glassOn;  // sync the module‑level var
-  document.getElementById('glassModeSwitch').checked = glassOn;
-  applyGlassMode();
+      // 🪩 Glass Mode
+      const glassOn = localStorage.getItem('glassMode') === 'true';
+      glassMode = glassOn;  // sync the module‑level var
+      document.getElementById('glassModeSwitch').checked = glassOn;
+      applyGlassMode();
 
-  // 🏷️ Bookmark Labels
-  const labelsHidden = localStorage.getItem('hideLabels') === 'true';
-  document.getElementById('labelsSwitch').checked = labelsHidden;
-  if (labelsHidden) {
-    document.body.classList.add('hide-labels');
-  } else {
-    document.body.classList.remove('hide-labels');
-  }
+      // 🏷️ Bookmark Labels
+      const labelsHidden = localStorage.getItem('hideLabels') === 'true';
+      document.getElementById('labelsSwitch').checked = labelsHidden;
+      if (labelsHidden) {
+        document.body.classList.add('hide-labels');
+      } else {
+        document.body.classList.remove('hide-labels');
+      }
 
-  // 🌀 Icon Style
-  
-
-  // 🔗 Open Links in New Tab
-  const newTab = localStorage.getItem('newTabLinks') === 'true';
-  document.getElementById('newTabLinksSwitch').checked = newTab;
-});
-// …after restoring switch state…
-document.querySelectorAll('a.tile').forEach(a => {
-  if (newTabLinks) a.setAttribute('target','_blank');
-  else a.removeAttribute('target');
-});
+      // 🔗 Open Links in New Tab
+      const newTab = localStorage.getItem('newTabLinks') === 'true';
+      document.getElementById('newTabLinksSwitch').checked = newTab;
+    });
+    // …after restoring switch state…
+    document.querySelectorAll('a.tile').forEach(a => {
+      if (newTabLinks) a.setAttribute('target','_blank');
+      else a.removeAttribute('target');
+    });
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  const blurSaved = localStorage.getItem('bgBlur') === 'true';
-  const blurSwitch = document.getElementById('bgBlurSwitch');
-  if (blurSwitch) blurSwitch.checked = blurSaved;
-  applyBgBlur(blurSaved);
-});
+    document.addEventListener('DOMContentLoaded', () => {
+      const blurSaved = localStorage.getItem('bgBlur') === 'true';
+      const blurSwitch = document.getElementById('bgBlurSwitch');
+      if (blurSwitch) blurSwitch.checked = blurSaved;
+      applyBgBlur(blurSaved);
+    });
 
 
    // Register SW only when served from http/https (not file://)
-if (
-  'serviceWorker' in navigator &&
-  (location.protocol === 'https:' || location.protocol === 'http:')
-) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('./serviceworker.js', { scope: './' })
-      .then(reg => console.log('✅ Service worker registered:', reg.scope))
-      .catch(err => console.error('❌ Service worker registration failed:', err));
-  });
-} else {
-  console.log('Skipping SW registration (protocol:', location.protocol, ')');
-}
+    if (
+      'serviceWorker' in navigator &&
+      (location.protocol === 'https:' || location.protocol === 'http:')
+    ) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('./serviceworker.js', { scope: './' })
+          .then(reg => console.log('✅ Service worker registered:', reg.scope))
+          .catch(err => console.error('❌ Service worker registration failed:', err));
+      });
+    } else {
+      console.log('Skipping SW registration (protocol:', location.protocol, ')');
+    }
 
 
     
