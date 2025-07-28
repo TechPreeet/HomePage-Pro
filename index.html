@@ -476,21 +476,25 @@
 
     .tile img.round {
       border-radius: 50%;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .tile img.squircle {
       border-radius: 20%;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .tile img.rounded-rect {
-      width: 75px;
-      height: 90px;
-      object-fit: cover;
-      border-radius: 65% / 90%;
-      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 30%;
     }
+
+    .tile img.tv-rect { 
+      clip-path: inset(11% 0 11% 0 round 12px) !important;
+      border-radius: 0 !important;  
+    }
+
+    .tile img.sammy {
+        border-radius: 65% / 90%;
+    }
+
 
     #sidebar-toggle-btn {
         position: fixed;
@@ -579,7 +583,7 @@
       z-index: 1001;
       box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4);
       transform: translateX(100%);
-      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
       overflow-y: auto;
       padding: 20px;
       padding-top: calc(20px + env(safe-area-inset-top));
@@ -744,7 +748,7 @@
       box-shadow: 0 0 15px -2px var(--accent-color);
     }
     
-    #tileSizeSlider, #gradientSlider {
+    #tileSizeSlider, #gradientSlider, #iconStyleSlider {
       width: 90%;
       margin: 5px 0;
       -webkit-appearance: none;
@@ -753,10 +757,10 @@
       border-radius: 4px;
       background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) 50%, #ffffff 50%, #ffffff 100%);
       outline: none;
-      transition: background 0.2s ease;
+      transition: background 0.2s ease, opacity 0.3s ease;
     }
 
-    #tileSizeSlider::-webkit-slider-thumb, #gradientSlider::-webkit-slider-thumb {
+    #tileSizeSlider::-webkit-slider-thumb, #gradientSlider::-webkit-slider-thumb, #iconStyleSlider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
       width: 16px;
@@ -768,11 +772,11 @@
       transition: transform 0.2s ease;
     }
 
-    #tileSizeSlider::-webkit-slider-thumb:hover, #gradientSlider::-webkit-slider-thumb:hover {
+    #tileSizeSlider::-webkit-slider-thumb:hover, #gradientSlider::-webkit-slider-thumb:hover, #iconStyleSlider::-webkit-slider-thumb:hover {
       transform: scale(1.2);
     }
 
-    #tileSizeSlider::-moz-range-thumb, #gradientSlider::-moz-range-thumb {
+    #tileSizeSlider::-moz-range-thumb, #gradientSlider::-moz-range-thumb, #iconStyleSlider::-moz-range-thumb {
       width: 16px;
       height: 16px;
       background: #ffffff;
@@ -782,14 +786,40 @@
       transition: transform 0.2s ease;
     }
 
-    #tileSizeSlider::-moz-range-thumb:hover, #gradientSlider::-moz-range-thumb:hover {
+    #tileSizeSlider::-moz-range-thumb:hover, #gradientSlider::-moz-range-thumb:hover, #iconStyleSlider::-moz-range-thumb:hover {
       transform: scale(1.2);
     }
 
-    #tileSizeSliderContainer, #gradientSliderContainer {
+    #tileSizeSliderContainer, #gradientSliderContainer, #iconStyleSliderContainer {
       margin: 10px 0;
       padding: 0 10px;
     }
+
+    /* When dragging ANY slider, hide every child of the sidebar... */
+body.sidebar-slider-active #settings-sidebar > *{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .12s, visibility .12s;
+}
+
+/* ...EXCEPT the container holding the active slider */
+body.sidebar-slider-active #settings-sidebar > .slider-container-active{
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+  position:relative;
+  z-index:9999;
+}
+
+/* Make sure the sidebar chrome itself doesn’t show */
+body.sidebar-slider-active #settings-sidebar{
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+}
+
 
     #bgInput, #importInput, #videoInput, #lensInput {
       display: none;
@@ -825,6 +855,10 @@
       transition: opacity 0.3s ease;
       pointer-events: none;
       opacity: 0;
+    }
+
+    #tabsModal {
+        z-index: 1600; /* Higher than iframe viewer */
     }
 
     .modal.hidden {
@@ -1128,7 +1162,7 @@
     #bookmarkControls {
       display: flex;
       justify-content: center;
-      gap: 2.5rem; /* Space between buttons */
+      gap: 1.5rem; /* Closer buttons */
       margin-bottom: 1.5rem;
       width: 100%;
       position: relative;
@@ -1372,7 +1406,6 @@
     background: var(--accent-color) !important;
   }
 
-
 /* ─── Wallpaper blur layer ─── */
 #bgBlurLayer {
   position: fixed;
@@ -1387,6 +1420,102 @@
 body.bg-blur #bgBlurLayer {
   opacity: 1;
 }
+
+/* --- iFrame In-App Browser Styles --- */
+#iframe-viewer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1500;
+  background-color: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#iframe-viewer:not(.hidden) {
+    transform: translateY(0);
+}
+
+#iframe-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: var(--accent-color);
+  flex-shrink: 0;
+  height: 45px;
+  box-sizing: border-box;
+  color: white;
+}
+
+#iframe-tab-info {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: white;
+}
+
+#iframe-favicon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+#iframe-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#iframe-buttons {
+    display: flex;
+    align-items: center;
+}
+
+#iframe-buttons button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#iframe-buttons button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+#iframe-buttons button svg {
+    width: 20px;
+    height: 20px;
+}
+
+#browser-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  flex-grow: 1;
+  background-color: #fff; /* Fallback for pages that don't load */
+}
+
+#browser-frame.iframe-force-dark {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+#browser-frame.iframe-reader-mode {
+    filter: sepia(10%) contrast(110%) brightness(105%);
+}
+
 
 /* --- Tabs Modal Styles --- */
 .tabs-box {
@@ -1418,6 +1547,30 @@ body.bg-blur #bgBlurLayer {
 #tabs-list-container {
   overflow-y: auto;
   flex-grow: 1;
+  margin-bottom: 15px;
+}
+
+.tabs-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+#close-all-tabs-btn {
+    background: transparent;
+    border: 1px solid #d9534f;
+    color: #d9534f;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#close-all-tabs-btn:hover {
+    background-color: #d9534f;
+    color: white;
 }
 
 .tab-item {
@@ -1590,9 +1743,89 @@ body.bg-blur #bgBlurLayer {
     color: white;
 }
 
+/* ========== CSS‑only “solo slider” focus ========== */
+
+/* Smooth fade for sidebar children */
+#settings-sidebar > *{
+  transition: opacity .15s, visibility .15s;
+}
+
+/* 1) When ANY slider is being pressed, hide every direct child and also clear the panel's own chrome */
+#settings-sidebar:has(.slider-container input[type="range"]:active){
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Hide all children (text, buttons, etc.) */
+#settings-sidebar:has(.slider-container input[type="range"]:active) > *{
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* 2) …except the slider container that is currently being held */
+#settings-sidebar:has(.slider-container input[type="range"]:active)
+  > .slider-container:has(input[type="range"]:active){
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 9999;
+}
+
+/* Make sure the active slider itself is fully visible */
+.slider-container input[type="range"]:active{
+  opacity: 1;
+}
+
+/* Optional: cover tiny glitches when finger leaves the element */
+@media (hover: none){
+  .slider-container input[type="range"]{ touch-action: pan-x; }
+}
+
+
 </style>
 </head>
 <body tabindex="-1">
+
+<!-- In-App Browser (iFrame Viewer) -->
+<div id="iframe-viewer" class="hidden">
+    <div id="iframe-controls">
+        <div id="iframe-tab-info">
+            <img id="iframe-favicon" src="" alt="favicon" />
+            <span id="iframe-title">Loading...</span>
+        </div>
+        <div id="iframe-buttons">
+            <button title="Refresh" onclick="refreshActiveTab()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            </button>
+            <button title="Go Home" onclick="goHome()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            </button>
+            <button title="Tabs" onclick="openTabsModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+                    <path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4l-3 3-3-3H5a2 2 0 0 1-2-2V5z"/>
+                    <path d="M9 3v6m6-6v6"/>
+                </svg>
+            </button>           
+            <button title="Force Dark Mode" onclick="toggleIframeDarkMode()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-5.4-5.4c0-1.81 0.88-3.39 2.26-4.4A8.892 8.892 0 0 0 12 3Z"/></svg>
+            </button>
+            <button title="Reader View" onclick="toggleReaderMode()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.999 21.001H4.999v-2h15v2zm0-4H4.999v-2h15v2zm-15-4H19.999v-2H4.999v2zm15-4H4.999V7h15v2zm0-4H4.999V3h15v2z"/></svg>
+            </button>
+            <button title="Fullscreen" onclick="maximizeTab()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+            </button>
+            <button title="Close Tab" onclick="closeActiveTab()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+    </div>
+    <iframe id="browser-frame" sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-top-navigation-by-user-activation" allow="fullscreen"></iframe>
+</div>
 
 <div class="top-blend"></div>
 
@@ -1648,6 +1881,9 @@ body.bg-blur #bgBlurLayer {
       <h2>❐ Open Tabs</h2>
       <div id="tabs-list-container">
         <!-- Tab items will be injected here -->
+      </div>
+      <div class="tabs-footer">
+          <button id="close-all-tabs-btn">Close All Tabs</button>
       </div>
     </div>
   </div>
@@ -1730,14 +1966,14 @@ body.bg-blur #bgBlurLayer {
             <button id="toggleTabsBtn" class="toggle-refresh" aria-label="Show tabs">❐</button>
             <button id="addBookmarkBtn" class="toggle-add" aria-label="Add bookmark">＋</button>
             <button id="toggleBookmarks" class="toggle-arrow" aria-label="Hide bookmarks">▼</button>
-            <button id="refreshBtn" class="toggle-refresh" aria-label="Refresh">⟳</button>
             <button id="toggleHistoryBtn" class="toggle-refresh" aria-label="Show history">
-                    <svg width="32" height="32" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 4C7.58 4 4 7.58 4 12s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="currentColor"/>
-                      <path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586V7z" fill="currentColor"/>
-                    </svg>
-            </button>        
-          </div>
+                <svg width="32" height="32" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 4C7.58 4 4 7.58 4 12s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z" fill="currentColor"/>
+                  <path d="M13 7h-2v5.414l3.293 3.293 1.414-1.414L13 11.586V7z" fill="currentColor"/>
+                </svg>
+            </button>
+            <button id="refreshBtn" class="toggle-refresh" aria-label="Refresh">⟳</button>
+        </div>
         
         <div class="grid" id="bookmarkGrid">
           </div>
@@ -1917,7 +2153,7 @@ body.bg-blur #bgBlurLayer {
     <input type="file" id="bgInput" accept="image/*,.heic,.heif,.webp,.avif" />
     <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mov,.hevc">
     <div class="toolbar-option" id="gradientLabel">Background Color</div>
-    <div id="gradientSliderContainer">
+    <div id="gradientSliderContainer" class="slider-container">
         <input type="range" id="gradientSlider" min="0" max="15" value="0" class="toolbar-option" oninput="setGradientBackground(this.value)">
     </div>
     <div class="toolbar-option" id="accentColorOption">
@@ -1964,8 +2200,10 @@ body.bg-blur #bgBlurLayer {
   </div>
 </label>
 
-  
-    <div class="toolbar-option" aria-label="Toggle Icon Style" onclick="toggleIconStyle()" tabindex="0">🌀 Toggle Icon Style</div>
+    <div class="toolbar-option" id="iconStyleLabel">Icon Style</div>
+    <div id="iconStyleSliderContainer" class="slider-container">
+      <input type="range" id="iconStyleSlider" min="0" max="4" value="0" class="toolbar-option" oninput="setIconStyle(this.value)">
+    </div>
   
 <!-- Bookmark Labels -->
 <label class="toolbar-option">
@@ -1981,7 +2219,7 @@ body.bg-blur #bgBlurLayer {
 </label>
   
     <div class="toolbar-option" id="tileSizeLabel">Resize Bookmark Tiles</div>
-    <div id="tileSizeSliderContainer">
+    <div id="tileSizeSliderContainer" class="slider-container">
       <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
     </div>
     
@@ -1998,6 +2236,31 @@ body.bg-blur #bgBlurLayer {
   </div>
 </label>
 
+<!-- In-App Browser Toggle -->
+<label class="toolbar-option">
+  🌐 Open Links In-App
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="inAppBrowserSwitch"
+      onchange="toggleInAppBrowser()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+
+<div class="toolbar-option toolbar-option-header" id="inAppBrowserSettingsHeader" tabindex="0">🛡️ In-App Browser Settings</div>
+<div class="collapsible-content" id="inAppBrowserSettingsContent">
+    <label class="toolbar-option">
+        Block Popups (Experimental)
+        <div class="switch">
+            <input type="checkbox" id="blockPopupsSwitch" onchange="updateSandboxPermissions()">
+            <span class="slider"></span>
+        </div>
+    </label>
+    <p style="font-size: 11px; opacity: 0.7; padding: 0 10px;">Note: Ad & tracker blocking is not possible without a full browser extension.</p>
+</div>
+
     
     <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()" tabindex="0">🔄 Rearrange Bookmarks</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()" tabindex="0">📤 Export Bookmarks</div>
@@ -2010,12 +2273,18 @@ body.bg-blur #bgBlurLayer {
   </div>
 
   <script>
-    
+
+   
 let _firstBookmarkLoad = true;
 
 // === Debounce timers ===
 let _gradLogTimer = null;
 let _tileLogTimer = null;
+
+// === In-App Tab Management ===
+let inAppTabs = [];
+let activeTabId = null;
+let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
 
 
     /**
@@ -2108,8 +2377,8 @@ let _tileLogTimer = null;
       document.querySelectorAll(".floating-menu").forEach(m => m.remove());
       const menu = document.createElement("div");
       menu.className = "floating-menu";
-      const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab"];
-      const icons = { Edit:"📝", Delete:"🗑️", Share:"🔗", "Copy URL":"📋", "Open in New Tab":"↗️" };
+      const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab", "Open in App"];
+      const icons = { Edit:"📝", Delete:"🗑️", Share:"🔗", "Copy URL":"📋", "Open in New Tab":"↗️", "Open in App": "🌐" };
 
       actions.forEach(action => {
         const opt = document.createElement("div");
@@ -2121,19 +2390,12 @@ let _tileLogTimer = null;
         e.stopPropagation();
 
         if (action === "Delete") {
-            // 1) close the menu immediately
             menu.remove();
-
-            // 2) notify the user right away
             showToast("Bookmark deleted");
             logHistory('Bookmark', `Deleted bookmark: '${bookmark.name}'`);
-
-            // 3) update your data + redraw
             bookmarks.splice(index, 1);
             localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
             loadBookmarks();
-
-            // 4) bail out so we don’t hit the final menu.remove() again
             return;
         } else if (action === "Edit") {
             const modal = document.getElementById("bookmarkModal");
@@ -2186,6 +2448,8 @@ let _tileLogTimer = null;
           } else if (action === "Open in New Tab") {
               window.open(bookmark.url, '_blank');
               logHistory('Bookmark', `Opened '${bookmark.name}' in new tab`);
+          } else if (action === "Open in App") {
+              openInAppTab(bookmark.url, bookmark.name);
           }
   
           
@@ -2196,7 +2460,7 @@ let _tileLogTimer = null;
 
       const rect = tile.getBoundingClientRect();
       const menuWidth = 140; 
-      const menuHeight = 160;
+      const menuHeight = 200;
 
       const spaceRight = window.innerWidth - rect.right;
       const spaceLeft = rect.left;
@@ -2354,6 +2618,10 @@ function setTextSafe(id, text) {
 
     document.addEventListener("keydown", function(e) {
       if (e.key === "Escape") {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        }
+        goHome(); // This will close the iframe viewer if it's open
         closeModal();
         closeAboutModal();
         closeHistoryModal();
@@ -2755,15 +3023,13 @@ function setTextSafe(id, text) {
     function toggleNewTabLinks() {
       newTabLinks = !newTabLinks;
       localStorage.setItem('newTabLinks', newTabLinks);
-      logHistory('Setting', `Set 'Open in New Tab' to ${newTabLinks}`);
-      // update all existing tiles right away:
-      document.querySelectorAll('a.tile').forEach(a => {
-        if (newTabLinks) {
-          a.setAttribute('target', '_blank');
-        } else {
-          a.removeAttribute('target');
-        }
-      });
+      logHistory('Setting', `Set 'Open Links in New Tab' to ${newTabLinks}`);
+    }
+
+    function toggleInAppBrowser() {
+        useInAppBrowser = !useInAppBrowser;
+        localStorage.setItem('useInAppBrowser', useInAppBrowser);
+        logHistory('Setting', `Set 'Open Links In-App' to ${useInAppBrowser}`);
     }
 
 
@@ -2871,19 +3137,55 @@ function setTextSafe(id, text) {
         }
     }
     
-    function createBookmarkElement(bookmark, index) {
-      const a = document.createElement("a");
-      a.draggable = rearrangeMode;
-      a.href = bookmark.url;
-      a.className = "tile";
-      if (newTabLinks) a.target = "_blank";
-      a.dataset.index = index;
-      a.tabIndex = 0;
-      
-      // FIX: Apply animation delay via inline style so it works with the CSS rule
-      a.style.animationDelay = `${index * 0.03}s`;
 
-      if ('ontouchstart' in window) {
+    function createBookmarkElement(bookmark, index) {
+    const a = document.createElement("a");
+    a.draggable = rearrangeMode;
+    a.href = bookmark.url; 
+    a.className = "tile";
+    a.dataset.index = index;
+    a.tabIndex = 0;
+    
+    a.style.animationDelay = `${index * 0.03}s`;
+
+    // --- Main Click Handler ---
+const handleClick = (e) => {
+  if (rearrangeMode) return;
+
+  e.preventDefault();            // <- stop the anchor/default click
+  e.stopPropagation();           // <- stop bubbling to any parent handler
+
+  const tile = e.currentTarget;
+
+  if (useInAppBrowser) {
+    openInAppTab(bookmark.url, bookmark.name);
+  } else {
+    if (newTabLinks) {
+      sessionStorage.setItem('hppReloadOnReturn','1'); // optional reload flag
+      window.open(bookmark.url, '_blank', 'noopener');
+    } else {
+      location.href = bookmark.url;
+    }
+    logHistory('Bookmark', `Opened '${bookmark.name}'`);
+  }
+
+      tile.classList.add('no-hover');
+    setTimeout(()=> tile.classList.remove('no-hover'), 100);
+
+
+  // clear highlight right away
+  tile.blur();
+  tile.classList.remove('active','selected');
+  requestAnimationFrame(() => {
+    tile.blur();
+    tile.classList.remove('active','selected');
+  });
+};
+
+
+    a.addEventListener('click', handleClick);
+
+    if ('ontouchstart' in window) {
         let pressTimer = null;
         let longPressDidOccur = false;
 
@@ -2894,100 +3196,75 @@ function setTextSafe(id, text) {
             longPressDidOccur = true;
             showMenuOptions(a, bookmark, index);
           }, 500);
-        });
+        }, { passive: true });
 
         a.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
-        a.addEventListener('touchend', () => { clearTimeout(pressTimer); });
-
-        a.addEventListener('click', (e) => {
-          if (longPressDidOccur) {
-            e.preventDefault();
-          } else {
-            if (!rearrangeMode) {
-                logHistory('Bookmark', `Opened '${bookmark.name}'`);
-            }
-          }
+        a.addEventListener('touchend', (e) => { 
+            if(longPressDidOccur) e.preventDefault();
+            clearTimeout(pressTimer); 
         });
-      } else {
-        a.addEventListener('click', (e) => {
-            if (!rearrangeMode) {
-                logHistory('Bookmark', `Opened '${bookmark.name}'`);
-            }
-        });
-      }
-      
-      a.addEventListener('contextmenu', (e) => { e.preventDefault(); });
+    }
+    
+    a.addEventListener('contextmenu', (e) => { e.preventDefault(); showMenuOptions(a, bookmark, index); });
 
-      a.addEventListener('click', (e) => {
-        if (rearrangeMode) {
-            e.preventDefault();
-        }
-      });
-
-      a.addEventListener("keydown", (e) => {
+    a.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
-            logHistory('Bookmark', `Opened '${bookmark.name}'`);
-            window.location.href = a.href;
+            handleClick(e);
         }
-      });
+    });
 
-
-      const img = document.createElement("img");
-      try {
+    const img = document.createElement("img");
+    try {
         img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
-      } catch (e) {
-        console.warn(`Invalid URL for bookmark ${bookmark.name}: ${bookmark.url}, using default icon`);
+    } catch (e) {
         img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
-      }
-      img.draggable = false;
-
-      // restore last‑saved icon style (default to "round")
-      const savedStyle = localStorage.getItem("iconStyle") || "round";
-      img.classList.add(savedStyle);
-
-      
-      const name = document.createElement("div");
-      name.className = "bookmark-label";
-      name.textContent = bookmark.name;
-      name.draggable = false;
-      
-      const menu = document.createElement("div");
-      menu.className = "menu";
-      menu.textContent = "⋮";
-      
-      menu.onclick = (e) => {
+    }
+    img.draggable = false;
+    const savedStyle = localStorage.getItem("iconStyle") || "0";
+    const iconStyles = ["round", "squircle", "rounded-rect", "tv-rect", "sammy"];
+    img.classList.add(iconStyles[parseInt(savedStyle, 10)] || "round");
+    
+    const name = document.createElement("div");
+    name.className = "bookmark-label";
+    name.textContent = bookmark.name;
+    name.draggable = false;
+    
+    const menu = document.createElement("div");
+    menu.className = "menu";
+    menu.textContent = "⋮";
+    menu.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
         showMenuOptions(a, bookmark, index);
-      };
+    };
 
-      a.appendChild(menu);
-      a.appendChild(img);
-      a.appendChild(name);
+    a.appendChild(menu);
+    a.appendChild(img);
+    a.appendChild(name);
 
-      const deleteBtn = document.createElement("div");
-      deleteBtn.className = "delete-btn";
-      deleteBtn.innerHTML = "−";
-      deleteBtn.title = "Delete Bookmark";
-      deleteBtn.onclick = (e) => {
+    const deleteBtn = document.createElement("div");
+    deleteBtn.className = "delete-btn";
+    deleteBtn.innerHTML = "−";
+    deleteBtn.title = "Delete Bookmark";
+    deleteBtn.onclick = (e) => {
         e.stopPropagation();
         e.preventDefault();
         logHistory('Bookmark', `Deleted bookmark: '${bookmark.name}'`);
         bookmarks.splice(index, 1);
         localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
         loadBookmarks();
-      };
-      a.appendChild(deleteBtn);
+    };
+    a.appendChild(deleteBtn);
 
-      if (rearrangeMode) {
+    if (rearrangeMode) {
         a.classList.add("rearrange-wiggle");
         deleteBtn.style.display = "flex";
-      } else {
+    } else {
         deleteBtn.style.display = "none";
-      }
-
-      return a;
     }
+
+    return a;
+}
 
 
    function loadBookmarks() {
@@ -3293,23 +3570,50 @@ function enableDragAndDrop() {
     }
 
 
-    function toggleIconStyle() {
-      const styles = ["round", "squircle", "rounded-rect"];
-      const current = localStorage.getItem("iconStyle") || "round";
-      const currentIndex = styles.indexOf(current);
-      const nextIndex = (currentIndex + 1) % styles.length;
-      const newStyle = styles[nextIndex];
-      localStorage.setItem("iconStyle", newStyle);
-      logHistory('Setting', `Changed icon style to '${newStyle}'`);
-      applyIconStyle(newStyle);
-    }
+    let _iconLogTimer = null; // keep this once globally
 
-    function applyIconStyle(style) {
-   document.querySelectorAll(".tile img").forEach(img => {
-     img.classList.remove("round","squircle","rounded-rect");
-     img.classList.add(style);
-   });
- }
+function setIconStyle(value, skipLog = false) {
+  const styles       = ["Round", "Squircle", "Rounded Rectangle", "TV Rectangle", "Sammy"];
+  const styleClasses = ["round", "squircle", "rounded-rect", "tv-rect", "sammy"];
+
+  // Clamp & normalize
+  let idx = parseInt(value, 10);
+  if (isNaN(idx)) idx = 0;
+  idx = Math.max(0, Math.min(styles.length - 1, idx));
+
+  const newStyle = styleClasses[idx];
+
+  // Apply live
+  document.querySelectorAll(".tile img").forEach(img => {
+    img.className = "";
+    img.classList.add(newStyle);
+  });
+
+  // UI feedback
+  const slider = document.getElementById("iconStyleSlider");
+  const label  = document.getElementById("iconStyleLabel");
+  if (slider) {
+    const pct = (idx / (styles.length - 1)) * 100;
+    slider.style.background = `linear-gradient(to right, var(--accent-color) ${pct}%, #ffffff ${pct}%)`;
+    slider.value = idx; // sync if clamped
+  }
+  if (label) label.textContent = `Icon Style: ${styles[idx]}`;
+
+  // Save immediately so refresh keeps it
+  const vStr = String(idx);
+  const prev = localStorage.getItem("iconStyle");
+  localStorage.setItem("iconStyle", vStr);
+
+  // Debounce ONLY the log
+  if (!skipLog && prev !== vStr) {
+    clearTimeout(_iconLogTimer);
+    _iconLogTimer = setTimeout(() => {
+      logHistory?.("Setting", `Changed icon style to '${styles[idx]}'`, { value: idx });
+    }, 2000);
+  }
+}
+
+
 
     function setTileSize(size) {
       const tiles         = document.querySelectorAll(".tile");
@@ -3490,45 +3794,31 @@ function enableDragAndDrop() {
 
 
     function performSearch(isVoiceSearch = false) {
-      const searchInput = document.getElementById("searchInput");
-      const query       = searchInput.value.trim();
-      if (!query) return;
+        const searchInput = document.getElementById("searchInput");
+        const query = searchInput.value.trim();
+        if (!query) return;
 
-      // Log the search action
-      if (!isVoiceSearch) {
-          logHistory('Search', `Searched for: '${query}'`);
-      }
-
-      const isFullURL   = /^(https?:\/\/)/i.test(query);
-      const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
-
-      // 1) URLs go straight
-      if (isFullURL || isDomainURL) {
-        const dest = isFullURL ? query : `https://${query}`;
-        if (newTabLinks) {
-          window.open(dest, '_blank');
-          // ← clear on any new‐tab
-          searchInput.value = "";
-          handleSearchInput();
-        } else {
-          window.location.href = dest;
+        if (!isVoiceSearch) {
+            logHistory('Search', `Searched for: '${query}'`);
         }
-        return;
-      }
 
-      // 2) Otherwise do a search
-      const engineName = localStorage.getItem('searchEngine') || 'Google';
-      const baseURL    = searchEngines[engineName].url;
-      const searchURL  = baseURL + encodeURIComponent(query);
-      
-      if (newTabLinks) {
-        window.open(searchURL, '_blank');
-        // ← clear on any new‐tab
+        const isFullURL = /^(https?:\/\/)/i.test(query);
+        const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
+
+        const dest = (isFullURL || isDomainURL) 
+            ? (isFullURL ? query : `https://${query}`)
+            : searchEngines[localStorage.getItem('searchEngine') || 'Google'].url + encodeURIComponent(query);
+        
+        const title = (isFullURL || isDomainURL) ? dest : `Search: ${query}`;
+
+        if (useInAppBrowser) {
+            openInAppTab(dest, title);
+        } else {
+            window.open(dest, '_blank');
+        }
+        
         searchInput.value = "";
         handleSearchInput();
-      } else {
-        window.location.href = searchURL;
-      }
     }
 
 
@@ -3777,6 +4067,121 @@ function enableDragAndDrop() {
          (navigator.msMaxTouchPoints > 0));
     }
 
+    // --- In-App Browser & Tab Management ---
+
+    function openInAppTab(url, title) {
+        const viewer = document.getElementById('iframe-viewer');
+        const frame = document.getElementById('browser-frame');
+        const titleEl = document.getElementById('iframe-title');
+        const faviconEl = document.getElementById('iframe-favicon');
+
+        // Check if this tab is already open
+        const existingTab = inAppTabs.find(tab => tab.url === url);
+        if (existingTab) {
+            switchToTab(existingTab.id);
+            return;
+        }
+
+        // Create a new tab object
+        const newTab = {
+            id: Date.now(),
+            url: url,
+            title: title
+        };
+        inAppTabs.push(newTab);
+        activeTabId = newTab.id;
+
+        // Update UI
+        titleEl.textContent = title;
+        try {
+            faviconEl.src = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;
+        } catch {
+            faviconEl.src = ''; // Default icon
+        }
+        
+        frame.src = url;
+        viewer.classList.remove('hidden');
+        logHistory('Tab', `Opened tab: '${title}'`);
+    }
+
+    function switchToTab(tabId) {
+        const tab = inAppTabs.find(t => t.id === tabId);
+        if (!tab) return;
+
+        activeTabId = tab.id;
+        const viewer = document.getElementById('iframe-viewer');
+        const frame = document.getElementById('browser-frame');
+        const titleEl = document.getElementById('iframe-title');
+        const faviconEl = document.getElementById('iframe-favicon');
+
+        titleEl.textContent = tab.title;
+        try {
+            faviconEl.src = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(tab.url).hostname}`;
+        } catch {
+            faviconEl.src = '';
+        }
+
+        frame.src = tab.url;
+        viewer.classList.remove('hidden');
+        closeTabsModal(); // Close the tab list modal after switching
+    }
+
+    function closeActiveTab() {
+        inAppTabs = inAppTabs.filter(tab => tab.id !== activeTabId);
+        if (inAppTabs.length > 0) {
+            // Switch to the last opened tab
+            switchToTab(inAppTabs[inAppTabs.length - 1].id);
+        } else {
+            // No tabs left, go home
+            goHome();
+        }
+    }
+
+    function closeAllTabs() {
+        if (confirm("Are you sure you want to close all in-app tabs?")) {
+            inAppTabs = [];
+            goHome();
+            closeTabsModal();
+            showToast("All in-app tabs closed.");
+        }
+    }
+
+    function goHome() {
+        const viewer = document.getElementById('iframe-viewer');
+        const frame = document.getElementById('browser-frame');
+        viewer.classList.add('hidden');
+        frame.src = 'about:blank'; // Clear the frame to stop any processes
+        activeTabId = null;
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        }
+    }
+
+    function refreshActiveTab() {
+        const frame = document.getElementById('browser-frame');
+        frame.src = frame.src; // Reloads the iframe
+    }
+
+    function maximizeTab() {
+        const viewer = document.getElementById('iframe-viewer');
+        if (!document.fullscreenElement) {
+            viewer.requestFullscreen().catch(err => {
+                showToast(`Error: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    function toggleIframeDarkMode() {
+        document.getElementById('browser-frame').classList.toggle('iframe-force-dark');
+    }
+
+    function toggleReaderMode() {
+        showToast("Reader mode is experimental and may not work on all sites.");
+        document.getElementById('browser-frame').classList.toggle('iframe-reader-mode');
+    }
+
     // --- Tabs Modal Functions ---
     function openTabsModal() {
         const modal = document.getElementById("tabsModal");
@@ -3793,31 +4198,24 @@ function enableDragAndDrop() {
         const container = document.getElementById("tabs-list-container");
         container.innerHTML = ''; // Clear previous list
 
-        // --- !! IMPORTANT !! ---
-        // This is placeholder data. A real web page cannot access your tabs.
-        // If this were a browser extension, you would replace this with a call
-        // to an API like `chrome.tabs.query({}, (tabs) => { ... });`
-        const placeholderTabs = [
-            { title: "HomePage Pro - Your Dashboard", url: "https://example.com/homepage-pro", favIconUrl: "https://www.google.com/s2/favicons?sz=64&domain=google.com" },
-            { title: "GitHub - TechPreeet/HomePage-Pro", url: "https://github.com/TechPreeet/HomePage-Pro", favIconUrl: "https://www.google.com/s2/favicons?sz=64&domain=github.com" },
-            { title: "Design Inspiration | Awwwards", url: "https://www.awwwards.com/", favIconUrl: "https://www.google.com/s2/favicons?sz=64&domain=awwwards.com" },
-            { title: "Stack Overflow - Where Developers Learn, Share, & Build Careers", url: "https://stackoverflow.com/", favIconUrl: "https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com" }
-        ];
-
-        if (placeholderTabs.length === 0) {
-            container.innerHTML = `<p style="text-align: center; opacity: 0.7;">No other tabs are open.</p>`;
+        if (inAppTabs.length === 0) {
+            container.innerHTML = `<p style="text-align: center; opacity: 0.7;">No in-app tabs are open.</p>`;
             return;
         }
 
-        placeholderTabs.forEach(tab => {
-            const tabElement = document.createElement('a');
+        inAppTabs.forEach(tab => {
+            const tabElement = document.createElement('div'); // Use div instead of <a>
             tabElement.className = 'tab-item';
-            tabElement.href = tab.url; // In a real extension, this would switch to the tab
-            tabElement.target = "_blank"; // For this demo, it opens a new tab
-            tabElement.title = `Click to open ${tab.title}`;
+            tabElement.title = `Click to switch to ${tab.title}`;
+            tabElement.onclick = () => switchToTab(tab.id);
             
+            let favIconUrl = '';
+            try {
+                favIconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(tab.url).hostname}`;
+            } catch {}
+
             tabElement.innerHTML = `
-                <img src="${tab.favIconUrl}" alt="">
+                <img src="${favIconUrl}" alt="">
                 <div class="tab-item-info">
                     <span class="tab-item-title">${tab.title}</span>
                     <span class="tab-item-url">${tab.url}</span>
@@ -3881,6 +4279,21 @@ function enableDragAndDrop() {
         }
     }
 
+        function updateSandboxPermissions() {
+      const blockPopups = document.getElementById('blockPopupsSwitch').checked;
+      const frame = document.getElementById('browser-frame');
+
+      let permissions = "allow-forms allow-modals allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation-by-user-activation";
+      if (!blockPopups) {
+        permissions += " allow-popups allow-popups-to-escape-sandbox";
+      }
+      frame.sandbox = permissions;
+
+      const changed = localStorage.getItem('blockPopups') !== String(blockPopups);
+      localStorage.setItem('blockPopups', blockPopups);
+      if (changed) logHistory('Setting', `Block Popups: ${blockPopups}`);
+    }
+
 
     window.onload = async function() {
       updateClock();
@@ -3894,6 +4307,10 @@ function enableDragAndDrop() {
       
       const savedSize = localStorage.getItem("tileSize") || 90;
       setTileSize(savedSize);
+
+      const savedIconStyle = localStorage.getItem("iconStyle") || 0;
+      document.getElementById('iconStyleSlider').value = savedIconStyle;
+      setIconStyle(savedIconStyle);
       
       const savedGradient = localStorage.getItem("gradientIndex") || 0;
       applyGradientBackground(savedGradient);
@@ -3981,6 +4398,7 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
         
         setupCollapsible('clockSettingsHeader', 'clockSettingsContent');
         setupCollapsible('searchEngineHeader', 'searchEngineContent');
+        setupCollapsible('inAppBrowserSettingsHeader', 'inAppBrowserSettingsContent');
     });
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -4018,6 +4436,7 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
         document.getElementById('tabsModal').addEventListener('click', (e) => {
             if (e.target.id === 'tabsModal') closeTabsModal();
         });
+        document.getElementById('close-all-tabs-btn').addEventListener('click', closeAllTabs);
         document.getElementById('historyModal').addEventListener('click', (e) => {
             if (e.target.id === 'historyModal') closeHistoryModal();
         });
@@ -4066,6 +4485,20 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
         addBtn.addEventListener('click', () => {
             addBookmark();
         });
+
+        // Samsung-style slider interaction
+        document.querySelectorAll('.slider-container input[type="range"]').forEach(slider => {
+            const container = slider.parentElement;
+            const sidebar = document.getElementById('settings-sidebar');
+            slider.addEventListener('touchstart', () => {
+                sidebar.classList.add('sidebar-content-hidden');
+                container.classList.add('slider-container-active');
+            }, { passive: true });
+            slider.addEventListener('touchend', () => {
+                sidebar.classList.remove('sidebar-content-hidden');
+                container.classList.remove('slider-container-active');
+            });
+        });
     });
 
 
@@ -4103,11 +4536,16 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       // 🔗 Open Links in New Tab
       const newTab = localStorage.getItem('newTabLinks') === 'true';
       document.getElementById('newTabLinksSwitch').checked = newTab;
-    });
-    // …after restoring switch state…
-    document.querySelectorAll('a.tile').forEach(a => {
-      if (newTabLinks) a.setAttribute('target','_blank');
-      else a.removeAttribute('target');
+      
+      // 🌐 In-App Browser
+      const inApp = localStorage.getItem('useInAppBrowser') === 'true';
+      document.getElementById('inAppBrowserSwitch').checked = inApp;
+      useInAppBrowser = inApp;
+
+      // 🛡️ In-App Browser Settings
+      const blockPopups = localStorage.getItem('blockPopups') === 'true';
+      document.getElementById('blockPopupsSwitch').checked = blockPopups;
+      updateSandboxPermissions();
     });
 
 
@@ -4117,6 +4555,70 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       if (blurSwitch) blurSwitch.checked = blurSaved;
       applyBgBlur(blurSaved);
     });
+
+// Mobile/desktop fallback to keep the classes on while dragging
+(function(){
+  const pairs = [
+    ['tileSizeSlider','tileSizeSliderContainer'],
+    ['gradientSlider','gradientSliderContainer'],
+    ['iconStyleSlider','iconStyleSliderContainer']
+  ];
+  pairs.forEach(([sid, cid])=>{
+    const s = document.getElementById(sid);
+    const c = document.getElementById(cid);
+    if(!s || !c) return;
+
+    const on  = ()=>{ document.body.classList.add('sidebar-slider-active'); c.classList.add('slider-container-active'); };
+    const off = ()=>{ document.body.classList.remove('sidebar-slider-active'); c.classList.remove('slider-container-active'); };
+
+    s.addEventListener('pointerdown', on, {passive:true});
+    s.addEventListener('touchstart',  on, {passive:true});
+    s.addEventListener('input',       on);        // keeps it active while sliding
+    s.addEventListener('pointerup',   off);
+    s.addEventListener('touchend',    off);
+    s.addEventListener('pointercancel', off);
+    s.addEventListener('mouseleave',  off);
+  });
+
+  // safety reset
+  document.addEventListener('pointerup', ()=>{
+    document.body.classList.remove('sidebar-slider-active');
+    document.querySelectorAll('.slider-container-active')
+      .forEach(el=>el.classList.remove('slider-container-active'));
+  }, {passive:true});
+})();
+
+
+// --- Reload home when returning after opening a bookmark in a new tab ---
+(function () {
+  const RELOAD_KEY = 'hppReloadOnReturn';
+
+  // Set flag when a tile opens in a new tab
+  document.addEventListener('click', e=>{
+    const tile = e.target.closest('.tile');
+    if (!tile) return;
+    if (window.newTabLinks) {           // you already use this toggle
+      sessionStorage.setItem(RELOAD_KEY, '1');
+    }
+  }, {capture:true, passive:true});
+
+  // When page becomes visible again, reload once
+  document.addEventListener('visibilitychange', ()=>{
+    if (!document.hidden && sessionStorage.getItem(RELOAD_KEY) === '1') {
+      sessionStorage.removeItem(RELOAD_KEY);
+      location.reload();
+    }
+  });
+
+  // Safety for Android bfcache
+  window.addEventListener('pageshow', ()=>{
+    if (sessionStorage.getItem(RELOAD_KEY) === '1') {
+      sessionStorage.removeItem(RELOAD_KEY);
+      location.reload();
+    }
+  });
+})();
+
 
 
    // Register SW only when served from http/https (not file://)
