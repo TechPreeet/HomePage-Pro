@@ -1859,9 +1859,25 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 #iframe-viewer{
   top: calc(var(--header-height) + env(safe-area-inset-top));
 }
-#iframeHeader   { height: 44px; }
-#iframe-viewer  { top: calc(44px + env(safe-area-inset-top)); }
+#iframeHeader   { height: 22px; }
+#iframe-viewer  { top: calc(22px + env(safe-area-inset-top)); }
 
+.install-btn.hidden { display:none; }
+
+.install-btn{
+  position:fixed;
+  bottom:16px;           /* put it where you like */
+  right:16px;
+  padding:10px 16px;
+  background:var(--accent-color);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-size:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,.25);
+  cursor:pointer;
+  z-index:10000;
+}
 
 
 </style>
@@ -1986,6 +2002,8 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
         </div>
     </div>
   </div>
+
+  <button id="installBtn" class="install-btn hidden">Install HomePage Pro</button>
 
   
   <div id="toast-notification"></div>
@@ -2233,7 +2251,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     <!-- Gradient -->
     <div id="gradientSliderContainer" class="slider-container">
   <div class="toolbar-option" id="gradientLabel">Background Color</div>
-  <input type="range" id="gradientSlider" min="0" max="15" value="0"
+  <input type="range" id="gradientSlider" min="0" max="18" value="0"
          class="toolbar-option"
          oninput="setGradientBackground(this.value)">
 </div>
@@ -2414,8 +2432,31 @@ let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
     let glassMode = false;
     let newTabLinks = localStorage.getItem("newTabLinks") === "true";
 
+
+
+(function handleShortcutLaunch(){
+  const params = new URLSearchParams(location.search);
+  if (!params.has('shortcut')) return;
+
+  switch (params.get('shortcut')){
+    case 'addmark': /* your existing */ openAddBookmark(); break;
+    case 'coin':    flipCoin();                       break;
+    case 'voice':   startVoiceSearch();               break;
+  }
+
+  // strip the param so refresh doesn’t repeat it
+  params.delete('shortcut');
+  history.replaceState({}, '', location.pathname + (params.toString() ? '?'+params : ''));
+})();
+
+
+
+
     const gradients = [
         { name: 'Default', value: '' },
+        { name: 'Cosmic', value: 'linear-gradient(to right, #1d2b64, #f8cdda)' },
+        { name: 'Twilight', value: 'linear-gradient(to right, #ee0979, #ff6a00)' },
+        { name: 'Emerald', value: 'linear-gradient(to right, #00c9ff, #92fe9d)' },
         { name: 'Sunrise', value: 'linear-gradient(to right, #ff9966, #ff5e62)' },
         { name: 'Ocean', value: 'linear-gradient(to right, #43cea2, #185a9d)' },
         { name: 'Grapefruit', value: 'linear-gradient(to right, #ffafbd, #ffc3a0)' },
@@ -3279,7 +3320,7 @@ const handleClick = (e) => {
 
     a.addEventListener('click', handleClick);
 
-    if (!isIOS && 'ontouchstart' in window) {          // keep your iOS check
+    if ('ontouchstart' in window) {          /* works on iOS and Android */
   let pressTimer = null;
   let longPressDidOccur = false;
   let savedHref = null;                            /* NEW */
@@ -4748,6 +4789,22 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
 window.addEventListener('load', () => {
   requestAnimationFrame(() => document.body.classList.remove('preload'));
 });
+
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();                       // stop Chrome’s mini‑infobar
+  deferredPrompt = e;                       // save the event
+  installBtn.classList.remove('hidden');    // show the button
+});
+
+installBtn.onclick = async () => {
+  deferredPrompt.prompt();                  // open Chrome’s install popup
+  await deferredPrompt.userChoice;          // wait for user choice
+  installBtn.classList.add('hidden');       // hide button afterwards
+  deferredPrompt = null;
+};
+
 
 
 
