@@ -129,13 +129,6 @@
       overflow: hidden;
       transition: background-color 0.5s ease-in-out;
     }
-
-    /* disable all animations/transitions when this class is present */
-body.no-animation *, body.preload * {
-  animation: none !important;
-  transition: none !important;
-}
-
     body.dark-mode {
         background-color: #121212;
     }
@@ -1868,7 +1861,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   top: calc(var(--header-height) + env(safe-area-inset-top));
 }
 #iframeHeader   { height: 0px; }
-#iframe-viewer  { top: calc(-2px + env(safe-area-inset-top)); }
+#iframe-viewer  { top: calc(0px + env(safe-area-inset-top)); }
 
 
 </style>
@@ -1909,12 +1902,10 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
             </button>
         </div>
     </div>
-    <iframe id="browser-frame" sandbox="allow-forms allow-modals allow-pointer-lock allow-same-origin allow-top-navigation-by-user-activation" allow="fullscreen"></iframe>
+    <iframe id="browser-frame" sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" allow="fullscreen"></iframe>
 </div>
 
-
 <div class="top-blend"></div>
-
 
   <div id="aboutModal" class="modal hidden">
     <div class="about-box">
@@ -2371,29 +2362,6 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 
   <script>
 
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // show a subtle toast or sidebar button
-  showToast("Install HomePage‑Pro on your device", {
-    action: "Install",
-    onClick: installPWA
-  });
-});
-
-function installPWA() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then((choice) => {
-    logHistory('Setting', choice.outcome === 'accepted'
-      ? 'User accepted PWA install'
-      : 'User dismissed PWA install');
-    deferredPrompt = null;
-  });
-}
-
-
  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
   
 let _firstBookmarkLoad = true;
@@ -2449,20 +2417,18 @@ let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
 
 (function handleShortcutLaunch(){
   const params = new URLSearchParams(location.search);
-  if (!params.has('shortcut') || sessionStorage.getItem('shortcutUsed')) return;
+  if (!params.has('shortcut')) return;
 
   switch (params.get('shortcut')){
-    case 'addmark': openAddBookmark(); break;
-    case 'coin':    flipCoin();         break;
-    case 'voice':   startVoiceSearch(); break;
+    case 'addmark': /* your existing */ openAddBookmark(); break;
+    case 'coin':    flipCoin();                       break;
+    case 'voice':   startVoiceSearch();               break;
   }
-  // mark as handled
-  sessionStorage.setItem('shortcutUsed','1');
-  // strip param so manual refresh won’t re-trigger
-  params.delete('shortcut');
-  history.replaceState({},'', location.pathname + (params.toString()?'?'+params:''));
-})();
 
+  // strip the param so refresh doesn’t repeat it
+  params.delete('shortcut');
+  history.replaceState({}, '', location.pathname + (params.toString() ? '?'+params : ''));
+})();
 
 
 
@@ -3348,7 +3314,6 @@ const handleClick = (e) => {
 
       /* --- NEW: disable navigation --- */
       savedHref = a.getAttribute('href');
-      a.dataset.skipClick = '1';
       a.removeAttribute('href');                   /* stops iOS default tap */
 
       showMenuOptions(a, bookmark, index);
@@ -4495,17 +4460,6 @@ function setIconStyle(value, skipLog = false) {
       applyDarkMode(localStorage.getItem("dark-mode") === "true");
       loadBookmarks();
       
-      // on page load, if coming back from a new tab, suppress animations
-window.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('hppReloadOnReturn') === '1') {
-    document.body.classList.add('no-animation');
-    sessionStorage.removeItem('hppReloadOnReturn');
-  }
-  // remove preload once everything’s settled
-  setTimeout(() => document.body.classList.remove('preload'), 0);
-});
-
-
 if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       
       const mic = document.getElementById("micIcon");
