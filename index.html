@@ -1843,6 +1843,24 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   visibility: visible !important;
   pointer-events: auto !important;
 }
+/* iOS safe‑area padding for the in‑app browser header */
+#iframeHeader{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* existing background / height / flex styles remain */
+
+  /* reserve the notch / status‑bar space */
+  padding-top: env(safe-area-inset-top);
+}
+
+/* keep the iframe itself below the header (height:‑‑header‑‑) */
+#iframe-viewer{
+  top: calc(var(--header-height) + env(safe-area-inset-top));
+}
+#iframeHeader   { height: 44px; }
+#iframe-viewer  { top: calc(44px + env(safe-area-inset-top)); }
 
 
 
@@ -3222,33 +3240,26 @@ function setTextSafe(id, text) {
 
     // --- Main Click Handler ---
 const handleClick = (e) => {
-  if (rearrangeMode) 
-  e.preventDefault();
-  return;
-  if (e.currentTarget.dataset.skipClick === '1') {
-  e.currentTarget.dataset.skipClick = '0';
-  return;
-}
-if (!isIOS && e.currentTarget.dataset.skipClick === '1') {
-  e.currentTarget.dataset.skipClick = '0';
-  return;
-}
-
-
-  e.preventDefault();            // <- stop the anchor/default click
-  e.stopPropagation();           // <- stop bubbling to any parent handler
+  if (rearrangeMode) { e.preventDefault(); return; }
+  if (!isIOS && e.currentTarget.dataset.skipClick === '1') {
+    e.currentTarget.dataset.skipClick = '0';
+    return;
+  }
 
   const tile = e.currentTarget;
 
+  /* ►► Decide first, then prevent default only if we’re overriding ◄◄ */
   if (useInAppBrowser) {
+    e.preventDefault();
     openInAppTab(bookmark.url, bookmark.name);
+  } else if (newTabLinks) {
+    e.preventDefault();
+    sessionStorage.setItem('hppReloadOnReturn','1');
+    window.open(bookmark.url, '_blank', 'noopener');
   } else {
-    if (newTabLinks) {
-      sessionStorage.setItem('hppReloadOnReturn','1'); // optional reload flag
-      window.open(bookmark.url, '_blank', 'noopener');
-    } else {
-      location.href = bookmark.url;
-    }
+    /* same‑tab navigation – let the browser follow a.href;
+       no e.preventDefault() here                           */
+  
     logHistory('Bookmark', `Opened '${bookmark.name}'`);
   }
 
@@ -3268,26 +3279,40 @@ if (!isIOS && e.currentTarget.dataset.skipClick === '1') {
 
     a.addEventListener('click', handleClick);
 
-    if ('ontouchstart' in window) {
-        let pressTimer = null;
-        let longPressDidOccur = false;
+    if (!isIOS && 'ontouchstart' in window) {          // keep your iOS check
+  let pressTimer = null;
+  let longPressDidOccur = false;
+  let savedHref = null;                            /* NEW */
 
-        a.addEventListener('touchstart', (e) => {
-  if (rearrangeMode) return;
-  longPressDidOccur = false;
-  pressTimer = setTimeout(() => {
-    longPressDidOccur = true;
-    a.dataset.skipClick = '1';          // (from Part B)
-    showMenuOptions(a, bookmark, index);
-  }, 500);
-}, { passive: false });                  // ← Part C here
+  a.addEventListener('touchstart', (e) => {
+    if (rearrangeMode) return;
+    longPressDidOccur = false;
+    pressTimer = setTimeout(() => {
+      longPressDidOccur = true;
 
-a.addEventListener('touchend', (e) => { 
-  if (longPressDidOccur) e.preventDefault();
-  clearTimeout(pressTimer);
-}, { passive: false });                  // ← and here
+      /* --- NEW: disable navigation --- */
+      savedHref = a.getAttribute('href');
+      a.removeAttribute('href');                   /* stops iOS default tap */
 
+      showMenuOptions(a, bookmark, index);
+
+    }, 500);
+  }, { passive: false });
+
+  a.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+  a.addEventListener('touchend', (e) => { 
+    clearTimeout(pressTimer);
+
+    /* If long‑press happened, keep link disabled until after a frame */
+    if (longPressDidOccur) {
+      e.preventDefault();                          // stop synthetic click
+      /* --- NEW: restore href after this event loop --- */
+      setTimeout(() => { if (savedHref) a.setAttribute('href', savedHref); }, 0);
     }
+  }, { passive: false });
+}
+
     
     a.addEventListener('contextmenu', (e) => { e.preventDefault(); showMenuOptions(a, bookmark, index); });
 
