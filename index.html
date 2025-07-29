@@ -3265,6 +3265,7 @@ function setTextSafe(id, text) {
 const handleClick = (e) => {
   if (rearrangeMode) { e.preventDefault(); return; }
   if (!isIOS && e.currentTarget.dataset.skipClick === '1') {
+      e.preventDefault();                       // ← ADD THIS
     e.currentTarget.dataset.skipClick = '0';
     return;
   }
