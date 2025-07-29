@@ -55,7 +55,7 @@
       "name": "Add New Bookmark",
       "short_name": "Add Bookmark",
       "description": "Quickly add a new bookmark to your start page.",
-      "url": "/?shortcut=addmark",
+       "url": "index.html?action=add",
       "icons": [
         {
           "src": "icons/bookmark-512.png",
@@ -68,7 +68,7 @@
       "name": "Flip a Coin",
       "short_name": "Flip Coin",
       "description": "Flip a virtual coin.",
-      "url": "/?shortcut=coin",
+      "url": "index.html?action=flip",
       "icons": [
         {
           "src": "icons/flip-512.png",
@@ -81,7 +81,7 @@
       "name": "Voice Search",
       "short_name": "Voice",
       "description": "Start a voice search immediately",
-      "url": "/?shortcut=voice",
+      "url": "index.html?action=voice",
       "icons": [
         {
           "src": "icons/voice-512.png",
