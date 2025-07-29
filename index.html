@@ -748,17 +748,39 @@
       box-shadow: 0 0 15px -2px var(--accent-color);
     }
     
-    #tileSizeSlider, #gradientSlider, #iconStyleSlider {
-      width: 90%;
-      margin: 5px 0;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 8px;
-      border-radius: 4px;
-      background: linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) 50%, #ffffff 50%, #ffffff 100%);
-      outline: none;
-      transition: background 0.2s ease, opacity 0.3s ease;
-    }
+    /* ===== Range‑slider track & thumb (all three sliders) ===== */
+#tileSizeSlider,
+#gradientSlider,
+#iconStyleSlider{
+  width: 90%;
+  margin: 5px 0;
+  -webkit-appearance: none;
+          appearance: none;
+  height: 8px;
+  border-radius: 50px;               /* pill shape – round on all edges   */
+  background: #ffffff;               /* plain; JS will paint the gradient */
+  outline: none;
+  transition: opacity .3s ease;
+}
+
+/* Chrome / Safari / Edge track */
+#tileSizeSlider::-webkit-slider-runnable-track,
+#gradientSlider::-webkit-slider-runnable-track,
+#iconStyleSlider::-webkit-slider-runnable-track{
+  height: 8px;
+  border-radius: 50px;
+  background: transparent;           /* let the main rule show through    */
+}
+
+/* Firefox track */
+#tileSizeSlider::-moz-range-track,
+#gradientSlider::-moz-range-track,
+#iconStyleSlider::-moz-range-track{
+  height: 8px;
+  border-radius: 50px;
+  background: transparent;
+}
+
 
     #tileSizeSlider::-webkit-slider-thumb, #gradientSlider::-webkit-slider-thumb, #iconStyleSlider::-webkit-slider-thumb {
       -webkit-appearance: none;
@@ -770,6 +792,7 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
       cursor: pointer;
       transition: transform 0.2s ease;
+      margin-top: -4px;          /* (thumb‑height – track‑height)/2 */
     }
 
     #tileSizeSlider::-webkit-slider-thumb:hover, #gradientSlider::-webkit-slider-thumb:hover, #iconStyleSlider::-webkit-slider-thumb:hover {
@@ -784,6 +807,7 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
       cursor: pointer;
       transition: transform 0.2s ease;
+      margin-top: -4px;          /* (thumb‑height – track‑height)/2 */
     }
 
     #tileSizeSlider::-moz-range-thumb:hover, #gradientSlider::-moz-range-thumb:hover, #iconStyleSlider::-moz-range-thumb:hover {
@@ -1812,6 +1836,15 @@ body.preload #iframe-viewer {
 body.preload #settings-sidebar { transform: translateX(100%) !important; }
 body.preload #iframe-viewer   { transform: translateY(100%) !important; }
 
+/* Also keep the specific label visible */
+body.sidebar-slider-active #settings-sidebar > .slider-container-active,
+body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+
 
 </style>
 </head>
@@ -2179,10 +2212,14 @@ body.preload #iframe-viewer   { transform: translateY(100%) !important; }
     <div class="toolbar-option" aria-label="Remove Wallpaper" onclick="removeWallpaper()" tabindex="0">🚫 Remove Wallpaper</div>
     <input type="file" id="bgInput" accept="image/*,.heic,.heif,.webp,.avif" />
     <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mov,.hevc">
-    <div class="toolbar-option" id="gradientLabel">Background Color</div>
+    <!-- Gradient -->
     <div id="gradientSliderContainer" class="slider-container">
-        <input type="range" id="gradientSlider" min="0" max="15" value="0" class="toolbar-option" oninput="setGradientBackground(this.value)">
-    </div>
+  <div class="toolbar-option" id="gradientLabel">Background Color</div>
+  <input type="range" id="gradientSlider" min="0" max="15" value="0"
+         class="toolbar-option"
+         oninput="setGradientBackground(this.value)">
+</div>
+
     <div class="toolbar-option" id="accentColorOption">
         <label for="accentColorPicker">🎨 Accent Color</label>
         <input type="color" id="accentColorPicker" oninput="previewAccentColor(this.value)" onchange="setAccentColor(this.value)">
@@ -2227,10 +2264,14 @@ body.preload #iframe-viewer   { transform: translateY(100%) !important; }
   </div>
 </label>
 
-    <div class="toolbar-option" id="iconStyleLabel">Icon Style</div>
+<!-- Icon style -->
     <div id="iconStyleSliderContainer" class="slider-container">
-      <input type="range" id="iconStyleSlider" min="0" max="4" value="0" class="toolbar-option" oninput="setIconStyle(this.value)">
-    </div>
+  <div class="toolbar-option" id="iconStyleLabel">Icon Style</div>
+  <input type="range" id="iconStyleSlider" min="0" max="4" value="0"
+         class="toolbar-option"
+         oninput="setIconStyle(this.value)">
+</div>
+
   
 <!-- Bookmark Labels -->
 <label class="toolbar-option">
@@ -2244,11 +2285,14 @@ body.preload #iframe-viewer   { transform: translateY(100%) !important; }
     <span class="slider"></span>
   </div>
 </label>
-  
-    <div class="toolbar-option" id="tileSizeLabel">Resize Bookmark Tiles</div>
+  <!-- Bookmark size -->
     <div id="tileSizeSliderContainer" class="slider-container">
-      <input type="range" id="tileSizeSlider" min="40" max="120" value="90" class="toolbar-option" oninput="setTileSize(this.value)">
-    </div>
+  <div class="toolbar-option" id="tileSizeLabel">Resize Bookmark Tiles</div>
+  <input type="range" id="tileSizeSlider" min="40" max="120" value="90"
+         class="toolbar-option"
+         oninput="setTileSize(this.value)">
+</div>
+
     
 <!-- Open Links in New Tab -->
 <label class="toolbar-option">
@@ -2301,7 +2345,8 @@ body.preload #iframe-viewer   { transform: translateY(100%) !important; }
 
   <script>
 
-   
+ const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  
 let _firstBookmarkLoad = true;
 
 // === Debounce timers ===
@@ -3177,11 +3222,18 @@ function setTextSafe(id, text) {
 
     // --- Main Click Handler ---
 const handleClick = (e) => {
-  if (rearrangeMode) return;
+  if (rearrangeMode) 
+  e.preventDefault();
+  return;
   if (e.currentTarget.dataset.skipClick === '1') {
   e.currentTarget.dataset.skipClick = '0';
   return;
 }
+if (!isIOS && e.currentTarget.dataset.skipClick === '1') {
+  e.currentTarget.dataset.skipClick = '0';
+  return;
+}
+
 
   e.preventDefault();            // <- stop the anchor/default click
   e.stopPropagation();           // <- stop bubbling to any parent handler
