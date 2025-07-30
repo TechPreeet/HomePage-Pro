@@ -158,11 +158,19 @@
         }
     }
 
-    /* FIX: Apply animation only when not in rearrange mode */
-    #bookmarkGrid:not(.rearrange-active):not(.no-animation) .tile {
-        animation: tileFadeIn 0.2s ease-out forwards;
-        opacity: 0; /* Make invisible only for the animation */
-    }
+    /* only play the fade‑in on fresh loads; skip whenever .no‑animation is on the grid */
+#bookmarkGrid:not(.rearrange-active):not(.no-animation) .tile {
+  animation: tileFadeIn 0.2s ease-out forwards;
+  opacity: 0;
+}
+
+/* when we add .no-animation, kill those animations/transitions and make tiles immediately visible */
+#bookmarkGrid.no-animation .tile {
+  animation: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+}
+
 
     .tile.dragging {
       opacity: 0.5;
@@ -4779,6 +4787,24 @@ document.addEventListener('click', function(e) {
     e.preventDefault();            // block the navigation
   }
 }, true); // use capture phase so it runs before your link’s default click
+
+
+let hasLoaded = false;
+
+// mark that the initial load completed
+window.addEventListener('load', () => {
+  hasLoaded = true;
+});
+
+document.addEventListener('visibilitychange', () => {
+  // if we're past the initial load, and the page just became visible again...
+  if (hasLoaded && document.visibilityState === 'visible') {
+    const grid = document.getElementById('bookmarkGrid');
+    if (grid) grid.classList.add('no-animation');
+  }
+});
+
+
 
 
    // Register SW only when served from http/https (not file://)
