@@ -90,15 +90,3 @@
         }
       ]
     }
-  ],
-  "display_override": [
-    "browser",
-    "fullscreen",
-    "window-controls-overlay",
-    "minimal-ui",
-    "standalone"
-  ],
-  "lang": "en",
-  "dir": "auto",
-  "orientation": "any"
-}
