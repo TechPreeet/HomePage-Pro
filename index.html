@@ -164,12 +164,19 @@
   opacity: 0;
 }
 
-/* when we add .no-animation, kill those animations/transitions and make tiles immediately visible */
-#bookmarkGrid.no-animation .tile {
+/* only kill fade‑in on non‑rearrange loads */
+#bookmarkGrid.no-animation:not(.rearrange-active) .tile {
   animation: none !important;
   transition: none !important;
   opacity: 1 !important;
 }
+
+/* your regular rearrange‑mode wiggle stays intact */
+#bookmarkGrid.rearrange-active .tile {
+  /* adjust this to match your wiggle name/duration */
+  animation: wiggleAnimation 0.5s ease-in-out infinite !important;
+}
+
 
 
     .tile.dragging {
@@ -4804,7 +4811,14 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-
+// 2) new: disable animations on “lost focus→focus”
+let initialLoadDone = false;
+window.addEventListener('load', () => { initialLoadDone = true; });
+window.addEventListener('focus', () => {
+  if (initialLoadDone) {
+    document.getElementById('bookmarkGrid')?.classList.add('no-animation');
+  }
+});
 
 
    // Register SW only when served from http/https (not file://)
