@@ -1866,7 +1866,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 /* 2. Fresh‑load fade‑in: only when .initial-load is present */
 #bookmarkGrid.initial-load .tile {
   opacity: 0;
-  animation: tileFadeIn 0.2s ease-out forwards;
+  animation: tileFadeIn 0.9s ease-out forwards;
 }
 
 
@@ -2331,18 +2331,6 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   </div>
 </label>
 
-<!-- In-App Browser Toggle -->
-<label class="toolbar-option">
-  🌐 Open Links In-App
-  <div class="switch">
-    <input
-      type="checkbox"
-      id="inAppBrowserSwitch"
-      onchange="toggleInAppBrowser()"
-    />
-    <span class="slider"></span>
-  </div>
-</label>
 
 <div class="toolbar-option toolbar-option-header" id="inAppBrowserSettingsHeader" tabindex="0">🛡️ In-App Browser Settings</div>
 <div class="collapsible-content" id="inAppBrowserSettingsContent">
@@ -2356,6 +2344,19 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     <p style="font-size: 11px; opacity: 0.7; padding: 0 10px;">Note: Ad & tracker blocking is not possible without a full browser extension.</p>
 </div>
 
+
+<!-- In-App Browser Toggle -->
+<label class="toolbar-option">
+  🌐 Open Links In-App
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="inAppBrowserSwitch"
+      onchange="toggleInAppBrowser()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
     
     <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()" tabindex="0">🔄 Rearrange Bookmarks</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()" tabindex="0">📤 Export Bookmarks</div>
@@ -4788,19 +4789,45 @@ document.addEventListener('click', function(e) {
 }, true); // use capture phase so it runs before your link’s default click
 
 
-const grid = document.getElementById('bookmarkGrid');
+(function() {
+  const grid = document.getElementById('bookmarkGrid');
+  if (!grid) return;
 
-window.addEventListener('load', () => {
-  // 1) mark that we want the fade‑in on this fresh load
-  grid.classList.add('initial-load');
-});
-
-// 2) once any tile’s fade‑in finishes, remove the class so it never re‑runs
-grid.addEventListener('animationend', e => {
-  if (e.animationName === 'tileFadeIn') {
-    grid.classList.remove('initial-load');
+  // 1) helper to read nav type
+  function getNavType() {
+    const nav = performance.getEntriesByType?.('navigation')?.[0];
+    if (nav) return nav.type;
+    return (performance.navigation?.type === performance.navigation.TYPE_RELOAD)
+      ? 'reload'
+      : (performance.navigation?.type === performance.navigation.TYPE_BACK_FORWARD)
+      ? 'back_forward'
+      : 'navigate';
   }
-}, { once: true });
+
+  // 2) run on every load
+  window.addEventListener('load', () => {
+    const navType = getNavType();
+    const firstFadeAllowed = localStorage.getItem('allowInitialFade');
+
+    // fade on first ever visit, or on manual refresh
+    if (
+        navType === 'reload' ||
+       (navType === 'navigate' && firstFadeAllowed !== 'false')
+    ) {
+      grid.classList.add('initial-load');
+
+      grid.addEventListener('animationend', e => {
+        if (e.animationName === 'tileFadeIn') {
+          grid.classList.remove('initial-load');
+          // mark that we’ve now done our one “initial” fade
+          localStorage.setItem('allowInitialFade', 'false');
+        }
+      }, { once: true });
+    }
+    // otherwise (back_forward, or a PWA relaunch after you've already seen the fade),
+    // we never add .initial-load and tiles render immediately.
+  });
+})();
 
 
 
