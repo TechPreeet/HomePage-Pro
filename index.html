@@ -2083,6 +2083,17 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
         <div id="sidebar-date"></div>
         <div id="sidebar-weatherContainer"></div>
     </div>
+
+    <div
+  class="toolbar-option"
+  id="installAppBtnSidebar"
+  aria-label="Install App"
+  onclick="showInstallPrompt(); toggleSidebar();"
+  tabindex="0"
+>
+  📲 Install as App
+</div>
+
     <div class="toolbar-option" id="addBookmarkBtnSidebar" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();" tabindex="0">📝 Add Bookmark</div>
     
     <!-- ─── Search Engine Selector ─── -->
@@ -2491,6 +2502,14 @@ let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
     };
 
 
+function showInstallPrompt() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(choice => {
+    console.log('Install choice:', choice.outcome);
+    deferredPrompt = null;
+  });
+}
 
 
         function showMenuOptions(tile, bookmark, index) {
@@ -4793,41 +4812,69 @@ document.addEventListener('click', function(e) {
   const grid = document.getElementById('bookmarkGrid');
   if (!grid) return;
 
-  // 1) helper to read nav type
-  function getNavType() {
-    const nav = performance.getEntriesByType?.('navigation')?.[0];
-    if (nav) return nav.type;
-    return (performance.navigation?.type === performance.navigation.TYPE_RELOAD)
-      ? 'reload'
-      : (performance.navigation?.type === performance.navigation.TYPE_BACK_FORWARD)
-      ? 'back_forward'
-      : 'navigate';
-  }
-
-  // 2) run on every load
   window.addEventListener('load', () => {
-    const navType = getNavType();
-    const firstFadeAllowed = localStorage.getItem('allowInitialFade');
-
-    // fade on first ever visit, or on manual refresh
-    if (
-        navType === 'reload' ||
-       (navType === 'navigate' && firstFadeAllowed !== 'false')
-    ) {
+    // only on the *very first* ever load
+    if (!localStorage.getItem('hasInitialFade')) {
       grid.classList.add('initial-load');
-
       grid.addEventListener('animationend', e => {
         if (e.animationName === 'tileFadeIn') {
           grid.classList.remove('initial-load');
-          // mark that we’ve now done our one “initial” fade
-          localStorage.setItem('allowInitialFade', 'false');
+          localStorage.setItem('hasInitialFade', '1');
         }
       }, { once: true });
     }
-    // otherwise (back_forward, or a PWA relaunch after you've already seen the fade),
-    // we never add .initial-load and tiles render immediately.
   });
 })();
+
+
+// 1. Detect iOS
+function isIos() {
+  return /iP(hone|ad|od)/.test(navigator.userAgent);
+}
+
+// 2. Show a little instructional overlay
+function showIosInstallInstructions() {
+  // You could also build this as a styled DIV/modal rather than an alert
+  alert(
+    "To install this app on iOS:\n\n" +
+    "1. Tap the Share icon (▣ with ↑) in Safari’s toolbar.\n" +
+    "2. Scroll down and select “Add to Home Screen.”\n" +
+    "3. Tap “Add” in the top right."
+  );
+}
+
+// 3. Wire it to your sidebar button
+document.getElementById('installAppBtnSidebar')
+  .addEventListener('click', e => {
+    toggleSidebar();  // your existing sidebar‐close logic
+    if (isIos()) {
+      showIosInstallInstructions();
+    } else if (deferredPrompt) {
+      // Android/desktop path:
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => {
+        deferredPrompt = null;
+      });
+    }
+  });
+
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', e => {
+  // Prevent Chrome’s mini‑infobar from appearing
+  e.preventDefault();
+  // Stash the event so we can trigger it later
+  deferredPrompt = e;
+  // Reveal your custom “Install” button now that install is possible
+  document.getElementById('installBtn').style.display = 'block';
+});
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Try to show it immediately:
+  deferredPrompt.prompt();
+});
 
 
 
