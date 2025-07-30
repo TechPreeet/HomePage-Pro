@@ -293,13 +293,6 @@
       -webkit-touch-callout: none;
     }
 
-    /* prevent the system context‑menu on long‑press */
-    .tile, .tile * {
-      -webkit-touch-callout: none !important;
-      -webkit-user-select: none !important;
-    }
-
-
     .tile img {
       width: 80%;
       height: 80%;
@@ -3351,35 +3344,6 @@ const handleClick = (e) => {
         }
     });
 
-    // inside createBookmarkElement, after your touchstart/touchend code:
-let ptrTimer = null, ptrLong = false, ptrSaved = null;
-
-function onPointerDown(e) {
-  if (rearrangeMode) return;
-  ptrLong = false;
-  e.preventDefault();                   // allow preventDefault
-  ptrTimer = setTimeout(() => {
-    ptrLong = true;
-    ptrSaved = a.getAttribute('href');
-    a.removeAttribute('href');
-    showMenuOptions(a, bookmark, index);
-  }, 500);
-}
-function onPointerMove() { clearTimeout(ptrTimer); }
-function onPointerUp(e) {
-  clearTimeout(ptrTimer);
-  if (ptrLong) {
-    e.preventDefault();                  // stop the click
-    setTimeout(() => a.setAttribute('href', ptrSaved), 0);
-  }
-}
-
-a.addEventListener('pointerdown', onPointerDown, { passive: false });
-a.addEventListener('pointermove', onPointerMove);
-a.addEventListener('pointerup', onPointerUp, { passive: false });
-a.addEventListener('pointercancel', onPointerUp, { passive: false });
-
-
     const img = document.createElement("img");
     try {
         img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
@@ -4715,11 +4679,6 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       updateSandboxPermissions();
     });
 
-        document.addEventListener('contextmenu', e => {
-      if (e.target.closest('.tile')) {
-        e.preventDefault();
-      }
-    });
 
     document.addEventListener('DOMContentLoaded', () => {
       const blurSaved = localStorage.getItem('bgBlur') === 'true';
@@ -4813,6 +4772,13 @@ window.addEventListener('load', () => {
 });
 
 
+// prevent a “click-through” when your custom menu is open
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.tile') && document.querySelector('.floating-menu')) {
+    e.stopImmediatePropagation();  // stop any other click handlers
+    e.preventDefault();            // block the navigation
+  }
+}, true); // use capture phase so it runs before your link’s default click
 
 
    // Register SW only when served from http/https (not file://)
