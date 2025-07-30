@@ -158,26 +158,6 @@
         }
     }
 
-    /* only play the fade‑in on fresh loads; skip whenever .no‑animation is on the grid */
-#bookmarkGrid:not(.rearrange-active):not(.no-animation) .tile {
-  animation: tileFadeIn 0.2s ease-out forwards;
-  opacity: 0;
-}
-
-/* only kill fade‑in on non‑rearrange loads */
-#bookmarkGrid.no-animation:not(.rearrange-active) .tile {
-  animation: none !important;
-  transition: none !important;
-  opacity: 1 !important;
-}
-
-/* your regular rearrange‑mode wiggle stays intact */
-#bookmarkGrid.rearrange-active .tile {
-  /* adjust this to match your wiggle name/duration */
-  animation: wiggleAnimation 0.5s ease-in-out infinite !important;
-}
-
-
 
     .tile.dragging {
       opacity: 0.5;
@@ -1877,6 +1857,18 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 }
 #iframeHeader   { height: 0px; }
 #iframe-viewer  { top: calc(0px + env(safe-area-inset-top)); }
+
+/* 1. Default: tiles fully visible unless we add .initial-load */
+#bookmarkGrid .tile {
+  opacity: 1;
+}
+
+/* 2. Fresh‑load fade‑in: only when .initial-load is present */
+#bookmarkGrid.initial-load .tile {
+  opacity: 0;
+  animation: tileFadeIn 0.2s ease-out forwards;
+}
+
 
 
 </style>
@@ -4796,29 +4788,20 @@ document.addEventListener('click', function(e) {
 }, true); // use capture phase so it runs before your link’s default click
 
 
-let hasLoaded = false;
+const grid = document.getElementById('bookmarkGrid');
 
-// mark that the initial load completed
 window.addEventListener('load', () => {
-  hasLoaded = true;
+  // 1) mark that we want the fade‑in on this fresh load
+  grid.classList.add('initial-load');
 });
 
-document.addEventListener('visibilitychange', () => {
-  // if we're past the initial load, and the page just became visible again...
-  if (hasLoaded && document.visibilityState === 'visible') {
-    const grid = document.getElementById('bookmarkGrid');
-    if (grid) grid.classList.add('no-animation');
+// 2) once any tile’s fade‑in finishes, remove the class so it never re‑runs
+grid.addEventListener('animationend', e => {
+  if (e.animationName === 'tileFadeIn') {
+    grid.classList.remove('initial-load');
   }
-});
+}, { once: true });
 
-// 2) new: disable animations on “lost focus→focus”
-let initialLoadDone = false;
-window.addEventListener('load', () => { initialLoadDone = true; });
-window.addEventListener('focus', () => {
-  if (initialLoadDone) {
-    document.getElementById('bookmarkGrid')?.classList.add('no-animation');
-  }
-});
 
 
    // Register SW only when served from http/https (not file://)
