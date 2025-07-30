@@ -158,11 +158,11 @@
         }
     }
 
-    body:not(.no-animations-on-load) #bookmarkGrid:not(.rearrange-active):not(.no-animation) .tile {
-    animation: tileFadeIn 0.2s ease-out forwards;
-    opacity: 0; /* Make invisible only for the animation */
-}
-
+    /* FIX: Apply animation only when not in rearrange mode */
+    #bookmarkGrid:not(.rearrange-active):not(.no-animation) .tile {
+        animation: tileFadeIn 0.2s ease-out forwards;
+        opacity: 0; /* Make invisible only for the animation */
+    }
 
     .tile.dragging {
       opacity: 0.5;
@@ -292,6 +292,13 @@
       border-radius: 16px;
       -webkit-touch-callout: none;
     }
+
+    /* prevent the system context‑menu on long‑press */
+    .tile, .tile * {
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+    }
+
 
     .tile img {
       width: 80%;
@@ -1074,10 +1081,9 @@ body.sidebar-slider-active #settings-sidebar{
       100% { transform: rotate(360deg); }
     }
 
-    body:not(.no-animations-on-load) #micIcon.animate-mic {
-  animation: spinOnce 1s ease;
-}
-
+    #micIcon.animate-mic {
+      animation: spinOnce 1s ease;
+    }
 
     @keyframes wiggle {
       0% { transform: rotate(-1.5deg); }
@@ -1869,29 +1875,6 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 </head>
 <body class="preload" tabindex="-1">
 
-  <!-- SCRIPT TO PREVENT ANIMATIONS ON RELOAD -->
-<script>
-  if (sessionStorage.getItem('isReloadingForReturn') === 'true') {
-    document.body.classList.add('no-animations-on-load');
-    sessionStorage.removeItem('isReloadingForReturn');
-  }
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-  // Prevent the mini-infobar from appearing on mobile
-  e.preventDefault();
-  // Stash the event so it can be triggered later.
-  deferredInstallPrompt = e;
-  // Update UI to notify the user they can install the PWA
-  const installButton = document.getElementById('installPwaBtn');
-  if (installButton) {
-    installButton.style.display = 'flex'; // Or 'block'
-  }
-  console.log(`'beforeinstallprompt' event was fired.`);
-});
-
-</script>
-
-
 <!-- In-App Browser (iFrame Viewer) -->
 <div id="iframe-viewer" class="hidden">
     <div id="iframe-controls">
@@ -2102,11 +2085,6 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     </div>
     <div class="toolbar-option" id="addBookmarkBtnSidebar" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();" tabindex="0">📝 Add Bookmark</div>
     
-    <!-- ADD THIS NEW BUTTON -->
-  <div class="toolbar-option" id="installPwaBtn" style="display: none;" onclick="promptToInstallPwa()" tabindex="0">
-    ⬇️ Install App
-  </div>
-
     <!-- ─── Search Engine Selector ─── -->
 <div
   class="toolbar-option toolbar-option-header"
@@ -2391,8 +2369,6 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 
   <script>
 
-let deferredInstallPrompt = null;
-
  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
   
 let _firstBookmarkLoad = true;
@@ -2446,34 +2422,19 @@ let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
 
 
 
-(function handleShortcutLaunch() {
-  const params = new URLSearchParams(window.location.search);
-  const shortcutAction = params.get('shortcut');
+(function handleShortcutLaunch(){
+  const params = new URLSearchParams(location.search);
+  if (!params.has('shortcut')) return;
 
-  if (!shortcutAction) {
-    return; // No shortcut parameter, do nothing.
+  switch (params.get('shortcut')){
+    case 'addmark': /* your existing */ openAddBookmark(); break;
+    case 'coin':    flipCoin();                       break;
+    case 'voice':   startVoiceSearch();               break;
   }
 
-  // Perform the action based on the parameter
-  switch (shortcutAction) {
-    case 'addmark':
-      addBookmark();
-      break;
-    case 'coin':
-      flipCoin();
-      break;
-    case 'voice':
-      startVoiceSearch();
-      break;
-  }
-
-  // After performing the action, immediately clean the URL.
-  // This replaces the current history entry with one that has no search parameters.
-  try {
-    history.replaceState(null, '', window.location.pathname);
-  } catch (e) {
-    console.error("Could not clean shortcut from URL:", e);
-  }
+  // strip the param so refresh doesn’t repeat it
+  params.delete('shortcut');
+  history.replaceState({}, '', location.pathname + (params.toString() ? '?'+params : ''));
 })();
 
 
@@ -2934,30 +2895,6 @@ function setTextSafe(id, text) {
       }
     }
     
-async function promptToInstallPwa() {
-  if (!deferredInstallPrompt) {
-    showToast("App cannot be installed right now.");
-    return;
-  }
-  // Show the install prompt.
-  deferredInstallPrompt.prompt();
-
-  // Wait for the user to respond to the prompt
-  const { outcome } = await deferredInstallPrompt.userChoice;
-  console.log(`User response to the install prompt: ${outcome}`);
-
-  // We've used the prompt, and can't use it again, throw it away
-  deferredInstallPrompt = null;
-
-  // Hide the install button
-  const installButton = document.getElementById('installPwaBtn');
-  if (installButton) {
-    installButton.style.display = 'none';
-  }
-}
-
-
-
     function removeWallpaper(showAlertMsg = true) {
         const videoBg = document.getElementById("videoBg");
         videoBg.src = "";
@@ -3371,52 +3308,77 @@ const handleClick = (e) => {
 
     a.addEventListener('click', handleClick);
 
-   if ('ontouchstart' in window) {
-      let pressTimer = null;
-      let longPressOccurred = false;
+    if ('ontouchstart' in window) {          /* works on iOS and Android */
+  let pressTimer = null;
+  let longPressDidOccur = false;
+  let savedHref = null;                            /* NEW */
 
-      a.addEventListener('touchstart', (e) => {
-        if (rearrangeMode) return;
-        
-        longPressOccurred = false; // Reset on new touch
-        
-        pressTimer = setTimeout(() => {
-          // If the timer completes, a long press has happened.
-          longPressOccurred = true;
-          // Vibrate slightly to give user feedback
-          if (navigator.vibrate) navigator.vibrate(50);
-          showMenuOptions(a, bookmark, index);
-        }, 500); // 500ms for a long press
-      }, { passive: true });
+  a.addEventListener('touchstart', (e) => {
+    if (rearrangeMode) return;
+    longPressDidOccur = false;
+    pressTimer = setTimeout(() => {
+      longPressDidOccur = true;
 
-      a.addEventListener('touchmove', () => {
-        // If finger moves, it's a scroll, not a long press
-        clearTimeout(pressTimer);
-      });
+      /* --- NEW: disable navigation --- */
+      savedHref = a.getAttribute('href');
+      a.removeAttribute('href');                   /* stops iOS default tap */
 
-      a.addEventListener('touchend', (e) => {
-        // Always clear the timer when the touch ends
-        clearTimeout(pressTimer);
-        
-        if (longPressOccurred) {
-          // If a long press happened, prevent the "ghost click" that follows.
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      });
-      
-      // Also modify the main click handler to check this flag
-      const originalClickHandler = a.onclick;
-      a.onclick = (e) => {
-          if (longPressOccurred) {
-              e.preventDefault();
-              e.stopPropagation();
-              longPressOccurred = false; // Reset for next interaction
-              return;
-          }
-          originalClickHandler(e);
-      };
+      showMenuOptions(a, bookmark, index);
+
+    }, 500);
+  }, { passive: false });
+
+  a.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+  a.addEventListener('touchend', (e) => { 
+    clearTimeout(pressTimer);
+
+    /* If long‑press happened, keep link disabled until after a frame */
+    if (longPressDidOccur) {
+      e.preventDefault();                          // stop synthetic click
+      /* --- NEW: restore href after this event loop --- */
+      setTimeout(() => { if (savedHref) a.setAttribute('href', savedHref); }, 0);
     }
+  }, { passive: false });
+}
+
+    
+    a.addEventListener('contextmenu', (e) => { e.preventDefault(); showMenuOptions(a, bookmark, index); });
+
+    a.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            handleClick(e);
+        }
+    });
+
+    // inside createBookmarkElement, after your touchstart/touchend code:
+let ptrTimer = null, ptrLong = false, ptrSaved = null;
+
+function onPointerDown(e) {
+  if (rearrangeMode) return;
+  ptrLong = false;
+  e.preventDefault();                   // allow preventDefault
+  ptrTimer = setTimeout(() => {
+    ptrLong = true;
+    ptrSaved = a.getAttribute('href');
+    a.removeAttribute('href');
+    showMenuOptions(a, bookmark, index);
+  }, 500);
+}
+function onPointerMove() { clearTimeout(ptrTimer); }
+function onPointerUp(e) {
+  clearTimeout(ptrTimer);
+  if (ptrLong) {
+    e.preventDefault();                  // stop the click
+    setTimeout(() => a.setAttribute('href', ptrSaved), 0);
+  }
+}
+
+a.addEventListener('pointerdown', onPointerDown, { passive: false });
+a.addEventListener('pointermove', onPointerMove);
+a.addEventListener('pointerup', onPointerUp, { passive: false });
+a.addEventListener('pointercancel', onPointerUp, { passive: false });
+
 
     const img = document.createElement("img");
     try {
@@ -4753,6 +4715,11 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       updateSandboxPermissions();
     });
 
+        document.addEventListener('contextmenu', e => {
+      if (e.target.closest('.tile')) {
+        e.preventDefault();
+      }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       const blurSaved = localStorage.getItem('bgBlur') === 'true';
@@ -4799,39 +4766,21 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
   const RELOAD_KEY = 'hppReloadOnReturn';
 
   // Set flag when a tile opens in a new tab
-  document.addEventListener('click', e => {
+  document.addEventListener('click', e=>{
     const tile = e.target.closest('.tile');
     if (!tile) return;
-    // Check both new tab and in-app browser settings
-    if (window.newTabLinks || window.useInAppBrowser) {
+    if (window.newTabLinks) {           // you already use this toggle
       sessionStorage.setItem(RELOAD_KEY, '1');
     }
-  }, { capture: true, passive: true });
+  }, {capture:true, passive:true});
 
-  // When page becomes visible again, reload once without animations
-  const reloadOnReturn = () => {
-    if (sessionStorage.getItem(RELOAD_KEY) === '1') {
+  // When page becomes visible again, reload once
+  document.addEventListener('visibilitychange', ()=>{
+    if (!document.hidden && sessionStorage.getItem(RELOAD_KEY) === '1') {
       sessionStorage.removeItem(RELOAD_KEY);
-      // SET THE FLAG to prevent animations on the NEXT load
-      sessionStorage.setItem('isReloadingForReturn', 'true');
       location.reload();
     }
-  };
-
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
-      reloadOnReturn();
-    }
   });
-
-  window.addEventListener('pageshow', (event) => {
-    // pageshow fires on load and on bfcache restore
-    if (event.persisted) { // event.persisted is true for bfcache restore
-      reloadOnReturn();
-    }
-  });
-})();
-
 
   // Safety for Android bfcache
   window.addEventListener('pageshow', ()=>{
@@ -4840,7 +4789,7 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       location.reload();
     }
   });
-
+})();
 
 // Add .pre-hover whenever we (re)enter the page, remove it on first move
 (function(){
