@@ -2090,9 +2090,11 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   aria-label="Install App"
   onclick="showInstallPrompt(); toggleSidebar();"
   tabindex="0"
+  style="display: none;"    <!-- hide until it's really installable -->
 >
   📲 Install as App
 </div>
+
 
     <div class="toolbar-option" id="addBookmarkBtnSidebar" aria-label="Add Bookmark" onclick="addBookmark(); toggleSidebar();" tabindex="0">📝 Add Bookmark</div>
     
@@ -4827,53 +4829,14 @@ document.addEventListener('click', function(e) {
 })();
 
 
-// 1. Detect iOS
-function isIos() {
-  return /iP(hone|ad|od)/.test(navigator.userAgent);
-}
-
-// 2. Show a little instructional overlay
-function showIosInstallInstructions() {
-  // You could also build this as a styled DIV/modal rather than an alert
-  alert(
-    "To install this app on iOS:\n\n" +
-    "1. Tap the Share icon (▣ with ↑) in Safari’s toolbar.\n" +
-    "2. Scroll down and select “Add to Home Screen.”\n" +
-    "3. Tap “Add” in the top right."
-  );
-}
-
-// 3. Wire it to your sidebar button
-document.getElementById('installAppBtnSidebar')
-  .addEventListener('click', e => {
-    toggleSidebar();  // your existing sidebar‐close logic
-    if (isIos()) {
-      showIosInstallInstructions();
-    } else if (deferredPrompt) {
-      // Android/desktop path:
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => {
-        deferredPrompt = null;
-      });
-    }
-  });
-
-
 let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', e => {
-  // Prevent Chrome’s mini‑infobar from appearing
-  e.preventDefault();
-  // Stash the event so we can trigger it later
-  deferredPrompt = e;
-  // Reveal your custom “Install” button now that install is possible
-  document.getElementById('installBtn').style.display = 'block';
-});
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Try to show it immediately:
-  deferredPrompt.prompt();
+  e.preventDefault();                      // stop the browser pop‑under
+  deferredPrompt = e;                      // save for later
+
+  const btn = document.getElementById('installAppBtnSidebar');
+  if (btn) btn.style.display = 'flex';     // show the real button
 });
 
 
