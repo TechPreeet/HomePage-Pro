@@ -4814,19 +4814,42 @@ document.addEventListener('click', function(e) {
   const grid = document.getElementById('bookmarkGrid');
   if (!grid) return;
 
+  // 1) helper to read nav type
+  function getNavType() {
+    const nav = performance.getEntriesByType?.('navigation')?.[0];
+    if (nav) return nav.type;
+    return (performance.navigation?.type === performance.navigation.TYPE_RELOAD)
+      ? 'reload'
+      : (performance.navigation?.type === performance.navigation.TYPE_BACK_FORWARD)
+      ? 'back_forward'
+      : 'navigate';
+  }
+
+  // 2) run on every load
   window.addEventListener('load', () => {
-    // only on the *very first* ever load
-    if (!localStorage.getItem('hasInitialFade')) {
+    const navType = getNavType();
+    const firstFadeAllowed = localStorage.getItem('allowInitialFade');
+
+    // fade on first ever visit, or on manual refresh
+    if (
+        navType === 'reload' ||
+       (navType === 'navigate' && firstFadeAllowed !== 'false')
+    ) {
       grid.classList.add('initial-load');
+
       grid.addEventListener('animationend', e => {
         if (e.animationName === 'tileFadeIn') {
           grid.classList.remove('initial-load');
-          localStorage.setItem('hasInitialFade', '1');
+          // mark that we’ve now done our one “initial” fade
+          localStorage.setItem('allowInitialFade', 'false');
         }
       }, { once: true });
     }
+    // otherwise (back_forward, or a PWA relaunch after you've already seen the fade),
+    // we never add .initial-load and tiles render immediately.
   });
 })();
+
 
 
 let deferredPrompt;
