@@ -1925,7 +1925,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
       <p>💖 <strong>If you enjoy using it, consider supporting the project:</strong></p>
       <p><a href="https://buymeacoffee.com/techpreeet" target="_blank" class="cta-link">☕ Buy Me a Coffee</a></p>
       <p>🌐 <strong>Made with HTML, CSS, JS – no frameworks, no trackers.</strong></p>
-      <p style="margin-top: 20px; font-style: italic; font-size: 17px;">❤️ Made with love, caffeine, and late-night debugging.</p>
+      <p style="margin-top: 20px; font-style: italic; font-size: 14px;">❤️ Made with love, caffeine, and late-night debugging.</p>
 
       <hr style="margin:16px 0; opacity:.2;">
 
@@ -2091,7 +2091,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   onclick="showInstallPrompt(); toggleSidebar();"
   tabindex="0"
   style="display: none;"    <!-- hide until it's really installable -->
->
+
   📲 Install as App
 </div>
 
@@ -2348,17 +2348,28 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 <div class="toolbar-option toolbar-option-header" id="inAppBrowserSettingsHeader" tabindex="0">🛡️ In-App Browser Settings</div>
 <div class="collapsible-content" id="inAppBrowserSettingsContent">
     <label class="toolbar-option">
-        Block Popups (Experimental)
+        Block Popups (beta)
         <div class="switch">
             <input type="checkbox" id="blockPopupsSwitch" onchange="updateSandboxPermissions()">
             <span class="slider"></span>
         </div>
     </label>
     <p style="font-size: 11px; opacity: 0.7; padding: 0 10px;">Note: Ad & tracker blocking is not possible without a full browser extension.</p>
-</div>
 
+<!-- NEW: Enable/Disable entire in-app browser -->
+  <label class="toolbar-option">
+    📴 Enable In-App Browser
+    <div class="switch">
+      <input
+        type="checkbox"
+        id="inAppBrowserEnabledSwitch"
+        onchange="toggleInAppEnabled()"
+      />
+      <span class="slider"></span>
+    </div>
+  </label>
 
-<!-- In-App Browser Toggle -->
+    <!-- In-App Browser Toggle -->
 <label class="toolbar-option">
   🌐 Open Links In-App
   <div class="switch">
@@ -2367,9 +2378,11 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
       id="inAppBrowserSwitch"
       onchange="toggleInAppBrowser()"
     />
-    <span class="slider"></span>
+      <span class="slider"></span>
+    </div>
+  </label>
   </div>
-</label>
+
     
     <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()" tabindex="0">🔄 Rearrange Bookmarks</div>
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()" tabindex="0">📤 Export Bookmarks</div>
@@ -2395,7 +2408,7 @@ let _tileLogTimer = null;
 let inAppTabs = [];
 let activeTabId = null;
 let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
-
+let inAppBrowserEnabled = (localStorage.getItem("inAppBrowserEnabled") ?? "true") === "true";
 
     /**
      * Logs an action to the user's history in localStorage.
@@ -2419,6 +2432,19 @@ let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
         } catch (e) {
             console.error("Failed to log history:", e);
         }
+    }
+
+function applyInAppEnabled(enabled){
+  const tabsBtn = document.getElementById('toggleTabsBtn');
+    if (tabsBtn) tabsBtn.style.display = enabled ? '' : 'none';
+    if (!enabled){ goHome(); document.getElementById('inAppBrowserSwitch').checked = false; }
+}
+
+    function toggleInAppEnabled(){
+inAppBrowserEnabled = !inAppBrowserEnabled;
+localStorage.setItem('inAppBrowserEnabled', inAppBrowserEnabled);
+applyInAppEnabled(inAppBrowserEnabled);
+logHistory('Setting', `Enable In-App Browser: ${inAppBrowserEnabled}`);
     }
 
 
@@ -2518,9 +2544,12 @@ function showInstallPrompt() {
       document.querySelectorAll(".floating-menu").forEach(m => m.remove());
       const menu = document.createElement("div");
       menu.className = "floating-menu";
-      const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab", "Open in App"];
+      const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab",];
+      
       const icons = { Edit:"📝", Delete:"🗑️", Share:"🔗", "Copy URL":"📋", "Open in New Tab":"↗️", "Open in App": "🌐" };
-
+      if (inAppBrowserEnabled) {
+      actions.push("Open in App");
+    }
       actions.forEach(action => {
         const opt = document.createElement("div");
         opt.innerHTML = `${icons[action]} ${action}`;
@@ -3168,10 +3197,15 @@ function setTextSafe(id, text) {
     }
 
     function toggleInAppBrowser() {
+        if (!inAppBrowserEnabled){
+          document.getElementById('inAppBrowserSwitch').checked = false;
+          showToast('Turn on “Enable In-App Browser” first.');
+          return;
+        }
         useInAppBrowser = !useInAppBrowser;
         localStorage.setItem('useInAppBrowser', useInAppBrowser);
-        logHistory('Setting', `Set 'Open Links In-App' to ${useInAppBrowser}`);
-    }
+        logHistory('Setting', `Set \"Open Links In-App\" to ${useInAppBrowser}`);
+      }
 
 
     function updateNewTabLinksOption() {
@@ -4230,6 +4264,7 @@ function setIconStyle(value, skipLog = false) {
     // --- In-App Browser & Tab Management ---
 
     function openInAppTab(url, title) {
+      if (!inAppBrowserEnabled) return window.open(url, '_blank');
         const viewer = document.getElementById('iframe-viewer');
         const frame = document.getElementById('browser-frame');
         const titleEl = document.getElementById('iframe-title');
@@ -4701,6 +4736,9 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       const inApp = localStorage.getItem('useInAppBrowser') === 'true';
       document.getElementById('inAppBrowserSwitch').checked = inApp;
       useInAppBrowser = inApp;
+
+      document.getElementById('inAppBrowserEnabledSwitch').checked = inAppBrowserEnabled;
+      applyInAppEnabled(inAppBrowserEnabled);
 
       // 🛡️ In-App Browser Settings
       const blockPopups = localStorage.getItem('blockPopups') === 'true';
