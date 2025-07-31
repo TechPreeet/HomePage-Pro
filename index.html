@@ -2408,7 +2408,27 @@ let _tileLogTimer = null;
 let inAppTabs = [];
 let activeTabId = null;
 let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
-let inAppBrowserEnabled = (localStorage.getItem("inAppBrowserEnabled") ?? "true") === "true";
+let inAppBrowserEnabled = localStorage.getItem("inAppBrowserEnabled") === "true";
+
+document.addEventListener('DOMContentLoaded', () => {
+  /* ── 1. Check launch-URL for the shortcut flag ─────────────────────────── */
+  const launchURL = new URL(location.href);
+  const action    = launchURL.searchParams.get('action');   // "add" | "flip" | "voice" | null
+
+  if (action) {
+    /* ── 2. Run the selected feature exactly once ────────────────────────── */
+    switch (action) {
+      case 'add':   openAddBookmark(); break;   // your existing function
+      case 'flip':  flipCoin();         break;
+      case 'voice': startVoiceSearch(); break;  // or whatever you call it
+    }
+
+    /* ── 3. Strip the flag so a refresh is clean ─────────────────────────── */
+    launchURL.searchParams.delete('action');            // keep any other params
+    history.replaceState(null, '', launchURL.pathname + launchURL.search);
+    // Now address bar is just ".../index.html" so reloads won’t repeat the action
+  }
+});
 
     /**
      * Logs an action to the user's history in localStorage.
@@ -4089,96 +4109,95 @@ function setIconStyle(value, skipLog = false) {
         });
       }
 
-    let recognition = null;
-    let handleCancelClick;
-    // FIX: Add a timer to automatically stop recognition on pause (for iOS)
-    let speechEndTimeout = null;
 
-    function startVoiceSearch() {
-      if (!('webkitSpeechRecognition' in window)) {
-        showToast("Voice search is not supported.");
-        document.getElementById("searchInput").focus();
-        return;
-      }
-      
-      if (recognition && recognition._isStarted) {
-        recognition.stop();
-        return;
-      }
 
-      recognition = new webkitSpeechRecognition();
-      recognition.lang = "en-US";
-      recognition.interimResults = true;
-      recognition.continuous = false; // Stop automatically on pause (iOS‑friendly)
-     recognition.onspeechend = () => recognition.stop();  // ← here
-      recognition.onspeechend = () => recognition.stop();
-      const searchInput = document.getElementById("searchInput");
-      const micIcon = document.getElementById("micIcon");
-      const container = document.querySelector('.container');
-      let finalTranscript = "";
+    /* Global singleton (you already have these) */
+let recognition = null;
+let handleCancelClick = null;
 
-      handleCancelClick = function(event) {
-        if (!event.target.closest('a, button, input, .menu, .toolbar-option')) {
-          if (recognition && recognition._isStarted) {
-            recognition.stop();
-          }
-        }
-      };
+function startVoiceSearch() {
+  if (!('webkitSpeechRecognition' in window)) {
+    showToast("Voice search is not supported.");
+    document.getElementById("searchInput").focus();
+    return;
+  }
 
-      recognition.onstart = () => {
-        recognition._isStarted = true;
-        searchInput.placeholder = "Listening...";
-        micIcon.style.color = "red";
-        container.addEventListener('click', handleCancelClick);
-      };
+  /* ───── Tap mic again to stop ───── */
+  if (recognition && recognition._isStarted) {
+    recognition.stop();
+    return;
+  }
 
-      recognition.onresult = (event) => {
-        let interimTranscript = "";
-        finalTranscript = ""; // Reset final transcript each time
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-        searchInput.value = finalTranscript + interimTranscript;
-        handleSearchInput();
+  /* ───── Create recogniser ───── */
+  recognition = new webkitSpeechRecognition();
+  recognition.lang           = "en-US";
+  recognition.interimResults = true;
+  recognition.continuous     = false;          // auto-stop after a pause
+  recognition.onspeechend    = () => recognition.stop();
 
-        
-      };
+  const searchInput = document.getElementById("searchInput");
+  const micIcon     = document.getElementById("micIcon");
+  const container   = document.querySelector(".container");
+  let   finalTranscript = "";
 
-      recognition.onerror = (event) => {
-        if (event.error !== "aborted" && event.error !== 'no-speech') {
-          showToast("Voice recognition error: " + event.error);
-        }
-      };
-
-      // 3) the fixed onend:
-      recognition.onend = () => {
-        recognition._isStarted = false;
-        recognition.onspeechend = () => recognition.stop();  // <-- VAD: stop when user stops talking
-
-        // restore placeholder + mic color
-        const eng = localStorage.getItem("searchEngine") || "Google";
-        searchInput.placeholder = `Search with ${eng}…`;
-        micIcon.style.color     = "";
-        container.removeEventListener("click", handleCancelClick);
-
-        // if there's text, run performSearch
-        if (searchInput.value.trim()) {
-          logHistory('Voice', `Voice search for: '${searchInput.value.trim()}'`);
-          performSearch(true); // Pass true to indicate it's a voice search
-
-          // then clear the bar
-          searchInput.value = "";
-          handleSearchInput();
-        }
-      };
-
-      recognition.start();
+  /* Cancel recording if user taps outside the UI */
+  handleCancelClick = (e) => {
+    if (!e.target.closest("a, button, input, .menu, .toolbar-option")) {
+      if (recognition && recognition._isStarted) recognition.stop();
     }
+  };
+
+  recognition.onstart = () => {
+    recognition._isStarted  = true;
+    searchInput.placeholder = "Listening…";
+    micIcon.style.color     = "red";
+    container.addEventListener("click", handleCancelClick);
+  };
+
+  recognition.onresult = (event) => {
+    let interim = "";
+    finalTranscript = "";
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) finalTranscript += t;
+      else                          interim         += t;
+    }
+    searchInput.value = finalTranscript + interim;
+    handleSearchInput();   // your live-suggestion function
+  };
+
+  recognition.onerror = (event) => {
+    if (event.error !== "aborted" && event.error !== "no-speech") {
+      showToast("Voice recognition error: " + event.error);
+    }
+  };
+
+  recognition.onend = () => {
+    recognition._isStarted = false;
+
+    /* Restore UI */
+    const eng = localStorage.getItem("searchEngine") || "Google";
+    searchInput.placeholder = `Search with ${eng}…`;
+    micIcon.style.color     = "";
+    container.removeEventListener("click", handleCancelClick);
+
+    /* Run the search exactly once */
+    const q = searchInput.value.trim();
+    if (q) {
+      setTimeout(() => {
+        logHistory("Voice", `Voice search: '${q}'`);
+        performSearch(true);        // true = came from voice (optional flag)
+        searchInput.value = "";     // clear bar after we’ve triggered nav
+        handleSearchInput();
+      }, 50);                       // iOS needs a tiny delay
+    }
+  };
+
+  recognition.start();
+}
+
+
 
     function exportBookmarks() {
       try {
@@ -4899,6 +4918,14 @@ window.addEventListener('beforeinstallprompt', e => {
   const btn = document.getElementById('installAppBtnSidebar');
   if (btn) btn.style.display = 'flex';     // show the real button
 });
+
+
+
+document.getElementById('searchForm')?.addEventListener('submit', e => {
+  e.preventDefault();      // stops default page reload
+  performSearch();
+});
+
 
 
 
