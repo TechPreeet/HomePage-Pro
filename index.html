@@ -2252,7 +2252,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     <!-- Gradient -->
     <div id="gradientSliderContainer" class="slider-container">
   <div class="toolbar-option" id="gradientLabel">Background Color</div>
-  <input type="range" id="gradientSlider" min="0" max="18" value="0"
+  <input type="range" id="gradientSlider" min="0" max="19" value="0"
          class="toolbar-option"
          oninput="setGradientBackground(this.value)">
 </div>
@@ -2520,7 +2520,8 @@ logHistory('Setting', `Enable In-App Browser: ${inAppBrowserEnabled}`);
         { name: 'Mauve', value: 'linear-gradient(to right, #42275a, #734b6d)' },
         { name: 'Cherry', value: 'linear-gradient(to right, #eb3349, #f45c43)' },
         { name: 'Serenity', value: 'linear-gradient(to right, #2980b9, #6dd5fa, #ffffff)' },
-    ];
+        { name: 'App theme', value: 'linear-gradient(to right, #050f26, #050f26, #050f26)' },
+     ];
 
     const searchEngines = {
         'Google': {
