@@ -4112,48 +4112,41 @@ function setIconStyle(value, skipLog = false) {
 
 
 
-    /* Global singleton (you already have these) */
-let recognition = null;
-let handleCancelClick = null;
+/* ------------------------------------------------------------- */
+/*  Voice Search – fires performSearch() once with final text    */
+/* ------------------------------------------------------------- */
+let recognition = null;           // keep your existing globals
+let handleCancelClick = null;     //           "
 
-/* ------------------------------------------------------------------ */
-/*  Voice search: listens once, fills the bar, then runs the query    */
-/*  – Works in iOS/Android PWAs and desktop browsers                  */
-/* ------------------------------------------------------------------ */
 function startVoiceSearch () {
-  /* 1 . Feature-detect */
   if (!('webkitSpeechRecognition' in window)) {
-    showToast("Voice search is not supported on this device.");
+    showToast("Voice search isn’t supported on this device.");
     document.getElementById("searchInput").focus();
     return;
   }
 
-  /* 2 . If the mic is already recording, tapping the icon stops it   */
-  if (recognition && recognition._isStarted) {
+  if (recognition && recognition._isStarted) {   // tap mic again to cancel
     recognition.stop();
     return;
   }
 
-  /* 3 . Create a fresh recogniser for this session                    */
   recognition = new webkitSpeechRecognition();
   recognition.lang           = "en-US";
-  recognition.interimResults = true;    // show words while speaking
-  recognition.continuous     = false;   // auto-stop on a short pause
-  recognition.onspeechend    = () => recognition.stop();   // single assignment
+  recognition.interimResults = true;
+  recognition.continuous     = false;            // auto-stop after pause
 
   const searchInput = document.getElementById("searchInput");
   const micIcon     = document.getElementById("micIcon");
-  const container   = document.querySelector(".container"); // tap-outside cancel
-  let   finalTranscript = "";
+  const container   = document.querySelector(".container");
 
-  /* 4 . Stop recording if user taps outside actionable UI            */
+  let finalText = "";
+
+  /* ── UI feedback ─────────────────────────────────── */
   handleCancelClick = (e) => {
-    if (!e.target.closest('a, button, input, .menu, .toolbar-option')) {
-      if (recognition && recognition._isStarted) recognition.stop();
-    }
+    if (!e.target.closest('a, button, input, .menu, .toolbar-option'))
+      recognition.stop();
   };
 
-  /* 5 . UI feedback while listening                                  */
   recognition.onstart = () => {
     recognition._isStarted  = true;
     searchInput.placeholder = "Listening…";
@@ -4161,50 +4154,40 @@ function startVoiceSearch () {
     container.addEventListener('click', handleCancelClick);
   };
 
-  /* 6 . Collect interim + final text                                 */
-  recognition.onresult = (event) => {
+  /* ── Collect text ────────────────────────────────── */
+  recognition.onresult = (e) => {
     let interim = "";
-    finalTranscript = "";
-
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const t = event.results[i][0].transcript;
-      if (event.results[i].isFinal) finalTranscript += t;
-      else                          interim         += t;
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      (e.results[i].isFinal) ? finalText += t : interim += t;
     }
+    searchInput.value = finalText + interim;
+    handleSearchInput();
 
-    searchInput.value = finalTranscript + interim;
-    handleSearchInput();               // live suggestions / UI update
+    // No manual stop here — we wait for onend
   };
 
-  /* 7 . Graceful error handling                                      */
-  recognition.onerror = (event) => {
-    if (event.error !== "aborted" && event.error !== "no-speech") {
-      showToast("Voice recognition error: " + event.error);
-    }
+  recognition.onerror = ({ error }) => {
+    if (error !== "aborted" && error !== "no-speech")
+      showToast("Voice recognition error: " + error);
   };
 
-  /* 8 . Finish: restore UI, then run the search exactly once         */
+  /* ── Finish: restore UI & run search once ────────── */
   recognition.onend = () => {
     recognition._isStarted = false;
-
-    // Restore placeholder + icon colour
-    const eng = localStorage.getItem('searchEngine') || 'Google';
-    searchInput.placeholder = `Search with ${eng}…`;
-    micIcon.style.color     = "";
     container.removeEventListener('click', handleCancelClick);
 
-    // If we captured text, launch the search once
+    searchInput.placeholder =
+      `Search with ${localStorage.getItem('searchEngine') || 'Google'}…`;
+    micIcon.style.color = "";
+
     const q = searchInput.value.trim();
     if (q) {
       logHistory('Voice', `Voice search: "${q}"`);
-      setTimeout(() => performSearch(true), 50); // 50 ms = iOS overlay quirk
-      // Optionally clear the bar after navigation:
-      // searchInput.value = "";
-      // handleSearchInput();
+      setTimeout(() => performSearch(true), 50);   // small iOS delay
     }
   };
 
-  /* 9 . Go!                                                           */
   recognition.start();
 }
 
