@@ -4116,45 +4116,52 @@ function setIconStyle(value, skipLog = false) {
 let recognition = null;
 let handleCancelClick = null;
 
-function startVoiceSearch() {
+/* ------------------------------------------------------------------ */
+/*  Voice search: listens once, fills the bar, then runs the query    */
+/*  – Works in iOS/Android PWAs and desktop browsers                  */
+/* ------------------------------------------------------------------ */
+function startVoiceSearch () {
+  /* 1 . Feature-detect */
   if (!('webkitSpeechRecognition' in window)) {
-    showToast("Voice search is not supported.");
+    showToast("Voice search is not supported on this device.");
     document.getElementById("searchInput").focus();
     return;
   }
 
-  /* ───── Tap mic again to stop ───── */
+  /* 2 . If the mic is already recording, tapping the icon stops it   */
   if (recognition && recognition._isStarted) {
     recognition.stop();
     return;
   }
 
-  /* ───── Create recogniser ───── */
+  /* 3 . Create a fresh recogniser for this session                    */
   recognition = new webkitSpeechRecognition();
   recognition.lang           = "en-US";
-  recognition.interimResults = true;
-  recognition.continuous     = false;          // auto-stop after a pause
-  recognition.onspeechend    = () => recognition.stop();
+  recognition.interimResults = true;    // show words while speaking
+  recognition.continuous     = false;   // auto-stop on a short pause
+  recognition.onspeechend    = () => recognition.stop();   // single assignment
 
   const searchInput = document.getElementById("searchInput");
   const micIcon     = document.getElementById("micIcon");
-  const container   = document.querySelector(".container");
+  const container   = document.querySelector(".container"); // tap-outside cancel
   let   finalTranscript = "";
 
-  /* Cancel recording if user taps outside the UI */
+  /* 4 . Stop recording if user taps outside actionable UI            */
   handleCancelClick = (e) => {
-    if (!e.target.closest("a, button, input, .menu, .toolbar-option")) {
+    if (!e.target.closest('a, button, input, .menu, .toolbar-option')) {
       if (recognition && recognition._isStarted) recognition.stop();
     }
   };
 
+  /* 5 . UI feedback while listening                                  */
   recognition.onstart = () => {
     recognition._isStarted  = true;
     searchInput.placeholder = "Listening…";
     micIcon.style.color     = "red";
-    container.addEventListener("click", handleCancelClick);
+    container.addEventListener('click', handleCancelClick);
   };
 
+  /* 6 . Collect interim + final text                                 */
   recognition.onresult = (event) => {
     let interim = "";
     finalTranscript = "";
@@ -4164,39 +4171,43 @@ function startVoiceSearch() {
       if (event.results[i].isFinal) finalTranscript += t;
       else                          interim         += t;
     }
+
     searchInput.value = finalTranscript + interim;
-    handleSearchInput();   // your live-suggestion function
+    handleSearchInput();               // live suggestions / UI update
   };
 
+  /* 7 . Graceful error handling                                      */
   recognition.onerror = (event) => {
     if (event.error !== "aborted" && event.error !== "no-speech") {
       showToast("Voice recognition error: " + event.error);
     }
   };
 
+  /* 8 . Finish: restore UI, then run the search exactly once         */
   recognition.onend = () => {
     recognition._isStarted = false;
 
-    /* Restore UI */
-    const eng = localStorage.getItem("searchEngine") || "Google";
+    // Restore placeholder + icon colour
+    const eng = localStorage.getItem('searchEngine') || 'Google';
     searchInput.placeholder = `Search with ${eng}…`;
     micIcon.style.color     = "";
-    container.removeEventListener("click", handleCancelClick);
+    container.removeEventListener('click', handleCancelClick);
 
-    /* Run the search exactly once */
+    // If we captured text, launch the search once
     const q = searchInput.value.trim();
     if (q) {
-      setTimeout(() => {
-        logHistory("Voice", `Voice search: '${q}'`);
-        performSearch(true);        // true = came from voice (optional flag)
-        searchInput.value = "";     // clear bar after we’ve triggered nav
-        handleSearchInput();
-      }, 50);                       // iOS needs a tiny delay
+      logHistory('Voice', `Voice search: "${q}"`);
+      setTimeout(() => performSearch(true), 50); // 50 ms = iOS overlay quirk
+      // Optionally clear the bar after navigation:
+      // searchInput.value = "";
+      // handleSearchInput();
     }
   };
 
+  /* 9 . Go!                                                           */
   recognition.start();
 }
+
 
 
 
