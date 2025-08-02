@@ -68,4 +68,13 @@
       ]
     }
   ]
+,"launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "iarc_rating_id": null,
+  "prefer_related_applications": false
 }
