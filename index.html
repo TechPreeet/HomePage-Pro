@@ -4,51 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 
-  
-      <!-- ── INSERT HERE ── -->
-        <script>
-          
-    /* ----- Search Bar Fixes ----- */
-    const originalPerformSearch = window.performSearch;
-    window.performSearch = function () {
-        // Clear search UI so cross icon disappears
-        const input = document.getElementById('searchInput');
-        const clearIcon = document.getElementById('clearIcon');
-        if (input) input.value = '';
-        if (clearIcon) clearIcon.style.display = 'none';
-        if (typeof handleSearchInput === 'function') handleSearchInput();
-
-        return originalPerformSearch.apply(this, arguments);
-    };
-
-    /* ----- Voice Search fix for New‑Tab setting ----- */
-    if (typeof startVoiceSearch === 'function') {
-        const originalStartVoice = startVoiceSearch;
-        window.startVoiceSearch = function () {
-            // Wrap original function
-            originalStartVoice.apply(this, arguments);
-
-            // When recognition ends, force a performSearch()
-            if (window.recognition) {
-                recognition.addEventListener('result', () => {
-                    setTimeout(() => {
-                        performSearch();
-                    }, 200);
-                }, { once: true });
-            }
-        };
-    }
-
-    /* ----- Remove lingering active styles on touch devices ----- */
-    document.addEventListener('touchend', () => {
-        document.querySelectorAll('.tile').forEach(el => el.classList.remove('active'));
-    });
-
-
-</script>
-        <!-- ── END INSERT ── -->
-
-
   <title>HomePage Pro</title>
 
   <!-- iPhone 15 Pro Max (428×926 @3x) -->
@@ -1945,7 +1900,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   <li>↗️ <strong>“Open in New Tab” Toggle</strong> — works for bookmarks & searches</li>
   <li>📚 <strong>Drag‑and‑Drop Bookmarks</strong> — iOS‑style wiggle edit mode</li>
   <li>🖼️ <strong>Custom Icons & Labels</strong> — edit, delete, copy URL quickly</li>
-  <li>📤📥 <strong>Export / Import</strong> — move your setup anywhere</li>
+  <li>�📥 <strong>Export / Import</strong> — move your setup anywhere</li>
   <li>🎨 <strong>Accent Color, Tile Size, Icon Shape</strong> controls</li>
   <li>🪩 <strong>Glass Mode</strong> & 🌙 <strong>Dark Mode</strong></li>
   <li>🌫️ <strong>Blur / Image / Video Backgrounds</strong></li>
@@ -4029,7 +3984,7 @@ function setIconStyle(value, skipLog = false) {
         if (useInAppBrowser) {
             openInAppTab(dest, title);
         } else {
-            window.open(dest, '_blank');
+            window.open(dest, newTabLinks ? '_blank' : '_self');
         }
         
         searchInput.value = "";
@@ -4113,7 +4068,7 @@ function setIconStyle(value, skipLog = false) {
 
 
 /* ------------------------------------------------------------- */
-/*  Voice Search – fires performSearch() once with final text    */
+/* Voice Search – fires performSearch() once with final text    */
 /* ------------------------------------------------------------- */
 let recognition = null;           // keep your existing globals
 let handleCancelClick = null;     //           "
@@ -4190,8 +4145,6 @@ function startVoiceSearch () {
 
   recognition.start();
 }
-
-
 
 
     function exportBookmarks() {
