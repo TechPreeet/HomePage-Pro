@@ -134,12 +134,13 @@
     }
 
     @media (hover: none) and (pointer: coarse) {
-      .tile:not(.add-tile):active {
-        transform: scale(1.1);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-        background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), rgba(0, 123, 255, 0.4));
-      }
-    }
+  .tile:not(.add-tile):active {
+    transform: none !important;
+    box-shadow: none !important;
+    background: none !important;
+  }
+}
+
 
     body.glass-mode .tile,
     body.glass-mode .search-bar-form {
@@ -1818,11 +1819,19 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   opacity: 1;
 }
 
-/* 2. Fresh‑load fade‑in: only when .initial-load is present */
 #bookmarkGrid.initial-load .tile {
-  opacity: 0;
-  animation: tileFadeIn 0.9s ease-out forwards;
+  opacity: 1 !important;
+  animation: none !important;
+  transform: none !important;
 }
+
+
+/* In-App Browser Disabled */
+  #iframe-viewer, #iframe-controls, #iframe-buttons {
+    display: none !important;
+  }
+  #toggleTabsBtn { display: none !important; }
+
 
 
 
@@ -1976,7 +1985,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   <div class="container">
     <div id="bookmarksWrapper">
         <div class="spacer"></div>
-        <form class="search-bar-form" action="javascript:void(0);" onsubmit="performSearch()">
+        <form class="search-bar-form" id="searchForm">
           <input
             type="search"
             id="searchInput"
@@ -2300,43 +2309,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 </label>
 
 
-<div class="toolbar-option toolbar-option-header" id="inAppBrowserSettingsHeader" tabindex="0">🛡️ In-App Browser Settings</div>
-<div class="collapsible-content" id="inAppBrowserSettingsContent">
-    <label class="toolbar-option">
-        Block Popups (beta)
-        <div class="switch">
-            <input type="checkbox" id="blockPopupsSwitch" onchange="updateSandboxPermissions()">
-            <span class="slider"></span>
-        </div>
-    </label>
-    <p style="font-size: 11px; opacity: 0.7; padding: 0 10px;">Note: Ad & tracker blocking is not possible without a full browser extension.</p>
 
-<!-- NEW: Enable/Disable entire in-app browser -->
-  <label class="toolbar-option">
-    📴 Enable In-App Browser
-    <div class="switch">
-      <input
-        type="checkbox"
-        id="inAppBrowserEnabledSwitch"
-        onchange="toggleInAppEnabled()"
-      />
-      <span class="slider"></span>
-    </div>
-  </label>
-
-    <!-- In-App Browser Toggle -->
-<label class="toolbar-option">
-  🌐 Open Links In-App
-  <div class="switch">
-    <input
-      type="checkbox"
-      id="inAppBrowserSwitch"
-      onchange="toggleInAppBrowser()"
-    />
-      <span class="slider"></span>
-    </div>
-  </label>
-  </div>
 
     
     <div class="toolbar-option" id="rearrangeBookmarksToggle" onclick="toggleRearrangeMode()" tabindex="0">🔄 Rearrange Bookmarks</div>
@@ -2522,10 +2495,8 @@ function showInstallPrompt() {
       menu.className = "floating-menu";
       const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab",];
       
-      const icons = { Edit:"📝", Delete:"🗑️", Share:"🔗", "Copy URL":"📋", "Open in New Tab":"↗️", "Open in App": "🌐" };
-      if (inAppBrowserEnabled) {
-      actions.push("Open in App");
-    }
+      const icons = { Edit:"📝", Delete:"🗑️", Share:"🔗", "Copy URL":"📋", "Open in New Tab":"↗️", };
+      
       actions.forEach(action => {
         const opt = document.createElement("div");
         opt.innerHTML = `${icons[action]} ${action}`;
@@ -2594,9 +2565,7 @@ function showInstallPrompt() {
           } else if (action === "Open in New Tab") {
               window.open(bookmark.url, '_blank');
               logHistory('Bookmark', `Opened '${bookmark.name}' in new tab`);
-          } else if (action === "Open in App") {
-              openInAppTab(bookmark.url, bookmark.name);
-          }
+          } 
   
           
           menu.remove();
@@ -4872,6 +4841,54 @@ window.addEventListener('beforeinstallprompt', e => {
 document.getElementById('searchForm')?.addEventListener('submit', e => {
   e.preventDefault();      // stops default page reload
   performSearch();
+});
+
+
+// Disable all in-app browser functions
+  window.openInAppBrowser = false;
+  function openInApp(url) {
+    // Always open in a new tab instead of iframe
+    window.open(url, '_blank');
+  }
+
+  // Override any old in-app browser functions
+  const disabledFns = [
+    'refreshActiveTab',
+    'goHome',
+    'openTabsModal',
+    'toggleIframeDarkMode',
+    'toggleReaderMode',
+    'maximizeTab',
+    'closeActiveTab'
+  ];
+  disabledFns.forEach(fn => window[fn] = () => console.log(`In-app browser disabled: ${fn}`));
+
+
+
+  /* --- iOS Brave/Safari Search Fix --- */
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('searchForm');
+  const input = document.getElementById('searchInput');
+
+  if (form && input) {
+    // Prevent any default "do nothing" behavior
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (typeof performSearch === 'function') {
+        performSearch();
+      } else {
+        console.warn('performSearch() not found.');
+      }
+    });
+
+    // On iOS Brave/Safari: manually detect Enter key
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    });
+  }
 });
 
 
