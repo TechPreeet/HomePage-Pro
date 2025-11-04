@@ -3953,8 +3953,15 @@ function setIconStyle(value, skipLog = false) {
         if (useInAppBrowser) {
             openInAppTab(dest, title);
         } else {
-            window.open(dest, newTabLinks ? '_blank' : '_self');
-        }
+            // 🛠 Brave iOS fix — ensure new-tab opens correctly
+    if (newTabLinks) {
+      setTimeout(() => {
+        window.open(dest, '_blank');
+      }, 50);
+    } else {
+      window.location.href = dest;
+    }
+  }
         
         searchInput.value = "";
         handleSearchInput();
@@ -4891,7 +4898,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Prevent unnecessary reload when returning from other tabs
+  if (sessionStorage.getItem("homepageLoaded")) {
+    document.body.classList.remove("preload"); // skip transitions
+  } else {
+    sessionStorage.setItem("homepageLoaded", "true");
+  }
 
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      // Page was restored from bfcache — skip reload
+      event.stopImmediatePropagation();
+    }
+  });
 
 
    // Register SW only when served from http/https (not file://)
