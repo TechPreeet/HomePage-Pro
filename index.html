@@ -47,7 +47,7 @@
   :root {
     --accent-color: #007bff;
     /* Change white → dark to prevent flash */
-    --bg-color: #050f26;
+    --bg-color: #00000009;
     --text-color: #ffffff;
     --grid-gap: 20px;
   }
@@ -73,7 +73,7 @@
 
   html {
     height: 100%;
-    background-color: #050f26; /* solid paint before body loads */
+    background-color: #00000009; /* solid paint before body loads */
     color-scheme: dark; /* ensure dark scrollbars/UI */
   }
 
@@ -94,7 +94,7 @@
 
   /* Preload or transition state — force dark background */
   body.preload {
-    background-color: #050f26 !important;
+    background-color: #00000009 !important;
     transition: none !important;
   }
 
