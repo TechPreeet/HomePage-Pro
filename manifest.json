@@ -2,9 +2,12 @@
   "name": "HomePage Pro",
   "short_name": "HomePro",
   "description": "A customizable, private, and fast PWA start page.",
-  "start_url": "index.html",
-  "scope": "/",                  // ← optional: defines navigation scope
+  "start_url": "./index.html",
+  "scope": "./"
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
+  "orientation": "portrait",
+  "dir": "ltr",
   "background_color": "#050f26",
   "theme_color": "#050f26",
   "icons": [
