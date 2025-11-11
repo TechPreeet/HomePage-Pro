@@ -1849,6 +1849,139 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   }
 }
 
+/* REPLACEMENT CSS for Stats Widget */
+#sidebar-stats-widget {
+    font-size: 13px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.stat-item-label, .stat-list-title {
+    font-weight: 600;
+    color: var(--text-color);
+    opacity: 0.9;
+}
+.stat-item-value {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent-color);
+}
+.stat-list {
+    margin-top: 5px;
+}
+.stat-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+    opacity: 0.8;
+}
+.stat-list-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 15px;
+}
+.stat-list-count {
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+#sidebar-qotd-widget {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 13px;
+    opacity: 0.8;
+}
+#qotd-text {
+    font-style: italic;
+    margin: 0;
+}
+#qotd-author {
+    font-weight: 600;
+    text-align: right;
+    margin: 5px 0 0;
+}
+
+#sidebar-notepad-widget {
+    margin-top: 15px;
+}
+.notepad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+#clear-note-btn {
+    background: none;
+    border: none;
+    color: white;
+    opacity: 0.7;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 5px;
+}
+#clear-note-btn:hover {
+    opacity: 1;
+    color: #ff6b6b; /* A light red */
+}
+#sidebar-notepad {
+    width: 100%;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 13px;
+    padding: 8px;
+    resize: vertical;
+    box-sizing: border-box; /* Important! */
+}
+#sidebar-notepad:focus {
+    outline: 1px solid var(--accent-color);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* REPLACEMENT for the greeting CSS */
+@keyframes greeting-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#sidebar-greeting {
+  font-size: 18px;
+  font-weight: 500;
+  margin-right: 20px;
+  margin-bottom: 12px;
+  color: var(--accent-color);
+
+  /* Start hidden by default */
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+/* NEW RULE: When sidebar opens, run the animation */
+#settings-sidebar.open #sidebar-greeting {
+    /* This delay lines up with the sidebar's slide-in animation */
+    animation: greeting-fade-in 0.5s ease-out 0.2s 1 forwards;
+}
 
 
 </style>
@@ -2061,8 +2194,23 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
         <div id="sidebar-greeting"></div>
         <div id="sidebar-clock"></div>
         <div id="sidebar-date"></div>
+        <div id="sidebar-stats-widget">
+    <!-- Stats will be loaded here -->
+        </div>
+        <div id="sidebar-qotd-widget">
+    <p id="qotd-text">Loading quote...</p>
+    <p id="qotd-author"></p>
+</div>
         <div id="sidebar-weatherContainer"></div>
     </div>
+
+<div id="sidebar-notepad-widget">
+    <div class="notepad-header">
+        <span>Quick Note</span>
+        <button id="clear-note-btn" title="Clear Note">×</button>
+    </div>
+    <textarea id="sidebar-notepad" placeholder="Jot down a quick note..."></textarea>
+</div>
 
     <div
   class="toolbar-option"
@@ -2374,6 +2522,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+
+let noteDebounceTimer;
+function setupNotepad() {
+    const notepad = document.getElementById('sidebar-notepad');
+    const clearBtn = document.getElementById('clear-note-btn');
+    if (!notepad || !clearBtn) return;
+
+    // Load saved note
+    notepad.value = localStorage.getItem('sidebarNotepad') || '';
+
+    // Save on input (debounced to save resources)
+    notepad.addEventListener('input', () => {
+        clearTimeout(noteDebounceTimer);
+        noteDebounceTimer = setTimeout(() => {
+            localStorage.setItem('sidebarNotepad', notepad.value);
+        }, 500); // Wait 500ms after user stops typing
+    });
+
+    // Clear button
+    clearBtn.addEventListener('click', () => {
+        notepad.value = '';
+        localStorage.removeItem('sidebarNotepad');
+        notepad.focus();
+    });
+}
+
+
     /**
      * Logs an action to the user's history in localStorage.
      * @param {string} type - The category of the action (e.g., 'Bookmark', 'Setting', 'Search', 'Voice').
@@ -2397,6 +2572,98 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("Failed to log history:", e);
         }
     }
+
+
+// REPLACEMENT for the updateStatsWidget function
+function updateStatsWidget() {
+    const widget = document.getElementById('sidebar-stats-widget');
+    if (!widget) return;
+
+    const totalBookmarks = bookmarks.length;
+    let history = [];
+    try {
+        history = JSON.parse(localStorage.getItem('historyLog') || '[]');
+    } catch (e) {
+        console.error("Failed to parse history log:", e);
+    }
+
+    const clickCounts = {};
+    const bookmarkClicks = history.filter(entry => entry.type === 'Bookmark' && entry.description.startsWith('Opened '));
+    
+    bookmarkClicks.forEach(entry => {
+    // NEW logic: Find text between the first and last single quote
+    const firstQuote = entry.description.indexOf("'");
+    const lastQuote = entry.description.lastIndexOf("'");
+
+    if (firstQuote !== -1 && lastQuote !== -1 && lastQuote > firstQuote) {
+        const name = entry.description.substring(firstQuote + 1, lastQuote);
+        clickCounts[name] = (clickCounts[name] || 0) + 1;
+    }
+});
+
+    const sortedStats = Object.entries(clickCounts).sort(([, countA], [, countB]) => countB - countA);
+    const top3 = sortedStats.slice(0, 3).map(([name, count]) => ({ name, count }));
+
+    let html = `
+        <div class="stat-item">
+            <span class="stat-item-label">Total Bookmarks</span>
+            <span class="stat-item-value">${totalBookmarks}</span>
+        </div>
+    `;
+
+    if (top3.length > 0) {
+        html += `
+            <div class="stat-list-title" style="margin-top: 10px;">Top Visited</div>
+            <div class="stat-list">
+                ${top3.map(item => `
+                    <div class="stat-list-item">
+                        <span class="stat-list-name" title="${item.name}">${item.name}</span>
+                        <span class="stat-list-count">${item.count}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    widget.innerHTML = html;
+}
+
+
+async function fetchQuote() {
+    const textEl = document.getElementById('qotd-text');
+    const authorEl = document.getElementById('qotd-author');
+    if (!textEl || !authorEl) return;
+
+    try {
+        // Try to get from session cache first
+        const cachedQuote = JSON.parse(sessionStorage.getItem('qotd'));
+        if (cachedQuote && cachedQuote.content) {
+            textEl.textContent = `"${cachedQuote.content}"`;
+            authorEl.textContent = `— ${cachedQuote.author}`;
+            return;
+        }
+
+        // If not in cache, fetch a new one
+        const response = await fetch('https://api.quotable.io/random?maxLength=100');
+        if (!response.ok) throw new Error('Response not OK');
+        const data = await response.json();
+
+        if (data.content && data.author) {
+            textEl.textContent = `"${data.content}"`;
+            authorEl.textContent = `— ${data.author}`;
+            // Save to session cache
+            sessionStorage.setItem('qotd', JSON.stringify(data));
+        } else {
+            throw new Error('Invalid data');
+        }
+    } catch (err) {
+        console.error("Quote Fetch Error:", err);
+        // Fallback quote in case API fails
+        textEl.textContent = "The best way to predict the future is to create it.";
+        authorEl.textContent = "— Alan Kay";
+    }
+}
+
+
 
 function applyInAppEnabled(enabled){
   const tabsBtn = document.getElementById('toggleTabsBtn');
@@ -3302,12 +3569,17 @@ const handleClick = (e) => {
     e.preventDefault();
     sessionStorage.setItem('hppReloadOnReturn','1');
     window.open(bookmark.url, '_blank', 'noopener');
+
+    // Add this line:
+  logHistory('Bookmark', `Opened '${bookmark.name}' in new tab`);
+
   } else {
     /* same‑tab navigation – let the browser follow a.href;
        no e.preventDefault() here                           */
   
     logHistory('Bookmark', `Opened '${bookmark.name}'`);
   }
+  if (typeof updateStatsWidget === 'function') { updateStatsWidget(); }
 
       tile.classList.add('no-hover');
     setTimeout(()=> tile.classList.remove('no-hover'), 100);
@@ -3441,6 +3713,9 @@ const handleClick = (e) => {
   } else {
     grid.classList.add("no-animation");
   }
+if (typeof updateStatsWidget === 'function') {
+    updateStatsWidget();
+}
 
   // Now do the rest of your setup (tile size, glass mode, etc.)
   const savedSize = localStorage.getItem("tileSize") || 90;
@@ -4443,6 +4718,9 @@ function startVoiceSearch () {
 
 
     window.onload = async function() {
+      updateStatsWidget();
+      fetchQuote();
+      setupNotepad();
       updateClock();
       setInterval(updateClock, 1000);
       glassMode = localStorage.getItem("glassMode") === "true";
@@ -4739,35 +5017,6 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
 })();
 
 
-// --- Reload home when returning after opening a bookmark in a new tab ---
-(function () {
-  const RELOAD_KEY = 'hppReloadOnReturn';
-
-  // Set flag when a tile opens in a new tab
-  document.addEventListener('click', e=>{
-    const tile = e.target.closest('.tile');
-    if (!tile) return;
-    if (window.newTabLinks) {           // you already use this toggle
-      sessionStorage.setItem(RELOAD_KEY, '1');
-    }
-  }, {capture:true, passive:true});
-
-  // When page becomes visible again, reload once
-  document.addEventListener('visibilitychange', ()=>{
-    if (!document.hidden && sessionStorage.getItem(RELOAD_KEY) === '1') {
-      sessionStorage.removeItem(RELOAD_KEY);
-      location.reload();
-    }
-  });
-
-  // Safety for Android bfcache
-  window.addEventListener('pageshow', ()=>{
-    if (sessionStorage.getItem(RELOAD_KEY) === '1') {
-      sessionStorage.removeItem(RELOAD_KEY);
-      location.reload();
-    }
-  });
-})();
 
 // Add .pre-hover whenever we (re)enter the page, remove it on first move
 (function(){
