@@ -19,7 +19,6 @@
   <link rel="manifest" href="manifest.json" />
 
   <!-- ✅ Match your wallpaper/video tone so top bar blends -->
-  <meta name="theme-color" content="#050f26" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -131,12 +130,23 @@
       z-index: 10;
     }
 
-    .tile:not(.add-tile):hover, .tile:focus-visible {
-      transform: scale(1.1);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
-      background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), var(--accent-color));
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    }
+    /* NEW: Only apply hover effects on devices that can actually hover */
+@media (hover: hover) and (pointer: fine) {
+  .tile:not(.add-tile):hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), var(--accent-color));
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+}
+
+/* NEW: Keep focus-visible for accessibility (e.g., keyboard) */
+.tile:not(.add-tile):focus-visible {
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.2), var(--accent-color));
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
 
     .tile:not(.add-tile):hover .bookmark-label {
       transform: scale(1.05);
@@ -533,25 +543,37 @@
     }
     
     #settings-sidebar {
-      position: fixed;
-      top: 0;
-      right: 0;
-      width: 300px;
-      max-width: 85vw;
-      height: 100%;
-      background: rgba(30, 30, 30, 0.8);
-      backdrop-filter: blur(15px);
-      color: white;
-      z-index: 1001;
-      box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4);
-      transform: translateX(100%);
-      transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
-      overflow-y: auto;
-      padding: 20px;
-      padding-top: calc(20px + env(safe-area-inset-top));
-      padding-bottom: calc(20px + env(safe-area-inset-bottom));
-      box-sizing: border-box;
-    }
+  position: fixed;
+  /* NEW: Add top/bottom/right spacing */
+  top: 10px;
+  bottom: 10px;
+  right: 10px;
+
+  width: 300px;
+  max-width: 85vw;
+
+  /* NEW: Calculated height respecting safe areas and margins */
+  height: calc(100vh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(15px);
+  color: white;
+  z-index: 1001;
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4);
+
+  /* NEW: Add rounded corners */
+  border-radius: 16px;
+
+  /* NEW: Update transform for the 10px right margin */
+  transform: translateX(calc(100% + 10px));
+
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+  overflow-y: auto;
+
+  /* NEW: Remove safe-area from padding, it's now in height calc */
+  padding: 20px;
+  box-sizing: border-box;
+}
     #settings-sidebar.open {
       transform: translateX(0);
     }
@@ -621,7 +643,7 @@
       white-space: nowrap;
       font-size: 14px;
       font-weight: 500;
-      transition: all 0.2s ease;
+      transition: background-color 0.3s ease, color 0.3s ease;
       border-radius: 8px;
       display: flex;
       justify-content: space-between;
@@ -705,10 +727,11 @@
 
 
     .toolbar-option:hover {
-      background: var(--accent-color);
-      transform: scale(1.02);
-      box-shadow: 0 0 15px -2px var(--accent-color);
-    }
+  background: var(--accent-color);
+  /* transform: scale(1.02);  <-- REMOVED to prevent "frame drop" */
+  box-shadow: 0 0 15px -2px var(--accent-color);
+  border-radius: 40px;
+}
     
     /* ===== Range‑slider track & thumb (all three sliders) ===== */
 #tileSizeSlider,
@@ -1383,14 +1406,28 @@ body.sidebar-slider-active #settings-sidebar{
     }
   }
    /* 3) Only show your accent flash on :active (finger‑down), never on :focus*/
-  .toolbar-option:active,
-  .tile:active,
-  .toggle-arrow:active,
-  .toggle-add:active,
-  .toggle-refresh:active,
-  .floating-menu div:active {
-    background: var(--accent-color) !important;
-  }
+  /* Apply accent flash on :active for buttons */
+.toolbar-option:active,
+.toggle-arrow:active,
+.toggle-add:active,
+.toggle-refresh:active,
+.floating-menu div:active {
+  background: var(--accent-color) !important;
+}
+
+/* On touch devices, do NOT apply a background flash to tiles */
+@media (hover: none) and (pointer: coarse) {
+    .tile:active {
+        background: none !important;
+    }
+}
+
+/* On hover devices, the flash is fine */
+@media (hover: hover) and (pointer: fine) {
+    .tile:active {
+        background: var(--accent-color) !important;
+    }
+}
 
 /* ─── Wallpaper blur layer ─── */
 #bgBlurLayer {
@@ -1768,7 +1805,9 @@ body.bg-blur #bgBlurLayer {
 
 /* Optional: cover tiny glitches when finger leaves the element */
 @media (hover: none){
-  .slider-container input[type="range"]{ touch-action: pan-x; }
+  /* This reserves horizontal swipes for the slider,
+     and allows vertical swipes for scrolling the sidebar. */
+  .slider-container input[type="range"]{ touch-action: pan-y; }
 }
 
 /* Hide hover/focus visuals only while .pre-hover is on <body> */
@@ -1893,22 +1932,6 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     flex-shrink: 0;
 }
 
-#sidebar-qotd-widget {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 13px;
-    opacity: 0.8;
-}
-#qotd-text {
-    font-style: italic;
-    margin: 0;
-}
-#qotd-author {
-    font-weight: 600;
-    text-align: right;
-    margin: 5px 0 0;
-}
 
 #sidebar-notepad-widget {
     margin-top: 15px;
@@ -1940,7 +1963,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     height: 80px;
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 5px;
+    border-radius: 8px;
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 13px;
@@ -1982,6 +2005,11 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     /* This delay lines up with the sidebar's slide-in animation */
     animation: greeting-fade-in 0.5s ease-out 0.2s 1 forwards;
 }
+
+body.sidebar-swiping {
+    overscroll-behavior-x: none;
+}
+
 
 
 </style>
@@ -2197,10 +2225,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
         <div id="sidebar-stats-widget">
     <!-- Stats will be loaded here -->
         </div>
-        <div id="sidebar-qotd-widget">
-    <p id="qotd-text">Loading quote...</p>
-    <p id="qotd-author"></p>
-</div>
+       
         <div id="sidebar-weatherContainer"></div>
     </div>
 
@@ -2211,6 +2236,20 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     </div>
     <textarea id="sidebar-notepad" placeholder="Jot down a quick note..."></textarea>
 </div>
+
+<!-- Quick Note Toggle -->
+<label class="toolbar-option">
+  📝 Quick Note
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="quickNoteSwitch"
+      onchange="toggleQuickNote()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+
 
     <div
   class="toolbar-option"
@@ -2547,6 +2586,64 @@ function setupNotepad() {
         notepad.focus();
     });
 }
+
+function toggleQuickNote() {
+  const enabled = document.getElementById('quickNoteSwitch').checked;
+  localStorage.setItem('showQuickNote', enabled);
+  logHistory('Setting', `Set Quick Note to ${enabled ? 'ON' : 'OFF'}`);
+  applyQuickNoteToggle(enabled);
+}
+
+function applyQuickNoteToggle(enabled) {
+  const widget = document.getElementById('sidebar-notepad-widget');
+  if (widget) {
+    widget.style.display = enabled ? 'block' : 'none';
+  }
+}
+
+
+
+function setupSidebarSwipe() {
+    const sidebar = document.getElementById('settings-sidebar');
+    let touchStartX = 0;
+    let touchCurrentX = 0;
+    let isSwiping = false;
+    const swipeThreshold = 50; // Min pixels to trigger swipe
+    const edgeThreshold = 40;  // How close to edge swipe must start
+
+    document.addEventListener('touchstart', (e) => {
+        if (sidebar.classList.contains('open')) return; // Don't swipe
+
+        touchStartX = e.touches[0].clientX;
+
+        // Check if swipe starts from the right edge
+        if (touchStartX > window.innerWidth - edgeThreshold) {
+            isSwiping = true;
+            touchCurrentX = touchStartX;
+            document.body.classList.add('sidebar-swiping');
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+        if (!isSwiping) return;
+        touchCurrentX = e.touches[0].clientX;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+        if (!isSwiping) return;
+
+        const diffX = touchStartX - touchCurrentX;
+
+        // If swiped left more than threshold, open sidebar
+        if (diffX > swipeThreshold) {
+            toggleSidebar(); // Your existing function
+        }
+
+        isSwiping = false;
+        document.body.classList.remove('sidebar-swiping');
+    }, { passive: true });
+}
+
 
 
     /**
@@ -4719,7 +4816,7 @@ function startVoiceSearch () {
 
     window.onload = async function() {
       updateStatsWidget();
-      fetchQuote();
+      setupSidebarSwipe();
       setupNotepad();
       updateClock();
       setInterval(updateClock, 1000);
@@ -4942,6 +5039,11 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       const greetOn = localStorage.getItem('showGreeting') === 'true';
       document.getElementById('greetingSwitch').checked = greetOn;
       applyGreetingToggle(greetOn);
+
+      // 📝 Quick Note
+      const quickNoteOn = localStorage.getItem('showQuickNote') === 'true';
+      document.getElementById('quickNoteSwitch').checked = quickNoteOn;
+      applyQuickNoteToggle(quickNoteOn);
 
       // 🪩 Glass Mode
       const glassOn = localStorage.getItem('glassMode') === 'true';
