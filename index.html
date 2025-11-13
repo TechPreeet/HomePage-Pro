@@ -56,8 +56,7 @@
   }
 
   /* Push your app’s content into the safe-area edges */
-  #app,
-  main {
+  #bookmarksWrapper {
     padding-top:    env(safe-area-inset-top);
     padding-right:  env(safe-area-inset-right);
     padding-bottom: env(safe-area-inset-bottom);
@@ -1161,6 +1160,7 @@ body.sidebar-slider-active #settings-sidebar{
       display: flex;
       flex-direction: column;
       align-items: center;
+      box-sizing: border-box; /* <-- ADD THIS LINE */
     }
 
     #bookmarksWrapper .spacer {
