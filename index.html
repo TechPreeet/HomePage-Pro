@@ -76,7 +76,7 @@
   }
 
   body {
-    height: 100vh;
+    height: 100%; /* <-- CHANGE THIS (was 100vh) */
     width: 100vw;
     margin: 0;
     padding: 0;
@@ -541,18 +541,18 @@
         transform: rotate(-135deg);
     }
     
-    #settings-sidebar {
+   #settings-sidebar {
   position: fixed;
-  /* NEW: Add top/bottom/right spacing */
-  top: 10px;
-  bottom: 10px;
+
+  /* NEW: Use top/bottom insets instead of height */
+  top: calc(10px + env(safe-area-inset-top));
+  bottom: calc(10px + env(safe-area-inset-bottom));
   right: 10px;
 
   width: 300px;
   max-width: 85vw;
 
-  /* NEW: Calculated height respecting safe areas and margins */
-  height: calc(100vh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  /* 'height' property is no longer needed */
 
   background: rgba(30, 30, 30, 0.8);
   backdrop-filter: blur(15px);
@@ -560,16 +560,13 @@
   z-index: 1001;
   box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4);
 
-  /* NEW: Add rounded corners */
   border-radius: 16px;
 
-  /* NEW: Update transform for the 10px right margin */
   transform: translateX(calc(100% + 10px));
 
   transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
   overflow-y: auto;
 
-  /* NEW: Remove safe-area from padding, it's now in height calc */
   padding: 20px;
   box-sizing: border-box;
 }
@@ -1149,6 +1146,10 @@ body.sidebar-slider-active #settings-sidebar{
       margin: 0;
       padding: 0;
       overflow: hidden;
+
+      /* --- ADD THESE TWO LINES --- */
+      padding-top: env(safe-area-inset-top);
+      box-sizing: border-box;
     }
 
     #bookmarksWrapper {
