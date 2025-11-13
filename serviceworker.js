@@ -34,36 +34,24 @@ const PRECACHE_URLS = [
 ];
 
 // Fallback HTML when offline navigation fails
-const OFFLINE_FALLBACK = `${ROOT}`;
+const OFFLINE_FALLBACK = `${ROOT}index.html`;
 
 /* ----------------------- INSTALL ----------------------- */
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(PRECACHE);
-
-    // Try to precache the core shell; skip any failures instead of aborting
-    await Promise.all(
-      PRECACHE_URLS.map(async (url) => {
-        try {
-          // Fetch fresh copy (no stale cache)
-          const response = await fetch(url, { cache: 'reload' });
-          if (response.ok) {
-            await cache.put(url, response.clone());
-            console.log('✅ Precached:', url);
-          } else {
-            console.warn('⚠️ Skipped precache (HTTP error):', url, response.status);
-          }
-        } catch (err) {
-          console.warn('❌ Precache failed:', url, err);
-        }
-      })
-    );
-
-    // Immediately activate new service worker without waiting for reload
+    for (const url of PRECACHE_URLS) {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        await cache.put(url, res.clone());
+      } catch (err) {
+        console.warn('❌ Precache failed:', url, err);
+      }
+    }
     await self.skipWaiting();
   })());
 });
-
 
 /* ----------------------- ACTIVATE ---------------------- */
 self.addEventListener('activate', (event) => {
