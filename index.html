@@ -1147,8 +1147,8 @@ body.sidebar-slider-active #settings-sidebar{
       padding: 0;
       overflow: hidden;
 
-      /* --- ADD THESE TWO LINES --- */
-      padding-top: env(safe-area-inset-top);
+      /* --- ADD THESE TWO LINES --- 
+      padding-top: env(safe-area-inset-top);*/
       box-sizing: border-box;
     }
 
@@ -1845,24 +1845,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
   visibility: visible !important;
   pointer-events: auto !important;
 }
-/* iOS safe‑area padding for the in‑app browser header */
-#iframeHeader{
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  /* existing background / height / flex styles remain */
 
-  /* reserve the notch / status‑bar space */
-  padding-top: env(safe-area-inset-top);
-}
-
-/* keep the iframe itself below the header (height:‑‑header‑‑) */
-#iframe-viewer{
-  top: calc(var(--header-height) + env(safe-area-inset-top));
-}
-#iframeHeader   { height: 0px; }
-#iframe-viewer  { top: calc(0px + env(safe-area-inset-top)); }
 
 /* 1. Default: tiles fully visible unless we add .initial-load */
 #bookmarkGrid .tile {
