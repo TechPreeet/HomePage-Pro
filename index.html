@@ -79,7 +79,7 @@
 
   html {
     height: 100vh;
-    background-color: transparent;
+    
     color-scheme: dark; /* ensure dark scrollbars/UI */
   }
 
@@ -1155,8 +1155,8 @@ body.sidebar-slider-active #settings-sidebar{
       padding: 0;
       overflow: hidden;
 
-      /* --- ADD THESE TWO LINES --- */
-      padding-top: env(safe-area-inset-top);
+      /* --- ADD THESE TWO LINES --- 
+      padding-top: env(safe-area-inset-top);*/
       box-sizing: border-box;
     }
 
@@ -1807,6 +1807,9 @@ body.sidebar-swiping {
     overscroll-behavior-x: none;
 }
 
+body.wallpaper-active {
+    background-color: transparent !important;
+}
 
 
 </style>
@@ -5028,6 +5031,7 @@ document.getElementById('searchForm')?.addEventListener('submit', e => {
   disabledFns.forEach(fn => window[fn] = () => console.log(`In-app browser disabled: ${fn}`));
 
 
+document.body.classList.add("wallpaper-active");
 
  
 
