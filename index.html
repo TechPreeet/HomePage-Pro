@@ -71,13 +71,13 @@
   }
 
   html {
-    height: 100%;
-    background-color: #00000009; /* solid paint before body loads */
+    height: 100vh;
+    background-color: transparent;
     color-scheme: dark; /* ensure dark scrollbars/UI */
   }
 
   body {
-    height: 100%; /* <-- CHANGE THIS (was 100vh) */
+    height: 100vh;
     width: 100vw;
     margin: 0;
     padding: 0;
@@ -1148,8 +1148,8 @@ body.sidebar-slider-active #settings-sidebar{
       padding: 0;
       overflow: hidden;
 
-      /* --- ADD THESE TWO LINES --- 
-      padding-top: env(safe-area-inset-top);*/
+      /* --- ADD THESE TWO LINES --- */
+      padding-top: env(safe-area-inset-top);
       box-sizing: border-box;
     }
 
@@ -2489,29 +2489,29 @@ function updateStatsWidget() {
 });
 
     const sortedStats = Object.entries(clickCounts).sort(([, countA], [, countB]) => countB - countA);
-    const top3 = sortedStats.slice(0, 3).map(([name, count]) => ({ name, count }));
+const top5 = sortedStats.slice(0, 5).map(([name, count]) => ({ name, count }));
 
-    let html = `
-        <div class="stat-item">
-            <span class="stat-item-label">Total Bookmarks</span>
-            <span class="stat-item-value">${totalBookmarks}</span>
+let html = `
+    <div class="stat-item">
+        <span class="stat-item-label">Total Bookmarks</span>
+        <span class="stat-item-value">${totalBookmarks}</span>
+    </div>
+`;
+
+if (top5.length > 0) {
+    html += `
+        <div class="stat-list-title" style="margin-top: 10px;">Top Visited</div>
+        <div class="stat-list">
+            ${top5.map(item => `
+                <div class="stat-list-item">
+                    <span class="stat-list-name" title="${item.name}">${item.name}</span>
+                    <span class="stat-list-count">${item.count}</span>
+                </div>
+            `).join('')}
         </div>
     `;
-
-    if (top3.length > 0) {
-        html += `
-            <div class="stat-list-title" style="margin-top: 10px;">Top Visited</div>
-            <div class="stat-list">
-                ${top3.map(item => `
-                    <div class="stat-list-item">
-                        <span class="stat-list-name" title="${item.name}">${item.name}</span>
-                        <span class="stat-list-count">${item.count}</span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-    widget.innerHTML = html;
+}
+widget.innerHTML = html;
 }
 
 
