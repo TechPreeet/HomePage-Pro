@@ -1821,6 +1821,16 @@ body.sidebar-swiping {
     color: #ffffff !important;
 }
 
+/* Cosmetic overlay for the status bar area */
+.statusbar-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: env(safe-area-inset-top);
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  background-color: color-mix(in oklab, transparent 60%, black 40%);
+}
 
 </style>
 </head>
