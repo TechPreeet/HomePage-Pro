@@ -63,6 +63,7 @@
     padding-right:  env(safe-area-inset-right);
     padding-bottom: env(safe-area-inset-bottom);
     padding-left:   env(safe-area-inset-left);
+    box-sizing: border-box;
 
     /* for older Safari: */
     padding-top:    constant(safe-area-inset-top); 
@@ -79,20 +80,9 @@ html, body {
   background-color: var(--bg-color);
 }
 
-/* Make the background/wallpaper actually paint under the status bar */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;                      /* covers the entire viewport incl. safe areas */
-  z-index: -2;
-  background: inherit;           /* mirrors body background (image or color) */
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-}
 
-  body {
-    height: 100vh;
+  html, body {
+    height: 100dvh;
     width: 100vw;
     margin: 0;
     padding: 0;
@@ -4874,6 +4864,34 @@ document.getElementById('searchForm')?.addEventListener('submit', e => {
     }
   })();
 
+// Helper: mirror body background to <html>
+function mirrorRootBackground() {
+  const img = document.body.style.backgroundImage || "";
+  const color = getComputedStyle(document.body).backgroundColor;
+  document.documentElement.style.backgroundImage = img;
+  // Keep a solid base color for the translucent text contrast
+  document.documentElement.style.backgroundColor = color;
+}
+
+// After setting an image wallpaper
+document.body.style.backgroundImage = `url(${dataUrlOrFile})`;
+document.body.classList.add('bg-image-active');
+mirrorRootBackground(); // NEW
+
+// After applying a gradient
+document.body.style.backgroundImage = gradient.value;  // existing
+mirrorRootBackground(); // NEW
+
+// When removing wallpaper
+document.body.style.backgroundImage = "";
+document.body.classList.remove('bg-image-active');
+mirrorRootBackground(); // NEW (clears html image too)
+
+// When enabling video wallpaper
+document.body.classList.add('video-active');
+document.body.classList.remove('bg-image-active');
+// Clear html image so iOS uses the solid base color while video plays
+document.documentElement.style.backgroundImage = "";
 
 
    // Register SW only when served from http/https (not file://)
