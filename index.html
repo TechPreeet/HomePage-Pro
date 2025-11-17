@@ -2301,35 +2301,6 @@ body.sidebar-swiping {
 
  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
 
- // Robust “installed app” check across iOS versions
-const isStandalone =
-  window.matchMedia?.('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true;  // iOS-specific
-
-// iOS + installed PWA => always open new tab (Safari)
-if (isStandalone && (
-  /iPad|iPhone|iPod/i.test(navigator.userAgent) ||
-  (navigator.userAgent.includes('Mac') && 'ontouchend' in document) // iPadOS masquerading
-)) {
-  newTabLinks = true;
-  localStorage.setItem('newTabLinks', true);
-
-  // Normalize any existing anchors
-  const normalizeAnchor = (a) => {
-    if (!a || !a.href) return;
-    a.target = '_blank';
-    a.rel = 'noopener,noreferrer';
-  };
-
-  document.querySelectorAll('a[href]').forEach(normalizeAnchor);
-
-  // Keep future anchors/newly rendered links normalized
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href]');
-    if (a) normalizeAnchor(a);
-  }, true);
-}
-
   
 let _firstBookmarkLoad = true;
 
