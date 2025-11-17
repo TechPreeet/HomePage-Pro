@@ -6,7 +6,7 @@
   <!-- ✅ Use just one viewport tag -->
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
   />
 
   <title>HomePage Pro</title>
@@ -20,7 +20,6 @@
       href="/splash/iphone-16-pro.png"
       media="(device-width: 402px) and (device-height: 874px)
              and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
-             
 
 
   <link rel="manifest" href="manifest.json" />
@@ -28,8 +27,7 @@
   <!-- ✅ Match your wallpaper/video tone so top bar blends -->
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
-
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
 <link rel="icon" href="icons/icon-72.png" sizes="72x72" type="image/png">
 <link rel="icon" href="icons/icon-96.png" sizes="96x96" type="image/png">
@@ -51,12 +49,12 @@
   <style>
   
   :root {
-    --accent-color: #007bff;
-    /* Change white → dark to prevent flash */
-    --bg-color: #00000009;
-    --text-color: #ffffff;
-    --grid-gap: 20px;
-  }
+  --accent-color: #007bff;
+  /* Default to a safe dark theme */
+  --bg-color: #121212;  /* <-- CHANGED FROM #00000009 */
+  --text-color: #ffffff;
+  --grid-gap: 20px;
+}
 
   html, body {
     pointer-events: auto !important;
@@ -79,7 +77,7 @@
 
   html {
     height: 100vh;
-    background-color: transparent !important;
+    background-color: transparent;
     color-scheme: dark; /* ensure dark scrollbars/UI */
   }
 
@@ -1155,8 +1153,8 @@ body.sidebar-slider-active #settings-sidebar{
       padding: 0;
       overflow: hidden;
 
-      /* --- ADD THESE TWO LINES --- 
-      padding-top: env(safe-area-inset-top);*/
+      /* --- ADD THESE TWO LINES --- */
+      padding-top: env(safe-area-inset-top);
       box-sizing: border-box;
     }
 
@@ -1807,51 +1805,12 @@ body.sidebar-swiping {
     overscroll-behavior-x: none;
 }
 
-body.wallpaper-active {
-    background-color: transparent !important;
-}
 
 
 </style>
 </head>
 <body class="preload" tabindex="-1">
 
-<!-- In-App Browser (iFrame Viewer) -->
-<div id="iframe-viewer" class="hidden">
-    <div id="iframe-controls">
-        <div id="iframe-tab-info">
-            <img id="iframe-favicon" src="" alt="favicon" />
-            <span id="iframe-title">Loading...</span>
-        </div>
-        <div id="iframe-buttons">
-            <button title="Refresh" onclick="refreshActiveTab()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-            </button>
-            <button title="Go Home" onclick="goHome()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            </button>
-            <button title="Tabs" onclick="openTabsModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
-                    <path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4l-3 3-3-3H5a2 2 0 0 1-2-2V5z"/>
-                    <path d="M9 3v6m6-6v6"/>
-                </svg>
-            </button>           
-            <button title="Force Dark Mode" onclick="toggleIframeDarkMode()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-5.4-5.4c0-1.81 0.88-3.39 2.26-4.4A8.892 8.892 0 0 0 12 3Z"/></svg>
-            </button>
-            <button title="Reader View" onclick="toggleReaderMode()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.999 21.001H4.999v-2h15v2zm0-4H4.999v-2h15v2zm-15-4H19.999v-2H4.999v2zm15-4H4.999V7h15v2zm0-4H4.999V3h15v2z"/></svg>
-            </button>
-            <button title="Fullscreen" onclick="maximizeTab()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-            </button>
-            <button title="Close Tab" onclick="closeActiveTab()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-        </div>
-    </div>
-    <iframe id="browser-frame" sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" allow="fullscreen"></iframe>
-</div>
 
 <div class="top-blend"></div>
 
@@ -1900,19 +1859,7 @@ body.wallpaper-active {
     </div>
   </div>
 
-  <!-- Tabs Modal -->
-  <div id="tabsModal" class="modal hidden">
-    <div class="tabs-box">
-      <span class="close-icon" onclick="closeTabsModal()">✖</span>
-      <h2>❐ Open Tabs</h2>
-      <div id="tabs-list-container">
-        <!-- Tab items will be injected here -->
-      </div>
-      <div class="tabs-footer">
-          <button id="close-all-tabs-btn">Close All Tabs</button>
-      </div>
-    </div>
-  </div>
+  
 
   <!-- History Modal -->
   <div id="historyModal" class="modal hidden">
@@ -4385,164 +4332,7 @@ function startVoiceSearch () {
          (navigator.msMaxTouchPoints > 0));
     }
 
-    // --- In-App Browser & Tab Management ---
-
-    function openInAppTab(url, title) {
-      if (!inAppBrowserEnabled) return window.open(url, '_blank');
-        const viewer = document.getElementById('iframe-viewer');
-        const frame = document.getElementById('browser-frame');
-        const titleEl = document.getElementById('iframe-title');
-        const faviconEl = document.getElementById('iframe-favicon');
-
-        // Check if this tab is already open
-        const existingTab = inAppTabs.find(tab => tab.url === url);
-        if (existingTab) {
-            switchToTab(existingTab.id);
-            return;
-        }
-
-        // Create a new tab object
-        const newTab = {
-            id: Date.now(),
-            url: url,
-            title: title
-        };
-        inAppTabs.push(newTab);
-        activeTabId = newTab.id;
-
-        // Update UI
-        titleEl.textContent = title;
-        try {
-            faviconEl.src = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;
-        } catch {
-            faviconEl.src = ''; // Default icon
-        }
-        
-        frame.src = url;
-        viewer.classList.remove('hidden');
-        logHistory('Tab', `Opened tab: '${title}'`);
-    }
-
-    function switchToTab(tabId) {
-        const tab = inAppTabs.find(t => t.id === tabId);
-        if (!tab) return;
-
-        activeTabId = tab.id;
-        const viewer = document.getElementById('iframe-viewer');
-        const frame = document.getElementById('browser-frame');
-        const titleEl = document.getElementById('iframe-title');
-        const faviconEl = document.getElementById('iframe-favicon');
-
-        titleEl.textContent = tab.title;
-        try {
-            faviconEl.src = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(tab.url).hostname}`;
-        } catch {
-            faviconEl.src = '';
-        }
-
-        frame.src = tab.url;
-        viewer.classList.remove('hidden');
-        closeTabsModal(); // Close the tab list modal after switching
-    }
-
-    function closeActiveTab() {
-        inAppTabs = inAppTabs.filter(tab => tab.id !== activeTabId);
-        if (inAppTabs.length > 0) {
-            // Switch to the last opened tab
-            switchToTab(inAppTabs[inAppTabs.length - 1].id);
-        } else {
-            // No tabs left, go home
-            goHome();
-        }
-    }
-
-    function closeAllTabs() {
-        if (confirm("Are you sure you want to close all in-app tabs?")) {
-            inAppTabs = [];
-            goHome();
-            closeTabsModal();
-            showToast("All in-app tabs closed.");
-        }
-    }
-
-    function goHome() {
-        const viewer = document.getElementById('iframe-viewer');
-        const frame = document.getElementById('browser-frame');
-        viewer.classList.add('hidden');
-        frame.src = 'about:blank'; // Clear the frame to stop any processes
-        activeTabId = null;
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        }
-    }
-
-    function refreshActiveTab() {
-        const frame = document.getElementById('browser-frame');
-        frame.src = frame.src; // Reloads the iframe
-    }
-
-    function maximizeTab() {
-        const viewer = document.getElementById('iframe-viewer');
-        if (!document.fullscreenElement) {
-            viewer.requestFullscreen().catch(err => {
-                showToast(`Error: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    }
-
-    function toggleIframeDarkMode() {
-        document.getElementById('browser-frame').classList.toggle('iframe-force-dark');
-    }
-
-    function toggleReaderMode() {
-        showToast("Reader mode is experimental and may not work on all sites.");
-        document.getElementById('browser-frame').classList.toggle('iframe-reader-mode');
-    }
-
-    // --- Tabs Modal Functions ---
-    function openTabsModal() {
-        const modal = document.getElementById("tabsModal");
-        modal.classList.remove("hidden");
-        renderTabsList();
-    }
-
-    function closeTabsModal() {
-        const modal = document.getElementById("tabsModal");
-        modal.classList.add("hidden");
-    }
-
-    function renderTabsList() {
-        const container = document.getElementById("tabs-list-container");
-        container.innerHTML = ''; // Clear previous list
-
-        if (inAppTabs.length === 0) {
-            container.innerHTML = `<p style="text-align: center; opacity: 0.7;">No in-app tabs are open.</p>`;
-            return;
-        }
-
-        inAppTabs.forEach(tab => {
-            const tabElement = document.createElement('div'); // Use div instead of <a>
-            tabElement.className = 'tab-item';
-            tabElement.title = `Click to switch to ${tab.title}`;
-            tabElement.onclick = () => switchToTab(tab.id);
-            
-            let favIconUrl = '';
-            try {
-                favIconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(tab.url).hostname}`;
-            } catch {}
-
-            tabElement.innerHTML = `
-                <img src="${favIconUrl}" alt="">
-                <div class="tab-item-info">
-                    <span class="tab-item-title">${tab.title}</span>
-                    <span class="tab-item-url">${tab.url}</span>
-                </div>
-            `;
-            container.appendChild(tabElement);
-        });
-    }
+   
 
     // --- History Modal Functions ---
     function openHistoryModal() {
@@ -5031,7 +4821,6 @@ document.getElementById('searchForm')?.addEventListener('submit', e => {
   disabledFns.forEach(fn => window[fn] = () => console.log(`In-app browser disabled: ${fn}`));
 
 
-document.body.classList.add("wallpaper-active");
 
  
 
