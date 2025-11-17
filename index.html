@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 
-  <!-- ✅ Use just one viewport tag -->
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-  />
 
   <title>HomePage Pro</title>
 
@@ -77,7 +73,7 @@
 
   html {
     height: 100vh;
-    background-color: transparent;
+    background-color: #000; /* <-- CHANGED */
     color-scheme: dark; /* ensure dark scrollbars/UI */
   }
 
@@ -546,9 +542,20 @@
         top: 11px;
         transform: rotate(-135deg);
     }
-    
+    /* When open: default = white */
+#sidebar-toggle-btn.open .hamburger-icon span {
+    background: #fff; 
+}
+
+/* When open AND hovered: use accent color */
+#sidebar-toggle-btn.open:hover .hamburger-icon span {
+    background: var(--accent-color);
+}
+
    #settings-sidebar {
   position: fixed;
+
+
 
   /* NEW: Use top/bottom insets instead of height */
   top: calc(10px + env(safe-area-inset-top));
@@ -1805,6 +1812,9 @@ body.sidebar-swiping {
     overscroll-behavior-x: none;
 }
 
+.stat-item-label {
+    color: #ffffff !important;
+}
 
 
 </style>
