@@ -1847,28 +1847,7 @@ body.sidebar-swiping {
     color: #ffffff !important;
 }
 
-@supports (padding-top: env(safe-area-inset-top)) {
-  html {
-    background: transparent !important;
-  }
-  body {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    background-attachment: fixed !important; /* crucial for video wallpaper */
-  }
-}
 
-/* Force video background to cover status bar area */
-#videoBg, 
-body.bg-image-active,
-body.video-active {
-  position: fixed !important;
-  top: 0; left: 0; right: 0; bottom: 0;
-  width: 100%;
-  height: 100dvh;
-  object-fit: cover;
-  z-index: -1;
-}
 
 
 </style>
