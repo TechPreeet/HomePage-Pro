@@ -28,7 +28,8 @@
   <!-- ✅ Match your wallpaper/video tone so top bar blends -->
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black"> <!-- hides it completely -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="light-translucent">
 
 <link rel="icon" href="icons/icon-72.png" sizes="72x72" type="image/png">
 <link rel="icon" href="icons/icon-96.png" sizes="96x96" type="image/png">
@@ -56,12 +57,23 @@
       
         * { box-sizing: border-box; }
         html, body { height: 100%; }
-        body { margin: 0; height: 100dvh; overflow: hidden;  }
+        body { margin: 0; height: 100dvh; overflow: hidden; color: var(--text); font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); }
         .viewport { height: 100%; display: flex; flex-direction: column; }
         .content { flex: 1 1 auto; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+        .blur-app { filter: blur(8px); pointer-events: none; user-select: none; }
         
         
-        
+        :root, html, body, * {
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+          }
+          input, textarea, select, [contenteditable="true"], .selectable {
+            -webkit-user-select: text !important;
+            user-select: text !important;
+            -webkit-touch-callout: default !important;
+          }
 
 
   :root {
@@ -1857,23 +1869,11 @@ body.video-active {
   object-fit: cover;
   z-index: -1;
 }
-body {
-  padding-top: 0 !important;
-}
-.fake-statusbar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: env(safe-area-inset-top);
-  background: transparent;   /* or radial-gradient if you want subtle glow */
-  z-index: 99999;
-  pointer-events: none;
-}
+
 
 </style>
 </head>
 <body class="preload" tabindex="-1">
-
-  <div class="fake-statusbar"></div>
 
 <!-- In-App Browser (iFrame Viewer) -->
 <div id="iframe-viewer" class="hidden">
