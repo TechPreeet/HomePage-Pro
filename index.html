@@ -1846,13 +1846,6 @@ body.sidebar-swiping {
     color: #ffffff !important;
 }
 
-@supports(padding-top: env(safe-area-inset-top)) {
-  body {
-    padding-top: env(safe-area-inset-top);
-    padding-top: constant(safe-area-inset-top); /* iOS < 15 fallback */
-    background-attachment: fixed; /* helps video/wallpaper stay put */
-  }
-}
 
 </style>
 </head>
