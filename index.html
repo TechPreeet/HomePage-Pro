@@ -31,6 +31,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 
+
 <link rel="icon" href="icons/icon-72.png" sizes="72x72" type="image/png">
 <link rel="icon" href="icons/icon-96.png" sizes="96x96" type="image/png">
 <link rel="icon" href="icons/icon-128.png" sizes="128x128" type="image/png">
@@ -1854,7 +1855,11 @@ body.sidebar-swiping {
     background-attachment: fixed; /* helps video/wallpaper stay put */
   }
 }
-
+@supports (padding-top: env(safe-area-inset-top)) {
+  body, .viewport, .content, main, #app {
+    padding-top: 0 !important;
+  }
+}
 </style>
 </head>
 <body class="preload" tabindex="-1">
