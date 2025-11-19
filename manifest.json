@@ -4,8 +4,9 @@
   "description": "A customizable, private, and fast PWA start page.",
   "start_url": "index.html",
   "scope": "/",                  // ← optional: defines navigation scope
-  "background_color": "#000000",
   "display": "standalone",
+  "background_color": "#000009",
+  "theme_color": "#000009",
   "icons": [
     { "src": "icons/icon-72.png",  "sizes": "72x72",   "type": "image/png" },
     { "src": "icons/icon-96.png",  "sizes": "96x96",   "type": "image/png" },
