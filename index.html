@@ -57,9 +57,16 @@
         
       
         
-        html, body { height: 100%; }
-        .viewport { height: 100%; display: flex; flex-direction: column; }
-        .content { flex: 1 1 auto; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+html, body { 
+            height: 100%; /* Fallback */
+            height: 100dvh; 
+        }
+        .viewport { 
+            height: 100%; /* Fallback */
+            height: 100dvh; 
+            display: flex; 
+            flex-direction: column; 
+        }        .content { flex: 1 1 auto; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
         .blur-app { filter: blur(8px); pointer-events: none; user-select: none; }
         
         
@@ -82,6 +89,10 @@
     --bg-color: #00000009;
     --text-color: #ffffff;
     --grid-gap: 10px;
+
+    /* Add these two new lines */
+  --bg-blur-intensity: 6px;
+  --bg-brightness: 100%;
   }
 
   html, body {
@@ -93,13 +104,12 @@
     overscroll-behavior: none; /* Prevents the "bounce" effect */
 }
 
-  /* Push your app’s content into the safe‑area edges */
-    #app, /* or whatever your top‑level container is called */
-    main {
-    /*padding-top:    env(safe-area-inset-top); */
-    padding-right:  env(safe-area-inset-right);
-    /*padding-bottom: env(safe-area-inset-bottom);*/
-    padding-left:   env(safe-area-inset-left);
+  /* Push your app’s content into the safe‑area edges securely */
+  .viewport {
+    padding-top: env(safe-area-inset-top); 
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
   }
 
   html {
@@ -801,78 +811,81 @@ body::before {
   border-radius: 40px;
 }
     
-    /* ===== Range‑slider track & thumb (all three sliders) ===== */
-#tileSizeSlider,
-#gradientSlider,
-#iconStyleSlider{
+/* ===== Range‑slider track & thumb (All Sliders) ===== */
+#tileSizeSlider, #gradientSlider, #iconStyleSlider,
+#blurIntensitySlider, #bgBrightnessSlider {
   width: 90%;
   margin: 5px 0;
   -webkit-appearance: none;
           appearance: none;
   height: 8px;
-  border-radius: 50px;               /* pill shape – round on all edges   */
+  border-radius: 50px;               
   background: #ffffff;               /* plain; JS will paint the gradient */
   outline: none;
   transition: opacity .3s ease;
 }
 
 /* Chrome / Safari / Edge track */
-#tileSizeSlider::-webkit-slider-runnable-track,
-#gradientSlider::-webkit-slider-runnable-track,
-#iconStyleSlider::-webkit-slider-runnable-track{
+#tileSizeSlider::-webkit-slider-runnable-track, #gradientSlider::-webkit-slider-runnable-track, #iconStyleSlider::-webkit-slider-runnable-track,
+#blurIntensitySlider::-webkit-slider-runnable-track, #bgBrightnessSlider::-webkit-slider-runnable-track {
   height: 8px;
   border-radius: 50px;
-  background: transparent;           /* let the main rule show through    */
+  background: transparent;           
 }
 
 /* Firefox track */
-#tileSizeSlider::-moz-range-track,
-#gradientSlider::-moz-range-track,
-#iconStyleSlider::-moz-range-track{
+#tileSizeSlider::-moz-range-track, #gradientSlider::-moz-range-track, #iconStyleSlider::-moz-range-track,
+#blurIntensitySlider::-moz-range-track, #bgBrightnessSlider::-moz-range-track {
   height: 8px;
   border-radius: 50px;
   background: transparent;
 }
 
+/* Thumb Styling (All Browsers) */
+#tileSizeSlider::-webkit-slider-thumb, #gradientSlider::-webkit-slider-thumb, #iconStyleSlider::-webkit-slider-thumb,
+#blurIntensitySlider::-webkit-slider-thumb, #bgBrightnessSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  margin-top: -4px;          
+}
 
-    #tileSizeSlider::-webkit-slider-thumb, #gradientSlider::-webkit-slider-thumb, #iconStyleSlider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      background: #ffffff;
-      border-radius: 50%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      transition: transform 0.2s ease;
-      margin-top: -4px;          /* (thumb‑height – track‑height)/2 */
-    }
+#tileSizeSlider::-webkit-slider-thumb:hover, #gradientSlider::-webkit-slider-thumb:hover, #iconStyleSlider::-webkit-slider-thumb:hover,
+#blurIntensitySlider::-webkit-slider-thumb:hover, #bgBrightnessSlider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
 
-    #tileSizeSlider::-webkit-slider-thumb:hover, #gradientSlider::-webkit-slider-thumb:hover, #iconStyleSlider::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
-    }
+#tileSizeSlider::-moz-range-thumb, #gradientSlider::-moz-range-thumb, #iconStyleSlider::-moz-range-thumb,
+#blurIntensitySlider::-moz-range-thumb, #bgBrightnessSlider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  margin-top: -4px;          
+}
 
-    #tileSizeSlider::-moz-range-thumb, #gradientSlider::-moz-range-thumb, #iconStyleSlider::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
-      background: #ffffff;
-      border-radius: 50%;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      transition: transform 0.2s ease;
-      margin-top: -4px;          /* (thumb‑height – track‑height)/2 */
-    }
+#tileSizeSlider::-moz-range-thumb:hover, #gradientSlider::-moz-range-thumb:hover, #iconStyleSlider::-moz-range-thumb:hover,
+#blurIntensitySlider::-moz-range-thumb:hover, #bgBrightnessSlider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
 
-    #tileSizeSlider::-moz-range-thumb:hover, #gradientSlider::-moz-range-thumb:hover, #iconStyleSlider::-moz-range-thumb:hover {
-      transform: scale(1.2);
-    }
+/* Slider Containers */
+#tileSizeSliderContainer, #gradientSliderContainer, #iconStyleSliderContainer,
+#blurIntensitySliderContainer, #bgBrightnessSliderContainer {
+  margin: 10px 0;
+  padding: 0 10px;
+}
 
-    #tileSizeSliderContainer, #gradientSliderContainer, #iconStyleSliderContainer {
-      margin: 10px 0;
-      padding: 0 10px;
-    }
-
-    /* When dragging ANY slider, hide every child of the sidebar... */
+/* When dragging ANY slider, hide every child of the sidebar... */
 body.sidebar-slider-active #settings-sidebar > *{
   opacity:0;
   visibility:hidden;
@@ -896,7 +909,6 @@ body.sidebar-slider-active #settings-sidebar{
   box-shadow:none !important;
   backdrop-filter:none !important;
 }
-
 
     #bgInput, #importInput, #videoInput, #lensInput {
       display: none;
@@ -1369,7 +1381,9 @@ body.sidebar-slider-active #settings-sidebar{
 
     .search-results-container {
       position: absolute;
-      top: 100%;
+      bottom: 100%; /* Changed from top: 100% to push it ABOVE the search bar */
+      top: auto;
+      margin-bottom: 15px; /* Adds breathing room between the box and the search bar */
       left: 50%;
       transform: translateX(-50%);
       width: 90%;
@@ -1508,19 +1522,23 @@ body.sidebar-slider-active #settings-sidebar{
     }
 }
 
-/* ─── Wallpaper blur layer ─── */
+/* ─── Wallpaper blur & brightness layer ─── */
 #bgBlurLayer {
   position: fixed;
   inset: 0;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  /* By default, apply brightness but no blur */
+  backdrop-filter: blur(0px) brightness(var(--bg-brightness, 100%));
+  -webkit-backdrop-filter: blur(0px) brightness(var(--bg-brightness, 100%));
   pointer-events: none;
   z-index: 0;
-  opacity: 0;
-  transition: opacity .25s ease;
+  opacity: 1; /* Always active to catch the brightness slider */
+  transition: backdrop-filter 0.3s ease;
 }
+
 body.bg-blur #bgBlurLayer {
-  opacity: 1;
+  /* When the blur switch is ON, apply BOTH the blur slider and brightness slider */
+  backdrop-filter: blur(var(--bg-blur-intensity, 6px)) brightness(var(--bg-brightness, 100%));
+  -webkit-backdrop-filter: blur(var(--bg-blur-intensity, 6px)) brightness(var(--bg-brightness, 100%));
 }
 
 
@@ -1880,7 +1898,153 @@ body.sidebar-swiping {
 .stat-list-title {
     color: #ffffff !important;
 }
+/* ===== Search Suggestions UI (Liquid Glass) ===== */
+/* 2. BOTTOM BOX: Search Suggestions */
+#searchSuggestionsBox {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    margin-top: 10px;
+    
+    /* EXACT Match to Search Bar Light Mode */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2.5px);
+    -webkit-backdrop-filter: blur(2.5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px; /* Matched to Search Bar */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    
+    /* Prevent sticking to the bottom page edge */
+    max-height: calc(50vh - 20px); 
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 100;
+    text-align: left;
+}
 
+/* Clean up borders inside the bottom box so it respects the rounded corners */
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+/* =========================================================
+   3. THEME SYNCING: MATCH DARK & GLASS MODES TO SEARCH BAR
+   ========================================================= */
+
+/* Dark Mode Match */
+body.dark-mode #searchResults,
+body.dark-mode #searchSuggestionsBox {
+    background: rgba(30, 30, 30, 0.3);
+}
+
+/* Glass Mode Match */
+body.glass-mode #searchResults,
+body.glass-mode #searchSuggestionsBox {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(6px) saturate(120%);
+    -webkit-backdrop-filter: blur(6px) saturate(120%);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Dark Mode + Glass Mode Match */
+body.dark-mode.glass-mode #searchResults,
+body.dark-mode.glass-mode #searchSuggestionsBox {
+    background: rgba(30, 30, 30, 0.3);
+    border-color: rgba(100, 100, 100, 0.3);
+}
+
+.suggestion-item {
+    padding: 14px 20px;
+    color: var(--text-color, #ffffff);
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease, padding-left 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    padding-left: 25px; /* Slight indent on hover for premium feel */
+}
+/* Container for the matching bookmarks above the search bar */
+/* 1. TOP BOX: Search Results (Bookmarks) */
+#searchResults {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%; 
+    margin-bottom: 10px; 
+    
+    /* EXACT Match to Search Bar Light Mode */
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(2.5px);
+    -webkit-backdrop-filter: blur(2.5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 24px; /* Matched to Search Bar */
+    padding: 15px;
+    
+    display: none; 
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    
+    /* Prevent sticking to the top page edge (Leaves a 20px gap above) */
+    max-height: min(200px, calc(50vh - 80px)); 
+    overflow-x: hidden;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+/* Adjust for smaller mobile touch screens */
+@media (max-width: 600px) {
+    #searchResults { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 400px) {
+    #searchResults { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* The individual tile inside the top box */
+.search-result-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.search-result-tile:hover {
+    transform: scale(1.05);
+}
+
+.search-result-tile img {
+    width: 48px; /* Matches standard tile size */
+    height: 48px;
+    border-radius: 12px;
+    margin-bottom: 6px;
+    object-fit: cover;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-result-tile span {
+    font-size: 11px;
+    color: #000; 
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+body.dark-mode .search-result-tile span {
+    color: #fff !important; 
+}
 
 </style>
 </head>
@@ -2042,6 +2206,7 @@ body.sidebar-swiping {
             autocorrect="off"
             autocapitalize="off"
             oninput="handleSearchInput()"
+            
           />
           <svg id="micIcon" onclick="startVoiceSearch()" title="Voice Search"
             xmlns="http://www.w3.org/2000/svg"
@@ -2054,6 +2219,7 @@ body.sidebar-swiping {
             style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
             <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
           </svg>
+          <div id="searchSuggestionsBox"></div>
           <div id="searchResults" class="search-results-container"></div>
         </form>
         
@@ -2300,7 +2466,7 @@ body.sidebar-swiping {
     </div>
   
 <!-- Glass Mode -->
-<label class="toolbar-option">
+<label class="toolbar-option"style="display:none;">
   🪩 Glass Mode
   <div class="switch">
     <input
@@ -2338,6 +2504,26 @@ body.sidebar-swiping {
   </div>
 </label>
 
+<div id="blurIntensitySliderContainer" class="slider-container">
+  <div class="toolbar-option">
+    <span>Blur Intensity</span>
+    <span id="blurIntensityValue">6%</span> 
+  </div>
+  <input type="range" id="blurIntensitySlider" min="0" max="20" value="6"
+         class="toolbar-option" 
+         oninput="setBlurIntensity(this.value); updateSliderColor(this); updateLabel('blurIntensityValue', this.value)">
+</div>
+
+<div id="bgBrightnessSliderContainer" class="slider-container">
+  <div class="toolbar-option">
+    <span>Background Brightness</span>
+    <span id="bgBrightnessValue">100%</span>
+  </div>
+  <input type="range" id="bgBrightnessSlider" min="10" max="100" value="100"
+         class="toolbar-option"
+         oninput="setBgBrightness(this.value); updateSliderColor(this); updateLabel('bgBrightnessValue', this.value)">
+</div>
+
 <!-- Icon style -->
     <div id="iconStyleSliderContainer" class="slider-container">
   <div class="toolbar-option" id="iconStyleLabel">Icon Style</div>
@@ -2346,6 +2532,34 @@ body.sidebar-swiping {
          oninput="setIconStyle(this.value)">
 </div>
 
+
+<!-- Mic Icon Hide -->
+<label class="toolbar-option">
+  🎤 Show Mic Icon
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="micToggleSwitch"
+      onchange="toggleMicIcon()"
+      checked
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+
+<!-- Toggle search suggestions -->
+<label class="toolbar-option">
+  💡 Search Suggestions
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="suggestionsToggleSwitch"
+      onchange="toggleSuggestions()"
+      checked
+    />
+    <span class="slider"></span>
+  </div>
+</label>
   
 <!-- Bookmark Labels -->
 <label class="toolbar-option">
@@ -2391,6 +2605,15 @@ body.sidebar-swiping {
     <div class="toolbar-option" onclick="resetAllSettings()" tabindex="0">🗑️ Reset All Settings</div>
     <div class="toolbar-option" onclick="openAboutModal()" tabindex="0">🧾 About This Page</div>
     <div class="toolbar-option" onclick="flipCoin(); toggleSidebar();" tabindex="0">🪙 Flip a Coin</div>
+
+    <div class="toolbar-option"
+     role="button"
+     aria-label="Buy Me a Coffee"
+     tabindex="0"
+     onclick="window.open('https://buymeacoffee.com/techpreeet', '_blank')"
+     onkeydown="if(event.key==='Enter' || event.key===' ') this.click();">
+    ☕ Buy Me a Coffee
+</div>
 
     <input type="file" id="importInput" accept=".json,application/json,.html,.htm,text/html">
   </div>
@@ -2999,11 +3222,21 @@ function setTextSafe(id, text) {
     });
 
     function clearSearch() {
-      const input = document.getElementById("searchInput");
-      input.value = "";
-      handleSearchInput();
-      input.focus();
+    const input = document.getElementById("searchInput");
+    input.value = ""; 
+    input.focus(); // Keep the cursor in the box
+
+    // Close the new search suggestions dropdown if it's open
+    const suggestionBox = document.getElementById('searchSuggestionsBox');
+    if (suggestionBox) {
+        suggestionBox.innerHTML = '';
+        suggestionBox.style.display = 'none';
     }
+
+    // Trigger the input handler to reset the icons and un-filter the bookmarks
+    handleSearchInput();
+}
+
 
     function openDB() {
       return new Promise((resolve, reject) => {
@@ -3420,67 +3653,112 @@ function setTextSafe(id, text) {
       });
     }
 
-    function handleSearchInput() {
-        const input = document.getElementById("searchInput");
-        const micIcon = document.getElementById("micIcon");
-        const clearIcon = document.getElementById("clearIcon");
-        const query = input.value.trim().toLowerCase();
-        const bookmarksWrapper = document.getElementById('bookmarksWrapper');
-        const searchResultsContainer = document.getElementById('searchResults');
+function handleSearchInput() {
+    const input = document.getElementById("searchInput");
+    const micIcon = document.getElementById("micIcon");
+    const clearIcon = document.getElementById("clearIcon");
+    const micSwitch = document.getElementById("micToggleSwitch"); 
+    const searchResultsContainer = document.getElementById('searchResults');
+    const suggestionsBox = document.getElementById('searchSuggestionsBox'); // Get suggestions box
+    
+    const query = input.value.trim().toLowerCase();
 
-        if (query !== "") {
-          micIcon.style.display = "none";
-          clearIcon.style.display = "block";
-        } else {
-          micIcon.style.display = "block";
-          clearIcon.style.display = "none";
-          searchResultsContainer.style.display = 'none';
+    // --- 1. Manage Icons & UI (Prevent Overlap) ---
+    if (query !== "") {
+        // User is typing: forcefully hide mic FIRST, then show cross
+        if (micIcon) micIcon.style.display = "none";
+        if (clearIcon) clearIcon.style.display = "block";
+    } else {
+        // Search is empty: forcefully hide cross FIRST
+        if (clearIcon) clearIcon.style.display = "none";
+        if (searchResultsContainer) searchResultsContainer.style.display = 'none';
+
+        // FIX: Instantly kill suggestions on backspace to prevent delayed pop-ups
+        if (suggestionsBox) {
+            suggestionsBox.style.display = 'none';
+            suggestionsBox.innerHTML = ''; 
         }
-
-        const matchingBookmarks = bookmarks.filter(bookmark => {
-            const name = bookmark.name.toLowerCase();
-            return name.includes(query);
-        });
         
-        const tiles = document.querySelectorAll(".tile");
-        tiles.forEach(tile => {
-            const label = tile.querySelector(".bookmark-label");
-            const name = label?.innerText.toLowerCase() || "";
-            tile.style.display = name.includes(query) ? "" : "none";
-        });
-        
-        if (bookmarksWrapper.classList.contains('collapsed') && query) {
-            searchResultsContainer.innerHTML = '';
-            if (matchingBookmarks.length > 0) {
-                matchingBookmarks.forEach(bookmark => {
-                    const item = document.createElement('a');
-                    item.href = bookmark.url;
-                    item.className = 'search-result-item';
-                    item.tabIndex = 0;
-                    if (newTabLinks) item.target = "_blank";
+        // Show mic ONLY if the toggle switch is turned ON
+        if (micIcon && micSwitch) {
+            micIcon.style.display = micSwitch.checked ? "block" : "none";
+        }
+    }
 
-                    const img = document.createElement("img");
+    // --- 2. Filter & Build Top Box Grid ---
+    // Target only the actual bookmark tiles (skip the 'add' button)
+    const tiles = document.querySelectorAll(".tile:not(.add-tile)");
+    
+    // Clear previous results in the top box
+    if (searchResultsContainer) searchResultsContainer.innerHTML = '';
+    let hasMatches = false;
+
+    tiles.forEach(tile => {
+        const label = tile.querySelector(".bookmark-label");
+        const name = label ? label.innerText.toLowerCase() : "";
+        
+        if (query !== "") {
+            // Hide the original tile from the main grid
+            tile.style.display = "none";
+            
+            // If it matches the search, build a grid item for the top box
+            if (name.includes(query)) {
+                hasMatches = true;
+                
+                // Grab the URL, Icon, and Display Name from the existing HTML tile
+                const linkUrl = tile.getAttribute('href') || '#';
+                const iconElement = tile.querySelector('img');
+                const iconSrc = iconElement ? iconElement.src : '';
+                const displayName = label ? label.innerText : '';
+
+                // Create the top-box tile container
+                const item = document.createElement('a');
+                item.href = linkUrl;
+                item.className = 'search-result-tile'; // Hooks into our new CSS
+                item.tabIndex = 0;
+                if (typeof newTabLinks !== 'undefined' && newTabLinks) item.target = "_blank";
+
+                // Create the icon image
+                const img = document.createElement("img");
+                if (iconSrc) {
+                    img.src = iconSrc;
+
+                    // FIX: Perfectly copy the exact shape/style from the main grid icon
+                    img.className = iconElement.className; 
+                    img.style.borderRadius = window.getComputedStyle(iconElement).borderRadius;
+
+                } else {
+                    // Fallback to Google Favicon API if the image didn't load
                     try {
-                        img.src = bookmark.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(bookmark.url.startsWith('http') ? bookmark.url : 'https://' + bookmark.url).hostname}`;
-                    } catch (e) {
+                        img.src = `https://www.google.com/s2/favicons?sz=128&domain=${new URL(linkUrl.startsWith('http') ? linkUrl : 'https://' + linkUrl).hostname}`;
+                    } catch(e) {
                         img.src = "https://www.google.com/s2/favicons?sz=128&domain=example.com";
                     }
+                }
 
-                    const name = document.createElement("span");
-                    name.textContent = bookmark.name;
+                // Create the label span
+                const nameSpan = document.createElement("span");
+                nameSpan.textContent = displayName;
 
-                    item.appendChild(img);
-                    item.appendChild(name);
-                    searchResultsContainer.appendChild(item);
-                });
-                searchResultsContainer.style.display = 'block';
-            } else {
-                searchResultsContainer.style.display = 'none';
+                // Assemble and append
+                item.appendChild(img);
+                item.appendChild(nameSpan);
+                if (searchResultsContainer) searchResultsContainer.appendChild(item);
             }
         } else {
-            searchResultsContainer.style.display = 'none';
+            // Query is empty, restore all original tiles in the main grid
+            tile.style.display = ""; 
         }
-      }
+    });
+
+    // --- 3. Manage Top Box Visibility ---
+    // If there is a query and we found matches, switch container to GRID display
+    if (query !== "" && hasMatches && searchResultsContainer) {
+        searchResultsContainer.style.display = 'grid'; 
+    } else if (searchResultsContainer) {
+        searchResultsContainer.style.display = 'none';
+    }
+}
 
     function copyToClipboard(text) {
         if (navigator.clipboard) {
@@ -4455,6 +4733,145 @@ function startVoiceSearch () {
          (navigator.msMaxTouchPoints > 0));
     }
 
+
+// Toggle Mic Icon Visibility
+function toggleMicIcon() {
+    const micIcon = document.getElementById('micIcon');
+    const toggleSwitch = document.getElementById('micToggleSwitch');
+    
+    if (micIcon) {
+        // Change 'inline-block' to 'flex' or 'block' if your layout requires it
+        micIcon.style.display = toggleSwitch.checked ? 'inline-block' : 'none'; 
+    }
+    
+    // Save preference
+    localStorage.setItem('showMicIcon', toggleSwitch.checked);
+}
+
+
+// 1. Save and Load the Suggestion Preference
+function toggleSuggestions() {
+    const toggleSwitch = document.getElementById('suggestionsToggleSwitch');
+    localStorage.setItem('enableSearchSuggestions', toggleSwitch.checked);
+    
+    // If turned off, immediately clear any visible suggestions
+    if (!toggleSwitch.checked) {
+        const suggestionBox = document.getElementById('searchSuggestionsBox'); // Update this ID to match your actual suggestion container
+        if (suggestionBox) suggestionBox.innerHTML = '';
+    }
+}
+
+// Load preference on startup (Add this inside your existing DOMContentLoaded listener)
+document.addEventListener('DOMContentLoaded', () => {
+    const savedSuggestionsState = localStorage.getItem('enableSearchSuggestions');
+    if (savedSuggestionsState !== null) {
+        const isEnabled = savedSuggestionsState === 'true';
+        const suggestionsSwitch = document.getElementById('suggestionsToggleSwitch');
+        if (suggestionsSwitch) suggestionsSwitch.checked = isEnabled;
+    }
+});
+
+// 2. The Debounce Function (The Captcha Fix)
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId); // Cancel the previous timer if user is still typing
+        timeoutId = setTimeout(() => {
+            func.apply(this, args); // Run the function only after typing stops
+        }, delay);
+    };
+}
+// --- Complete Search Suggestions Logic ---
+
+let currentSuggestionScript = null;
+
+// 1. The actual fetch function using JSONP to bypass CORS
+function fetchSearchSuggestions(query) {
+    const isEnabled = document.getElementById('suggestionsToggleSwitch')?.checked;
+    const suggestionBox = document.getElementById('searchSuggestionsBox');
+
+    // If turned off or search is empty, hide and stop
+    if (!isEnabled || query.trim() === "") {
+        if (suggestionBox) {
+            suggestionBox.innerHTML = '';
+            suggestionBox.style.display = 'none';
+        }
+        return;
+    }
+
+    // Clean up previous network request if user is still typing
+    if (currentSuggestionScript) {
+        document.head.removeChild(currentSuggestionScript);
+    }
+
+    // Define the global callback function Google will respond to
+    window.handleGoogleSuggestions = function(data) {
+        const suggestions = data[1]; // Google puts the array of text in index 1
+        renderSuggestions(suggestions);
+    };
+
+    // Create the JSONP script tag
+    currentSuggestionScript = document.createElement('script');
+    currentSuggestionScript.src = `https://suggestqueries.google.com/complete/search?client=chrome&q=${encodeURIComponent(query)}&callback=handleGoogleSuggestions`;
+    document.head.appendChild(currentSuggestionScript);
+}
+
+// 2. Render the items and add Click Support
+function renderSuggestions(suggestions) {
+    const suggestionBox = document.getElementById('searchSuggestionsBox');
+    suggestionBox.innerHTML = '';
+
+    if (suggestions.length === 0) {
+        suggestionBox.style.display = 'none';
+        return;
+    }
+
+    suggestions.forEach(text => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.textContent = text;
+        
+        // CLICK SUPPORT: Fill input and search instantly
+        div.onclick = () => {
+            document.getElementById('searchInput').value = text;
+            suggestionBox.style.display = 'none'; // Hide the box
+            performSearch(); // Trigger your existing search logic
+        };
+        
+        suggestionBox.appendChild(div);
+    });
+
+    // Show the box with a smooth fade
+    suggestionBox.style.display = 'block';
+}
+
+// 3. Connect to your Search Bar with Debounce
+const debouncedFetch = debounce(fetchSearchSuggestions, 300);
+
+const searchInput = document.getElementById('searchInput');
+if (searchInput) {
+    // Listen to every keystroke
+    searchInput.addEventListener('input', (e) => {
+        debouncedFetch(e.target.value);
+    });
+
+    // Premium UI Touch: Hide suggestions if user clicks somewhere else on the page
+    document.addEventListener('click', (e) => {
+        if (e.target !== searchInput && e.target.className !== 'suggestion-item') {
+            const box = document.getElementById('searchSuggestionsBox');
+            if (box) box.style.display = 'none';
+        }
+    });
+
+    // Show suggestions again if user clicks back into the search bar
+    searchInput.addEventListener('focus', (e) => {
+        if (e.target.value.trim() !== "") {
+            debouncedFetch(e.target.value);
+        }
+    });
+}
+
+
     // --- In-App Browser & Tab Management ---
 
     function openInAppTab(url, title) {
@@ -4948,6 +5365,16 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       updateSandboxPermissions();
     });
 
+    // Load Mic Icon preference
+    const savedMicState = localStorage.getItem('showMicIcon');
+    if (savedMicState !== null) {
+        const isVisible = savedMicState === 'true';
+        const micSwitch = document.getElementById('micToggleSwitch');
+        const micIcon = document.getElementById('micIcon');
+        
+        if (micSwitch) micSwitch.checked = isVisible;
+        if (micIcon) micIcon.style.display = isVisible ? 'inline-block' : 'none';
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
       const blurSaved = localStorage.getItem('bgBlur') === 'true';
@@ -5119,16 +5546,64 @@ document.body.classList.add("wallpaper-active");
     }
   });
 
+function updateSliderColor(slider) {
+    const min = slider.min || 0;
+    const max = slider.max || 100;
+    const value = slider.value;
+    const percentage = ((value - min) / (max - min)) * 100;
+    
+    slider.style.background = 
+        `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
+}
 
-// Hide mic icon if device is iOS (iPhone, iPad, iPod)
-  (function hideMicOnIOS() {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    if (isIOS) {
-      const micIcon = document.getElementById('micIcon');
-      if (micIcon) micIcon.style.display = 'none';
+function updateLabel(id, value) {
+    const label = document.getElementById(id);
+    if (label) {
+        // Logic: Blur labels get 'px', others get '%'
+        label.textContent = value + (id.includes('Blur') ? 'px' : '%');
     }
-  })();
+}
 
+// Update Blur Intensity
+function setBlurIntensity(value) {
+    document.documentElement.style.setProperty('--bg-blur-intensity', `${value}px`);
+    localStorage.setItem('bgBlurIntensity', value);
+    // Update label and color
+    updateLabel('blurIntensityValue', value);
+    updateSliderColor(document.getElementById('blurIntensitySlider'));
+}
+
+// Update Background Brightness
+function setBgBrightness(value) {
+    document.documentElement.style.setProperty('--bg-brightness', `${value}%`);
+    localStorage.setItem('bgBrightness', value);
+    // Update label and color
+    updateLabel('bgBrightnessValue', value);
+    updateSliderColor(document.getElementById('bgBrightnessSlider'));
+}
+
+// Load saved preferences on startup
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Blur Intensity
+    const savedBlur = localStorage.getItem('bgBlurIntensity') || '6';
+    document.documentElement.style.setProperty('--bg-blur-intensity', `${savedBlur}px`);
+    const blurSlider = document.getElementById('blurIntensitySlider');
+    if (blurSlider) {
+        blurSlider.value = savedBlur;
+        updateLabel('blurIntensityValue', savedBlur);
+        updateSliderColor(blurSlider);
+    }
+
+    // 2. Background Brightness
+    const savedBrightness = localStorage.getItem('bgBrightness') || '100';
+    document.documentElement.style.setProperty('--bg-brightness', `${savedBrightness}%`);
+    const brightnessSlider = document.getElementById('bgBrightnessSlider');
+    if (brightnessSlider) {
+        brightnessSlider.value = savedBrightness;
+        updateLabel('bgBrightnessValue', savedBrightness);
+        updateSliderColor(brightnessSlider);
+    }
+});
 
 
    // Register SW only when served from http/https (not file://)
