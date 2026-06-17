@@ -2488,7 +2488,7 @@ body.dark-mode .search-result-tile span {
   
 <!-- Dark Mode -->
 <label class="toolbar-option">
-  🌙 Dark Mode
+  🌙 Dark Text
   <div class="switch">
     <input
       type="checkbox"
@@ -2611,7 +2611,7 @@ body.dark-mode .search-result-tile span {
     <div class="toolbar-option" aria-label="Export Bookmarks" onclick="exportBookmarks()" tabindex="0">📤 Export Bookmarks</div>
     <div class="toolbar-option" aria-label="Import Bookmarks" onclick="document.getElementById('importInput').click()" tabindex="0">📥 Import Bookmarks</div>
     <div class="toolbar-option" onclick="resetAllSettings()" tabindex="0">🗑️ Reset All Settings</div>
-    <div class="toolbar-option" onclick="openAboutModal()" tabindex="0">🧾 About This Page</div>
+    <div class="toolbar-option" style="display:none;" onclick="openAboutModal()" tabindex="0">🧾 About This Page</div>
     <div class="toolbar-option" onclick="flipCoin(); toggleSidebar();" tabindex="0">🪙 Flip a Coin</div>
 
     <div class="toolbar-option"
@@ -4903,6 +4903,23 @@ if (searchInput) {
             if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < items.length) {
                 e.preventDefault(); // Stop standard form search
                 items[selectedSuggestionIndex].click(); // Trigger the selected suggestion's click event
+            }
+        } else if (e.key === ' ') { 
+            // NEW: SPACEBAR LOGIC
+            if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < items.length) {
+                e.preventDefault(); // Prevent standard space typing
+                
+                // Grab the text from the highlighted suggestion
+                const selectedText = items[selectedSuggestionIndex].innerText.trim();
+                
+                // Move it to the search bar and add a trailing space
+                searchInput.value = selectedText + ' ';
+                
+                // Hide the suggestions box
+                suggestionBox.style.display = 'none';
+                
+                // Optional: Manually trigger the input event so your top-box bookmarks update immediately
+                searchInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }
     });
