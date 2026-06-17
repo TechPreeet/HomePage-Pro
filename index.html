@@ -652,6 +652,8 @@ body::before {
   padding: 20px;
   box-sizing: border-box;
 }
+
+
     #settings-sidebar.open {
       transform: translateX(0);
     }
@@ -2054,6 +2056,7 @@ body.dark-mode .search-result-tile span {
     color: #fff !important; 
 }
 
+
 </style>
 </head>
 <body class="preload" tabindex="-1">
@@ -2486,18 +2489,6 @@ body.dark-mode .search-result-tile span {
   </div>
 </label>
   
-<!-- Dark Mode -->
-<label class="toolbar-option">
-  🌙 Dark Text
-  <div class="switch">
-    <input
-      type="checkbox"
-      id="darkModeSwitch"
-      onchange="toggleDarkMode()"
-    />
-    <span class="slider"></span>
-  </div>
-</label>
 
 <!-- Background Blur -->
 <label class="toolbar-option">
@@ -2515,11 +2506,11 @@ body.dark-mode .search-result-tile span {
 <div id="blurIntensitySliderContainer" class="slider-container">
   <div class="toolbar-option">
     <span>Blur Intensity</span>
-    <span id="blurIntensityValue">6%</span> 
+    <span id="blurIntensityValue">6px</span> 
   </div>
   <input type="range" id="blurIntensitySlider" min="0" max="20" value="6"
          class="toolbar-option" 
-         oninput="setBlurIntensity(this.value); updateSliderColor(this); updateLabel('blurIntensityValue', this.value)">
+         oninput="setBlurIntensity(this.value); updateSliderColor(this); updateLabel('blurIntensityValue', this.value + 'px')">
 </div>
 
 <div id="bgBrightnessSliderContainer" class="slider-container">
@@ -2529,7 +2520,7 @@ body.dark-mode .search-result-tile span {
   </div>
   <input type="range" id="bgBrightnessSlider" min="10" max="100" value="100"
          class="toolbar-option"
-         oninput="setBgBrightness(this.value); updateSliderColor(this); updateLabel('bgBrightnessValue', this.value)">
+         oninput="setBgBrightness(this.value); updateSliderColor(this); updateLabel('bgBrightnessValue', this.value + '%')">
 </div>
 
 <!-- Icon style -->
@@ -2569,6 +2560,19 @@ body.dark-mode .search-result-tile span {
   </div>
 </label>
   
+<!-- Dark Mode -->
+<label class="toolbar-option">
+  🌙 Dark Bookmark Labels
+  <div class="switch">
+    <input
+      type="checkbox"
+      id="darkModeSwitch"
+      onchange="toggleDarkMode()"
+    />
+    <span class="slider"></span>
+  </div>
+</label>
+
 <!-- Bookmark Labels -->
 <label class="toolbar-option">
   🏷️ Hide Bookmark Labels
@@ -5623,10 +5627,9 @@ function updateSliderColor(slider) {
 }
 
 function updateLabel(id, value) {
-    const label = document.getElementById(id);
-    if (label) {
-        // Logic: Blur labels get 'px', others get '%'
-        label.textContent = value + (id.includes('Blur') ? 'px' : '%');
+    const el = document.getElementById(id);
+    if (el) {
+        el.innerText = value; // Removed the hardcoded '%'
     }
 }
 
@@ -5656,7 +5659,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const blurSlider = document.getElementById('blurIntensitySlider');
     if (blurSlider) {
         blurSlider.value = savedBlur;
-        updateLabel('blurIntensityValue', savedBlur);
+        updateLabel('blurIntensityValue', savedBlur + 'px');
         updateSliderColor(blurSlider);
     }
 
@@ -5666,7 +5669,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const brightnessSlider = document.getElementById('bgBrightnessSlider');
     if (brightnessSlider) {
         brightnessSlider.value = savedBrightness;
-        updateLabel('bgBrightnessValue', savedBrightness);
+        updateLabel('bgBrightnessValue', savedBrightness + '%');
         updateSliderColor(brightnessSlider);
     }
 });
