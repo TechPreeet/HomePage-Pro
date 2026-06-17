@@ -1969,10 +1969,18 @@ body.dark-mode.glass-mode #searchSuggestionsBox {
     border-bottom: none;
 }
 
-.suggestion-item:hover {
+/* 1. Update Suggestion Hover to support Keyboard Selection */
+.suggestion-item:hover, 
+.suggestion-item.selected {
     background: rgba(255, 255, 255, 0.25);
     padding-left: 25px; /* Slight indent on hover for premium feel */
 }
+/* 2. Auto-hide the Bookmark Control Buttons when Search or Suggestions are Active */
+.search-bar-form:has(#searchSuggestionsBox[style*="display: block"]) + #bookmarkControls,
+.search-bar-form:has(#searchResults[style*="display: grid"]) + #bookmarkControls {
+    display: none !important;
+}
+
 /* Container for the matching bookmarks above the search bar */
 /* 1. TOP BOX: Search Results (Bookmarks) */
 #searchResults {
@@ -4847,15 +4855,18 @@ function renderSuggestions(suggestions) {
 
 // 3. Connect to your Search Bar with Debounce
 const debouncedFetch = debounce(fetchSearchSuggestions, 300);
-
 const searchInput = document.getElementById('searchInput');
+
 if (searchInput) {
+    let selectedSuggestionIndex = -1; // Tracks keyboard navigation
+
     // Listen to every keystroke
     searchInput.addEventListener('input', (e) => {
+        selectedSuggestionIndex = -1; // Reset keyboard selection on type
         debouncedFetch(e.target.value);
     });
 
-    // Premium UI Touch: Hide suggestions if user clicks somewhere else on the page
+    // Premium UI Touch: Hide suggestions if user clicks somewhere else
     document.addEventListener('click', (e) => {
         if (e.target !== searchInput && e.target.className !== 'suggestion-item') {
             const box = document.getElementById('searchSuggestionsBox');
@@ -4869,8 +4880,46 @@ if (searchInput) {
             debouncedFetch(e.target.value);
         }
     });
-}
 
+    // KEYBOARD NAVIGATION LOGIC
+    searchInput.addEventListener('keydown', (e) => {
+        const suggestionBox = document.getElementById('searchSuggestionsBox');
+        if (!suggestionBox || suggestionBox.style.display === 'none') return;
+        
+        const items = suggestionBox.getElementsByClassName('suggestion-item');
+        if (items.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault(); // Stop cursor from moving in input box
+            selectedSuggestionIndex++;
+            if (selectedSuggestionIndex >= items.length) selectedSuggestionIndex = 0; // Loop to top
+            updateHighlight(items);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault(); 
+            selectedSuggestionIndex--;
+            if (selectedSuggestionIndex < 0) selectedSuggestionIndex = items.length - 1; // Loop to bottom
+            updateHighlight(items);
+        } else if (e.key === 'Enter') {
+            if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < items.length) {
+                e.preventDefault(); // Stop standard form search
+                items[selectedSuggestionIndex].click(); // Trigger the selected suggestion's click event
+            }
+        }
+    });
+
+    // Helper to apply the 'selected' class and auto-scroll
+    function updateHighlight(items) {
+        Array.from(items).forEach((item, index) => {
+            if (index === selectedSuggestionIndex) {
+                item.classList.add('selected');
+                // Keep the highlighted item visible if the box has a scrollbar
+                item.scrollIntoView({ block: 'nearest' }); 
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+}
 
     // --- In-App Browser & Tab Management ---
 
