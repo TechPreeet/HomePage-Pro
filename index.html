@@ -542,13 +542,6 @@ body::before {
       border-radius: 50% 50% 30% 30% / 60% 60% 40% 40% !important; 
     }
 
-    .tile img.flower {
-  width: 200px; /* adjust to control the size */
-  aspect-ratio: 1;
-  --g:/23.606% 23.606% radial-gradient(#000 calc(71% - 1px),#0000 71%) no-repeat;
-  mask: 99.984% 51.257% var(--g),89.7% 80.397% var(--g),64.251% 97.926% var(--g),33.359% 97.15% var(--g),8.823% 78.363% var(--g),0.016% 48.743% var(--g),10.3% 19.603% var(--g),35.749% 2.074% var(--g),66.641% 2.85% var(--g),91.177% 21.637% var(--g),radial-gradient(100% 100%,#000 36.327%,#0000 calc(36.327% + 1px));
-}
-
 
     #sidebar-toggle-btn {
         position: fixed;
@@ -1884,7 +1877,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
 #clear-note-btn {
     background: none;
     border: none;
-    color: white;
+    color: rgb(0, 0, 0);
     opacity: 0.7;
     cursor: pointer;
     font-size: 16px;
@@ -2103,49 +2096,6 @@ body.dark-mode.glass-mode #searchSuggestionsBox {
 }
 body.dark-mode .search-result-tile span {
     color: #fff !important; 
-}
-/* =========================================================
-   PURE CSS GLASS FALLBACK FOR ALL ICONS
-   ========================================================= */
-
-.tile img, 
-.search-result-tile img {
-    width: 56px;
-    height: 56px;
-    
-    /* THE MAGIC: Prevents low-res icons from stretching and getting blurry, 
-       while shrinking large icons to fit perfectly */
-    /* object-fit: scale-down; */
-    
-    /* Adds a tiny bit of padding so even full-size square images 
-       leave a 2px glass border visible around the edge 
-    padding: .1px; 
-    box-sizing: border-box; */
-    
-    /* 1. Base Light Mode: Whitish glass behind the image */
-    background: rgba(0, 0, 0, 0.685);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 0px solid (transparent);
-    
-    /* Inherit whatever border-radius (round/square/squircle) you set for the grid */
-    border-radius: inherit; 
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    
-    /* Fallback text styling if the image completely fails to load (404 Error) */
-    color: #fff;
-    font-size: 10px;
-    text-align: center;
-    line-height: 52px; /* Centers the alt text vertically */
-    overflow: hidden;
-}
-
-/* 2. Dark Mode: Dark glass behind the image */
-body.dark-mode .tile img, 
-body.dark-mode .search-result-tile img {
-    background:  rgba(255, 255, 255, 0.365);
-    border: 0px solid (transparent);
-    color: #000; /* Makes broken image text black */
 }
 
 </style>
@@ -2581,7 +2531,7 @@ body.dark-mode .search-result-tile img {
 <!-- Icon style -->
     <div id="iconStyleSliderContainer" class="slider-container">
   <div class="toolbar-option" id="iconStyleLabel">Icon Style</div>
-  <input type="range" id="iconStyleSlider" min="0" max="6" value="0"
+  <input type="range" id="iconStyleSlider" min="0" max="5" value="0"
          class="toolbar-option"
          oninput="setIconStyle(this.value)">
 </div>
@@ -3961,7 +3911,7 @@ const handleClick = (e) => {
     img.draggable = false;
     const savedStyle = localStorage.getItem("iconStyle") || "0";
     // UPDATE: Array now has 7 items. Removed "tv-rect", added the 3 new shapes.
-    const iconStyles = ["round", "squircle", "rounded-rect", "sammy", "teardrop", "vessel", "flower"];
+    const iconStyles = ["round", "squircle", "rounded-rect", "sammy", "teardrop", "vessel"];
     img.classList.add(iconStyles[parseInt(savedStyle, 10)] || "round");
     
     const name = document.createElement("div");
@@ -4317,8 +4267,8 @@ function enableDragAndDrop() {
 
 function setIconStyle(value, skipLog = false) {
   // UPDATE: Adjusted both arrays to hold the 7 current shapes
-  const styles       = ["Round", "Squircle", "Rounded Rectangle", "Sammy", "Teardrop", "Vessel", "Flower"];
-  const styleClasses = ["round", "squircle", "rounded-rect", "sammy", "teardrop", "vessel", "flower"];
+  const styles       = ["Round", "Squircle", "Rounded Rectangle", "Sammy", "Teardrop", "Vessel"];
+  const styleClasses = ["round", "squircle", "rounded-rect", "sammy", "teardrop", "vessel"];
 
   // Clamp & normalize
   let idx = parseInt(value, 10);
@@ -4330,7 +4280,7 @@ function setIconStyle(value, skipLog = false) {
   // Apply live
   document.querySelectorAll(".tile img").forEach(img => {
     // Safely remove ALL potential old shape classes without wiping out other necessary classes
-    img.classList.remove("round", "squircle", "rounded-rect", "tv-rect", "sammy", "teardrop", "vessel", "flower");
+    img.classList.remove("round", "squircle", "rounded-rect", "tv-rect", "sammy", "teardrop", "vessel");
     img.classList.add(newStyle);
   });
 
