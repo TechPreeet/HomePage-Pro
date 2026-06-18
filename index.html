@@ -529,14 +529,25 @@ body::before {
       border-radius: 30%;
     }
 
-    .tile img.tv-rect { 
-      clip-path: inset(11% 0 11% 0 round 12px) !important;
-      border-radius: 0 !important;  
-    }
-
     .tile img.sammy {
         border-radius: 65% / 90%;
     }
+
+    /* NEW SHAPES */
+    .tile img.teardrop {
+      border-radius: 50% 50% 50% 12% !important; 
+    }
+
+    .tile img.vessel {
+      border-radius: 50% 50% 30% 30% / 60% 60% 40% 40% !important; 
+    }
+
+    .tile img.flower {
+  width: 200px; /* adjust to control the size */
+  aspect-ratio: 1;
+  --g:/23.606% 23.606% radial-gradient(#000 calc(71% - 1px),#0000 71%) no-repeat;
+  mask: 99.984% 51.257% var(--g),89.7% 80.397% var(--g),64.251% 97.926% var(--g),33.359% 97.15% var(--g),8.823% 78.363% var(--g),0.016% 48.743% var(--g),10.3% 19.603% var(--g),35.749% 2.074% var(--g),66.641% 2.85% var(--g),91.177% 21.637% var(--g),radial-gradient(100% 100%,#000 36.327%,#0000 calc(36.327% + 1px));
+}
 
 
     #sidebar-toggle-btn {
@@ -623,35 +634,73 @@ body::before {
     background: var(--accent-color);
 }
 
-   #settings-sidebar {
+/* =========================================================
+   1. BASE SIDEBAR (LIGHT MODE) - Whitish Glass & Black Text
+   ========================================================= */
+#settings-sidebar {
   position: fixed;
-
-  /* NEW: Use top/bottom insets instead of height */
   top: calc(10px + env(safe-area-inset-top));
   bottom: calc(10px + env(safe-area-inset-bottom));
   right: 10px;
-
   width: 300px;
   max-width: 85vw;
 
-  /* 'height' property is no longer needed */
-
-  background: rgba(30, 30, 30, 0.8);
+  /* NEW DEFAULT: Whitish Tinted Glass */
+  background: rgba(255, 255, 255, 0.626);
   backdrop-filter: blur(15px);
-  color: white;
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
+  /* NEW DEFAULT: Black Text */
+  color: #000; 
+  
   z-index: 1001;
-  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4);
-
+  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15); /* Slightly lighter shadow for light mode */
   border-radius: 16px;
-
   transform: translateX(calc(100% + 10px));
-
-  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease, background 0.3s ease, color 0.3s ease;
   overflow-y: auto;
-
   padding: 20px;
   box-sizing: border-box;
 }
+
+/* Base Light Mode Elements */
+#settings-sidebar * {
+  color: #000;
+}
+#settings-sidebar hr {
+  border-color: rgba(0, 0, 0, 0.1);
+}
+#settings-sidebar input[type="range"] {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* =========================================================
+   2. SIDEBAR DARK MODE OVERRIDES - Dark Glass & White Text
+   ========================================================= */
+
+/* Shift the Sidebar background to Dark Tinted Glass */
+body.dark-mode #settings-sidebar {
+    background: rgba(30, 30, 30, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: -5px 0 25px rgba(0, 0, 0, 0.4) !important;
+    color: white !important;
+}
+
+/* Force all text, labels, inputs, and icons to turn White */
+body.dark-mode #settings-sidebar * {
+    color: white !important;
+}
+
+/* Lighten dividers for dark mode */
+body.dark-mode #settings-sidebar hr {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Keep slider tracks visible on the dark glass 
+body.dark-mode #settings-sidebar input[type="range"] {
+    background: rgba(255, 255, 255, 0.2) !important;
+}*/
 
 
     #settings-sidebar.open {
@@ -1851,7 +1900,7 @@ body.sidebar-slider-active #settings-sidebar > .slider-container-active *{
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    color: white;
+    color: black;
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 13px;
     padding: 8px;
@@ -1898,7 +1947,7 @@ body.sidebar-swiping {
 }
 .stat-item-label,
 .stat-list-title {
-    color: #ffffff !important;
+    color: #000000 !important;
 }
 /* ===== Search Suggestions UI (Liquid Glass) ===== */
 /* 2. BOTTOM BOX: Search Suggestions */
@@ -2055,48 +2104,54 @@ body.dark-mode.glass-mode #searchSuggestionsBox {
 body.dark-mode .search-result-tile span {
     color: #fff !important; 
 }
+/* =========================================================
+   PURE CSS GLASS FALLBACK FOR ALL ICONS
+   ========================================================= */
 
+.tile img, 
+.search-result-tile img {
+    width: 56px;
+    height: 56px;
+    
+    /* THE MAGIC: Prevents low-res icons from stretching and getting blurry, 
+       while shrinking large icons to fit perfectly */
+    /* object-fit: scale-down; */
+    
+    /* Adds a tiny bit of padding so even full-size square images 
+       leave a 2px glass border visible around the edge 
+    padding: .1px; 
+    box-sizing: border-box; */
+    
+    /* 1. Base Light Mode: Whitish glass behind the image */
+    background: rgba(0, 0, 0, 0.685);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 0px solid (transparent);
+    
+    /* Inherit whatever border-radius (round/square/squircle) you set for the grid */
+    border-radius: inherit; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    
+    /* Fallback text styling if the image completely fails to load (404 Error) */
+    color: #fff;
+    font-size: 10px;
+    text-align: center;
+    line-height: 52px; /* Centers the alt text vertically */
+    overflow: hidden;
+}
+
+/* 2. Dark Mode: Dark glass behind the image */
+body.dark-mode .tile img, 
+body.dark-mode .search-result-tile img {
+    background:  rgba(255, 255, 255, 0.365);
+    border: 0px solid (transparent);
+    color: #000; /* Makes broken image text black */
+}
 
 </style>
 </head>
 <body class="preload" tabindex="-1">
 
-<!-- In-App Browser (iFrame Viewer) -->
-<div id="iframe-viewer" class="hidden">
-    <div id="iframe-controls">
-        <div id="iframe-tab-info">
-            <img id="iframe-favicon" src="" alt="favicon" />
-            <span id="iframe-title">Loading...</span>
-        </div>
-        <div id="iframe-buttons">
-            <button title="Refresh" onclick="refreshActiveTab()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-            </button>
-            <button title="Go Home" onclick="goHome()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-            </button>
-            <button title="Tabs" onclick="openTabsModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
-                    <path d="M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4l-3 3-3-3H5a2 2 0 0 1-2-2V5z"/>
-                    <path d="M9 3v6m6-6v6"/>
-                </svg>
-            </button>           
-            <button title="Force Dark Mode" onclick="toggleIframeDarkMode()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-5.4-5.4c0-1.81 0.88-3.39 2.26-4.4A8.892 8.892 0 0 0 12 3Z"/></svg>
-            </button>
-            <button title="Reader View" onclick="toggleReaderMode()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19.999 21.001H4.999v-2h15v2zm0-4H4.999v-2h15v2zm-15-4H19.999v-2H4.999v2zm15-4H4.999V7h15v2zm0-4H4.999V3h15v2z"/></svg>
-            </button>
-            <button title="Fullscreen" onclick="maximizeTab()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-            </button>
-            <button title="Close Tab" onclick="closeActiveTab()">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-            </button>
-        </div>
-    </div>
-    <iframe id="browser-frame" sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" allow="fullscreen"></iframe>
-</div>
 
 <div class="top-blend"></div>
 
@@ -2526,7 +2581,7 @@ body.dark-mode .search-result-tile span {
 <!-- Icon style -->
     <div id="iconStyleSliderContainer" class="slider-container">
   <div class="toolbar-option" id="iconStyleLabel">Icon Style</div>
-  <input type="range" id="iconStyleSlider" min="0" max="4" value="0"
+  <input type="range" id="iconStyleSlider" min="0" max="6" value="0"
          class="toolbar-option"
          oninput="setIconStyle(this.value)">
 </div>
@@ -2562,7 +2617,7 @@ body.dark-mode .search-result-tile span {
   
 <!-- Dark Mode -->
 <label class="toolbar-option">
-  🌙 Dark Bookmark Labels
+  🌙 Dark Text
   <div class="switch">
     <input
       type="checkbox"
@@ -3905,7 +3960,8 @@ const handleClick = (e) => {
     }
     img.draggable = false;
     const savedStyle = localStorage.getItem("iconStyle") || "0";
-    const iconStyles = ["round", "squircle", "rounded-rect", "tv-rect", "sammy"];
+    // UPDATE: Array now has 7 items. Removed "tv-rect", added the 3 new shapes.
+    const iconStyles = ["round", "squircle", "rounded-rect", "sammy", "teardrop", "vessel", "flower"];
     img.classList.add(iconStyles[parseInt(savedStyle, 10)] || "round");
     
     const name = document.createElement("div");
@@ -4260,8 +4316,9 @@ function enableDragAndDrop() {
     let _iconLogTimer = null; // keep this once globally
 
 function setIconStyle(value, skipLog = false) {
-  const styles       = ["Round", "Squircle", "Rounded Rectangle", "TV Rectangle", "Sammy"];
-  const styleClasses = ["round", "squircle", "rounded-rect", "tv-rect", "sammy"];
+  // UPDATE: Adjusted both arrays to hold the 7 current shapes
+  const styles       = ["Round", "Squircle", "Rounded Rectangle", "Sammy", "Teardrop", "Vessel", "Flower"];
+  const styleClasses = ["round", "squircle", "rounded-rect", "sammy", "teardrop", "vessel", "flower"];
 
   // Clamp & normalize
   let idx = parseInt(value, 10);
@@ -4272,7 +4329,8 @@ function setIconStyle(value, skipLog = false) {
 
   // Apply live
   document.querySelectorAll(".tile img").forEach(img => {
-    img.className = "";
+    // Safely remove ALL potential old shape classes without wiping out other necessary classes
+    img.classList.remove("round", "squircle", "rounded-rect", "tv-rect", "sammy", "teardrop", "vessel", "flower");
     img.classList.add(newStyle);
   });
 
@@ -4293,13 +4351,12 @@ function setIconStyle(value, skipLog = false) {
 
   // Debounce ONLY the log
   if (!skipLog && prev !== vStr) {
-    clearTimeout(_iconLogTimer);
-    _iconLogTimer = setTimeout(() => {
-      logHistory?.("Setting", `Changed icon style to '${styles[idx]}'`, { value: idx });
+    clearTimeout(typeof _iconLogTimer !== 'undefined' ? _iconLogTimer : 0);
+    window._iconLogTimer = setTimeout(() => {
+      if (typeof logHistory === 'function') logHistory("Setting", `Changed icon style to '${styles[idx]}'`, { value: idx });
     }, 2000);
   }
 }
-
 
 
     function setTileSize(size) {
