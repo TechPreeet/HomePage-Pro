@@ -95,10 +95,12 @@ html, body {
   .viewport {
     padding-top: env(safe-area-inset-top); 
     padding-right: env(safe-area-inset-right);
-    padding-bottom: env(safe-area-inset-bottom);
+   /* padding-bottom: env(safe-area-inset-bottom); */
     padding-left: env(safe-area-inset-left);
   }
-
+.content {
+  padding-bottom: env(safe-area-inset-bottom);
+}
   html {
     
     background-color: #000000;
@@ -2562,6 +2564,13 @@ let _firstBookmarkLoad = true;
 // === Debounce timers ===
 let _gradLogTimer = null;
 let _tileLogTimer = null;
+
+// === In-App Tab Management ===
+let inAppTabs = [];
+let activeTabId = null;
+let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
+let inAppBrowserEnabled = localStorage.getItem("inAppBrowserEnabled") === "true";
+
 
 
 document.addEventListener('DOMContentLoaded', () => {
