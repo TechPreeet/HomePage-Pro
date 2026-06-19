@@ -11,17 +11,6 @@
 
   <title>HomePage Pro</title>
 
-  <link rel="apple-touch-startup-image"
-        href="/splash/iphone-15-pro-max.png"
-        media="(device-width: 428px) and (device-height: 926px)
-               and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
-
-               <link rel="apple-touch-startup-image"
-      href="/splash/iphone-16-pro.png"
-      media="(device-width: 402px) and (device-height: 874px)
-             and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
-             
-
 
   <link rel="manifest" href="manifest.json" />
 
@@ -97,8 +86,6 @@ html, body {
 
   html, body {
     pointer-events: auto !important;
-  }
-  html, body {
     height: 100%;
     overflow: hidden; /* Keep this to prevent rubber-banding */
     overscroll-behavior: none; /* Prevents the "bounce" effect */
@@ -233,37 +220,6 @@ body::before {
 }
 
 
-    body.glass-mode .tile,
-    body.glass-mode .search-bar-form {
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
-      backdrop-filter: blur(6px) saturate(120%);
-      background: rgba(255, 255, 255, 0.12);
-      color: var(--text-color);
-      transform: translateZ(0);
-      will-change: transform, opacity;
-    }
-
-    body.dark-mode.glass-mode .tile,
-    body.dark-mode.glass-mode .search-bar-form {
-      background: rgba(30, 30, 30, 0.3);
-      border-color: rgba(100, 100, 100, 0.3);
-    }
-
-    @media (max-width: 768px) {
-    body.glass-mode .tile,
-    body.glass-mode .search-bar-form {
-      backdrop-filter: none;
-      background: rgba(255, 255, 255, 0.1);
-      }
-    }
-    @media (hover: hover) and (pointer: fine) {
-      body.glass-mode .tile:hover,
-      body.glass-mode .search-bar-form:hover {
-      transform: scale(1.05);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-      }
-    }
 
     .search-bar-form {
       width: 85%;
@@ -689,11 +645,6 @@ body.dark-mode #settings-sidebar * {
 body.dark-mode #settings-sidebar hr {
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
-
-/* Keep slider tracks visible on the dark glass 
-body.dark-mode #settings-sidebar input[type="range"] {
-    background: rgba(255, 255, 255, 0.2) !important;
-}*/
 
 
     #settings-sidebar.open {
@@ -1401,10 +1352,6 @@ body.sidebar-slider-active #settings-sidebar{
       display: none;
     }
 
-    body.glass-mode .tile img {
-      margin: 0;                 
-      transform: translateY(5px);
-    }
 
     .search-bar-form input,
     .modal-content input,
@@ -1983,22 +1930,6 @@ body.dark-mode #searchSuggestionsBox {
     background: rgba(30, 30, 30, 0.3);
 }
 
-/* Glass Mode Match */
-body.glass-mode #searchResults,
-body.glass-mode #searchSuggestionsBox {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
-    backdrop-filter: blur(6px) saturate(120%);
-    -webkit-backdrop-filter: blur(6px) saturate(120%);
-    background: rgba(255, 255, 255, 0.12);
-}
-
-/* Dark Mode + Glass Mode Match */
-body.dark-mode.glass-mode #searchResults,
-body.dark-mode.glass-mode #searchSuggestionsBox {
-    background: rgba(30, 30, 30, 0.3);
-    border-color: rgba(100, 100, 100, 0.3);
-}
 
 .suggestion-item {
     padding: 14px 20px;
@@ -2138,7 +2069,6 @@ body.dark-mode .search-result-tile span {
   <li>🖼️ <strong>Custom Icons & Labels</strong> — edit, delete, copy URL quickly</li>
   <li>�📥 <strong>Export / Import</strong> — move your setup anywhere</li>
   <li>🎨 <strong>Accent Color, Tile Size, Icon Shape</strong> controls</li>
-  <li>🪩 <strong>Glass Mode</strong> & 🌙 <strong>Dark Mode</strong></li>
   <li>🌫️ <strong>Blur / Image / Video Backgrounds</strong></li>
   <li>🕰️ <strong>Clock + Greeting</strong> (12/24h, seconds optional) & optional ☁️ weather</li>
   <li>🪙 <strong>Coin Flip mini-tool</strong></li>
@@ -2481,18 +2411,6 @@ body.dark-mode .search-result-tile span {
         <input type="color" id="accentColorPicker" oninput="previewAccentColor(this.value)" onchange="setAccentColor(this.value)">
     </div>
   
-<!-- Glass Mode -->
-<label class="toolbar-option"style="display:none;">
-  🪩 Glass Mode
-  <div class="switch">
-    <input
-      type="checkbox"
-      id="glassModeSwitch"
-      onchange="toggleGlassMode()"
-    />
-    <span class="slider"></span>
-  </div>
-</label>
   
 
 <!-- Background Blur -->
@@ -2645,11 +2563,6 @@ let _firstBookmarkLoad = true;
 let _gradLogTimer = null;
 let _tileLogTimer = null;
 
-// === In-App Tab Management ===
-let inAppTabs = [];
-let activeTabId = null;
-let useInAppBrowser = localStorage.getItem("useInAppBrowser") === "true";
-let inAppBrowserEnabled = localStorage.getItem("inAppBrowserEnabled") === "true";
 
 document.addEventListener('DOMContentLoaded', () => {
   /* ── 1. Check launch-URL for the shortcut flag ─────────────────────────── */
@@ -2872,20 +2785,6 @@ async function fetchQuote() {
 
 
 
-function applyInAppEnabled(enabled){
-  const tabsBtn = document.getElementById('toggleTabsBtn');
-    if (tabsBtn) tabsBtn.style.display = enabled ? '' : 'none';
-    if (!enabled){ goHome(); document.getElementById('inAppBrowserSwitch').checked = false; }
-}
-
-    function toggleInAppEnabled(){
-inAppBrowserEnabled = !inAppBrowserEnabled;
-localStorage.setItem('inAppBrowserEnabled', inAppBrowserEnabled);
-applyInAppEnabled(inAppBrowserEnabled);
-logHistory('Setting', `Enable In-App Browser: ${inAppBrowserEnabled}`);
-    }
-
-
     // Detect “iOS PWA” (installed to Home Screen, running standalone on iPhone/iPad)
       function isIosPwa() {
         return /iphone|ipad|ipod/i.test(navigator.userAgent) &&
@@ -2895,7 +2794,6 @@ logHistory('Setting', `Enable In-App Browser: ${inAppBrowserEnabled}`);
 
     let rearrangeMode = false;
     let bookmarks = [];
-    let glassMode = false;
     let newTabLinks = localStorage.getItem("newTabLinks") === "true";
 
 
@@ -3641,16 +3539,6 @@ function setTextSafe(id, text) {
       logHistory('Setting', `Set 'Open Links in New Tab' to ${newTabLinks}`);
     }
 
-    function toggleInAppBrowser() {
-        if (!inAppBrowserEnabled){
-          document.getElementById('inAppBrowserSwitch').checked = false;
-          showToast('Turn on “Enable In-App Browser” first.');
-          return;
-        }
-        useInAppBrowser = !useInAppBrowser;
-        localStorage.setItem('useInAppBrowser', useInAppBrowser);
-        logHistory('Setting', `Set \"Open Links In-App\" to ${useInAppBrowser}`);
-      }
 
 
     function updateNewTabLinksOption() {
@@ -3980,11 +3868,10 @@ if (typeof updateStatsWidget === 'function') {
     updateStatsWidget();
 }
 
-  // Now do the rest of your setup (tile size, glass mode, etc.)
+  // Now do the rest of your setup (tile size,  etc.)
   const savedSize = localStorage.getItem("tileSize") || 90;
   document.getElementById("tileSizeSlider").value = savedSize;
   setTileSize(savedSize);
-  applyGlassMode();
   updateNewTabLinksOption();
 }
 
@@ -4229,27 +4116,7 @@ function enableDragAndDrop() {
       }
     }
 
-    function applyGlassMode() {
-      const body = document.body;
-      const searchBar = document.querySelector(".search-bar-form");
-      const tiles = document.querySelectorAll(".tile:not(.add-tile)");
-      if (glassMode) {
-        body.classList.add("glass-mode");
-        searchBar.classList.add("glass-tile");
-        tiles.forEach(tile => tile.classList.add("glass-tile"));
-      } else {
-        body.classList.remove("glass-mode");
-        searchBar.classList.remove("glass-tile");
-        tiles.forEach(tile => tile.classList.remove("glass-tile"));
-      }
-    }
 
-    function toggleGlassMode() {
-      glassMode = !glassMode;
-      localStorage.setItem("glassMode", glassMode);
-      logHistory('Setting', `Set glass mode to ${glassMode ? 'ON' : 'OFF'}`);
-      applyGlassMode();
-    }
 
     function toggleBgBlur() {
       const enabled = document.getElementById('bgBlurSwitch').checked;
@@ -4258,10 +4125,16 @@ function enableDragAndDrop() {
       applyBgBlur(enabled);
     }
 
-    function applyBgBlur(enabled) {
+function applyBgBlur(enabled) {
+      // 1. Toggle the CSS class that actually applies the blur effect
       document.body.classList.toggle('bg-blur', enabled);
+      
+      // 2. Hide or show the intensity slider container
+      const sliderContainer = document.getElementById('blurIntensitySliderContainer');
+      if (sliderContainer) {
+          sliderContainer.style.display = enabled ? 'block' : 'none';
+      }
     }
-
 
     let _iconLogTimer = null; // keep this once globally
 
@@ -4951,74 +4824,7 @@ if (searchInput) {
 
     // --- In-App Browser & Tab Management ---
 
-    function openInAppTab(url, title) {
-      if (!inAppBrowserEnabled) return window.open(url, '_blank');
-        const viewer = document.getElementById('iframe-viewer');
-        const frame = document.getElementById('browser-frame');
-        const titleEl = document.getElementById('iframe-title');
-        const faviconEl = document.getElementById('iframe-favicon');
-
-        // Check if this tab is already open
-        const existingTab = inAppTabs.find(tab => tab.url === url);
-        if (existingTab) {
-            switchToTab(existingTab.id);
-            return;
-        }
-
-        // Create a new tab object
-        const newTab = {
-            id: Date.now(),
-            url: url,
-            title: title
-        };
-        inAppTabs.push(newTab);
-        activeTabId = newTab.id;
-
-        // Update UI
-        titleEl.textContent = title;
-        try {
-            faviconEl.src = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;
-        } catch {
-            faviconEl.src = ''; // Default icon
-        }
-        
-        frame.src = url;
-        viewer.classList.remove('hidden');
-        logHistory('Tab', `Opened tab: '${title}'`);
-    }
-
-    function switchToTab(tabId) {
-        const tab = inAppTabs.find(t => t.id === tabId);
-        if (!tab) return;
-
-        activeTabId = tab.id;
-        const viewer = document.getElementById('iframe-viewer');
-        const frame = document.getElementById('browser-frame');
-        const titleEl = document.getElementById('iframe-title');
-        const faviconEl = document.getElementById('iframe-favicon');
-
-        titleEl.textContent = tab.title;
-        try {
-            faviconEl.src = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(tab.url).hostname}`;
-        } catch {
-            faviconEl.src = '';
-        }
-
-        frame.src = tab.url;
-        viewer.classList.remove('hidden');
-        closeTabsModal(); // Close the tab list modal after switching
-    }
-
-    function closeActiveTab() {
-        inAppTabs = inAppTabs.filter(tab => tab.id !== activeTabId);
-        if (inAppTabs.length > 0) {
-            // Switch to the last opened tab
-            switchToTab(inAppTabs[inAppTabs.length - 1].id);
-        } else {
-            // No tabs left, go home
-            goHome();
-        }
-    }
+ 
 
     function closeAllTabs() {
         if (confirm("Are you sure you want to close all in-app tabs?")) {
@@ -5029,84 +4835,7 @@ if (searchInput) {
         }
     }
 
-    function goHome() {
-        const viewer = document.getElementById('iframe-viewer');
-        const frame = document.getElementById('browser-frame');
-        viewer.classList.add('hidden');
-        frame.src = 'about:blank'; // Clear the frame to stop any processes
-        activeTabId = null;
-        if (document.fullscreenElement) {
-            document.exitFullscreen();
-        }
-    }
 
-    function refreshActiveTab() {
-        const frame = document.getElementById('browser-frame');
-        frame.src = frame.src; // Reloads the iframe
-    }
-
-    function maximizeTab() {
-        const viewer = document.getElementById('iframe-viewer');
-        if (!document.fullscreenElement) {
-            viewer.requestFullscreen().catch(err => {
-                showToast(`Error: ${err.message}`);
-            });
-        } else {
-            document.exitFullscreen();
-        }
-    }
-
-    function toggleIframeDarkMode() {
-        document.getElementById('browser-frame').classList.toggle('iframe-force-dark');
-    }
-
-    function toggleReaderMode() {
-        showToast("Reader mode is experimental and may not work on all sites.");
-        document.getElementById('browser-frame').classList.toggle('iframe-reader-mode');
-    }
-
-    // --- Tabs Modal Functions ---
-    function openTabsModal() {
-        const modal = document.getElementById("tabsModal");
-        modal.classList.remove("hidden");
-        renderTabsList();
-    }
-
-    function closeTabsModal() {
-        const modal = document.getElementById("tabsModal");
-        modal.classList.add("hidden");
-    }
-
-    function renderTabsList() {
-        const container = document.getElementById("tabs-list-container");
-        container.innerHTML = ''; // Clear previous list
-
-        if (inAppTabs.length === 0) {
-            container.innerHTML = `<p style="text-align: center; opacity: 0.7;">No in-app tabs are open.</p>`;
-            return;
-        }
-
-        inAppTabs.forEach(tab => {
-            const tabElement = document.createElement('div'); // Use div instead of <a>
-            tabElement.className = 'tab-item';
-            tabElement.title = `Click to switch to ${tab.title}`;
-            tabElement.onclick = () => switchToTab(tab.id);
-            
-            let favIconUrl = '';
-            try {
-                favIconUrl = `https://www.google.com/s2/favicons?sz=64&domain=${new URL(tab.url).hostname}`;
-            } catch {}
-
-            tabElement.innerHTML = `
-                <img src="${favIconUrl}" alt="">
-                <div class="tab-item-info">
-                    <span class="tab-item-title">${tab.title}</span>
-                    <span class="tab-item-url">${tab.url}</span>
-                </div>
-            `;
-            container.appendChild(tabElement);
-        });
-    }
 
     // --- History Modal Functions ---
     function openHistoryModal() {
@@ -5184,8 +4913,6 @@ if (searchInput) {
       setupNotepad();
       updateClock();
       setInterval(updateClock, 1000);
-      glassMode = localStorage.getItem("glassMode") === "true";
-      applyGlassMode();
 
       const savedAccentColor = localStorage.getItem('accentColor') || '#007bff';
       document.documentElement.style.setProperty('--accent-color', savedAccentColor);
@@ -5409,11 +5136,6 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       document.getElementById('quickNoteSwitch').checked = quickNoteOn;
       applyQuickNoteToggle(quickNoteOn);
 
-      // 🪩 Glass Mode
-      const glassOn = localStorage.getItem('glassMode') === 'true';
-      glassMode = glassOn;  // sync the module‑level var
-      document.getElementById('glassModeSwitch').checked = glassOn;
-      applyGlassMode();
 
       // 🏷️ Bookmark Labels
       const labelsHidden = localStorage.getItem('hideLabels') === 'true';
@@ -5428,18 +5150,6 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
       const newTab = localStorage.getItem('newTabLinks') === 'true';
       document.getElementById('newTabLinksSwitch').checked = newTab;
       
-      // 🌐 In-App Browser
-      const inApp = localStorage.getItem('useInAppBrowser') === 'true';
-      document.getElementById('inAppBrowserSwitch').checked = inApp;
-      useInAppBrowser = inApp;
-
-      document.getElementById('inAppBrowserEnabledSwitch').checked = inAppBrowserEnabled;
-      applyInAppEnabled(inAppBrowserEnabled);
-
-      // 🛡️ In-App Browser Settings
-      const blockPopups = localStorage.getItem('blockPopups') === 'true';
-      document.getElementById('blockPopupsSwitch').checked = blockPopups;
-      updateSandboxPermissions();
     });
 
     // Load Mic Icon preference
@@ -5585,12 +5295,7 @@ document.getElementById('searchForm')?.addEventListener('submit', e => {
 });
 
 
-// Disable all in-app browser functions
-  window.openInAppBrowser = false;
-  function openInApp(url) {
-    // Always open in a new tab instead of iframe
-    window.open(url, '_blank');
-  }
+
 
   // Override any old in-app browser functions
   const disabledFns = [
@@ -5660,7 +5365,20 @@ function setBgBrightness(value) {
 
 // Load saved preferences on startup
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Blur Intensity
+    // --- 1. Background Blur Toggle State ---
+    // Read the saved toggle state (localStorage saves booleans as strings)
+    const savedBgBlur = localStorage.getItem('bgBlur') === 'true'; 
+    
+    // Sync the HTML checkbox with the saved state
+    const blurSwitch = document.getElementById('bgBlurSwitch');
+    if (blurSwitch) {
+        blurSwitch.checked = savedBgBlur;
+    }
+    
+    // Apply the visibility and CSS class immediately on load
+    applyBgBlur(savedBgBlur);
+
+    // --- 2. Blur Intensity State ---
     const savedBlur = localStorage.getItem('bgBlurIntensity') || '6';
     document.documentElement.style.setProperty('--bg-blur-intensity', `${savedBlur}px`);
     const blurSlider = document.getElementById('blurIntensitySlider');
@@ -5670,7 +5388,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSliderColor(blurSlider);
     }
 
-    // 2. Background Brightness
+    // 3. Background Brightness
     const savedBrightness = localStorage.getItem('bgBrightness') || '100';
     document.documentElement.style.setProperty('--bg-brightness', `${savedBrightness}%`);
     const brightnessSlider = document.getElementById('bgBrightnessSlider');
@@ -5680,6 +5398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSliderColor(brightnessSlider);
     }
 });
+
 
 
    // Register SW only when served from http/https (not file://)
