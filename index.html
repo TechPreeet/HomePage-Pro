@@ -44,148 +44,139 @@
 /* =========================
            BASE LAYOUT
         ========================= */
-        
-      
-        
-        html, body { 
-            width: 100vw;
-            height: 100vh; /* Fallback */
-            height: 100dvh; 
-            min-height: -webkit-fill-available;
-            margin: 0;
-            padding: 0;
-            background-color: #000000; /* Add this to kill the white base */
-            overflow: hidden; /* Add this to prevent the whole page from bouncing and revealing edges */
-        }
-        .viewport { 
-            height: 100%; /* Fallback */
-            height: 100dvh; 
-            display: flex; 
-            flex-direction: column; 
-        }        .content { flex: 1 1 auto; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
-        .blur-app { filter: blur(8px); pointer-events: none; user-select: none; }
-        
-        
-        :root, html, body, * {
-            -webkit-user-select: none !important;
-            user-select: none !important;
-            -webkit-touch-callout: none !important;
-            -webkit-tap-highlight-color: rgba(0,0,0,0);
-          }
-          input, textarea, select, [contenteditable="true"], .selectable {
-            -webkit-user-select: text !important;
-            user-select: text !important;
-            -webkit-touch-callout: default !important;
-          }
-
-
-  :root {
-    --accent-color: #007bff;
-    /* Change white → dark to prevent flash */
-    --bg-color: #00000009;
-    --text-color: #ffffff;
-    --grid-gap: 10px;
-
-    /* Add these two new lines */
+/* =========================================
+   1. CSS Variables & Base Theme Setup
+   ========================================= */
+:root {
+  --accent-color: #007bff;
+  --bg-color: #000000; /* Dark default to prevent flash */
+  --text-color: #ffffff;
+  --grid-gap: 10px;
   --bg-blur-intensity: 6px;
   --bg-brightness: 100%;
-  }
-
-  html, body {
-    pointer-events: auto !important;
-    height: 100%;
-    overflow: hidden; /* Keep this to prevent rubber-banding */
-    overscroll-behavior: none; /* Prevents the "bounce" effect */
+  color-scheme: dark; /* Ensures system scrollbars/UI are dark */
 }
 
-  /* Push your app’s content into the safe‑area edges securely */
-  .viewport {
-    padding-top: env(safe-area-inset-top); 
-    padding-right: env(safe-area-inset-right);
-   /* padding-bottom: env(safe-area-inset-bottom); */
-    padding-left: env(safe-area-inset-left);
-  }
-.content {
-  padding-bottom: env(safe-area-inset-bottom);
+/* =========================================
+   2. PWA Selectability Rules (Prevents accidental highlights)
+   ========================================= */
+:root, html, body, * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
-  html {
-    
-    background-color: #000000;
-    color-scheme: dark; /* ensure dark scrollbars/UI */
-  }
 
-  body {
-    
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    overflow: hidden;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center center;
-    transition: background-color 0.5s ease-in-out;
-  }
+input, textarea, select, [contenteditable="true"], .selectable {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+}
 
-/* ✅ FIX: Force background to cover entire screen including notches/bars */
+/* =========================================
+   3. Base HTML & Body (Configured for Natural Scrolling)
+   ========================================= */
+html {
+  background-color: #000000; /* Black base so white never flashes */
+}
+
 body {
-    background-attachment: scroll !important; /* Overrides the buggy 'fixed' */
-    background-position: center center;
-    background-size: cover;
-    /* Ensure body takes full height but doesn't trap scroll */
-    min-height: 100%; 
-    margin: 0;
-    padding: 0;
+  width: 100vw;
+  min-height: 100vh; /* Allows the page to grow and scroll naturally so mobile browsers minimize UI */
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  
+  /* Hide horizontal overflow to prevent side-to-side sway, but allow vertical scroll */
+  overflow-x: hidden; 
+  
+  /* Inherits wallpaper set by JS */
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+  transition: background-color 0.5s ease-in-out;
 }
 
-/* This element inherits the image you set on body via JS, 
-   but renders it in a fixed layer that ignores safe-areas */
+/* =========================================
+   4. The Magic Wallpaper Layer (Stretches past safe areas)
+   ========================================= */
 body::before {
-    content: "";
-    position: fixed;
-    top: -10%; /* Adding negative margins ensures no gaps when overscrolling */
-    left: -10%; 
-    width: 120vw; /* Stretch beyond edges to cover safe areas completely */
-    height: 120vh;
-    z-index: -10; 
-    background-image: inherit; 
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    pointer-events: none;
+  content: "";
+  position: fixed; /* Locks wallpaper in place while the rest of the body scrolls */
+  top: -20px; 
+  bottom: -20px; 
+  left: -20px; 
+  right: -20px; 
+  width: auto; 
+  height: auto; 
+  z-index: -10; 
+  background-image: inherit; 
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  pointer-events: none;
 }
 
+/* =========================================
+   5. Layout Containers
+   ========================================= */
+.viewport {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  box-sizing: border-box;
+  /* Apply safe areas to the top and sides */
+  padding-top: env(safe-area-inset-top); 
+  padding-right: env(safe-area-inset-right);
+  padding-left: env(safe-area-inset-left);
+}
 
-  /* Preload or transition state — force dark background */
-  body.preload {
-    background-color: #00000009 !important;
-    transition: none !important;
+.content {
+  flex: 1 1 auto;
+  width: 100%;
+  box-sizing: border-box;
+  /* Apply bottom safe area here so scrolling items clear the iPhone home bar */
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
+/* =========================================
+   6. Utility & State Classes
+   ========================================= */
+.blur-app { 
+  filter: blur(8px); 
+  pointer-events: none; 
+  user-select: none; 
+}
+
+body.preload {
+  background-color: #000000 !important;
+  transition: none !important;
+}
+
+body.dark-mode {
+  background-color: #121212;
+}
+
+body:focus {
+  outline: none;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes tileFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-
-  /* Dark mode override */
-  body.dark-mode {
-    background-color: #121212;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-
-
-    body:focus {
-        outline: none;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    @keyframes tileFadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+}
 
 
     .tile.dragging {
@@ -1116,18 +1107,20 @@ body.sidebar-slider-active #settings-sidebar{
     }
 
     #videoBg {
-      position: fixed;
-      top: -10%;
-      left: -10%;
-      width: 120vw;
-      height: 120vh;
-      object-fit: cover;
-      z-index: -1;
-      pointer-events: none;
-    }
+  position: fixed;
+  top: -20px; 
+  bottom: -20px; 
+  left: -20px; 
+  right: -20px;
+  width: auto; 
+  height: auto;
+  object-fit: cover;
+  z-index: -1;
+  pointer-events: none;
+}
 
     body.video-active #videoBg {
-      z-index: 0;
+      z-index: -1;
     }
 
     body.bg-image-active {
@@ -1226,35 +1219,26 @@ body.sidebar-slider-active #settings-sidebar{
       -webkit-user-select: none;
     }
 
-    .container {
-      display: flex; 
-      flex-direction: column;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-
-      /* Apply safe area padding here so content is safe, but bg is full */
-   /* padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);*/
+      .container {
+    display: flex; 
+    flex-direction: column;
+    min-height: 100vh;
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
-    
-    height: 100%; /* Ensure it fills the view */
     box-sizing: border-box;
-    }
+    /* Removed position: absolute and overflow: hidden */
+}
 
     #bookmarksWrapper {
-      flex: 1 1 auto;
-      width: 100%;
-      padding-bottom: 4rem;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-sizing: border-box; /* <-- ADD THIS LINE */
-    }
+    width: 100%;
+    /* Keep padding for bottom safe area */
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom)); 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    /* Removed overflow-y: auto */
+}
 
     #bookmarksWrapper .spacer {
         height: 30vh;
@@ -1523,10 +1507,12 @@ body.sidebar-slider-active #settings-sidebar{
 /* ─── Wallpaper blur & brightness layer ─── */
 #bgBlurLayer {
   position: fixed;
-  top: -10%;
-  left: -10%;
-  width: 120vw;
-  height: 120vh;
+  top: -20px; 
+  bottom: -20px; 
+  left: -20px; 
+  right: -20px;
+  width: auto; 
+  height: auto;
   backdrop-filter: blur(0px) brightness(var(--bg-brightness, 100%));
   -webkit-backdrop-filter: blur(0px) brightness(var(--bg-brightness, 100%));
   pointer-events: none;
@@ -2037,10 +2023,66 @@ body.dark-mode .search-result-tile span {
     color: #fff !important; 
 }
 
+#stickyHeader {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    /* Respects the iPhone notch dynamically */
+    padding-top: max(15px, env(safe-area-inset-top)); 
+    padding-bottom: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    /* Beautiful glassy effect when bookmarks scroll underneath 
+    background: rgba(128, 128, 128, 0.1); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);*/
+}
+
+#scrollTopBtn {
+    position: fixed;
+    /* Sits perfectly above the bottom home bar */
+    bottom: calc(20px + env(safe-area-inset-bottom)); 
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15); /* Glass base */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-color, #ffffff);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    cursor: pointer;
+    
+    /* Hidden by default with a smooth animation */
+    opacity: 0;
+    pointer-events: none; 
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+/* Class added by Javascript when scrolling down */
+#scrollTopBtn.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+/* Add this to your CSS sheet */
+body.no-scroll {
+    overflow: hidden !important;
+    touch-action: none; /* Completely disables mobile swipe scrolling */
+}
+
 </style>
 </head>
 <body class="preload" tabindex="-1">
-
 
 <div class="top-blend"></div>
 
@@ -2150,6 +2192,9 @@ body.dark-mode .search-result-tile span {
   <div class="container">
     <div id="bookmarksWrapper">
         <div class="spacer"></div>
+
+        <div id="stickyHeader">
+
         <form class="search-bar-form" id="searchForm">
           <input
             type="search"
@@ -2188,6 +2233,8 @@ body.dark-mode .search-result-tile span {
                 </svg>
             </button>
             <button id="refreshBtn" class="toggle-refresh" aria-label="Refresh">⟳</button>
+        </div>
+
         </div>
         
         <div class="grid" id="bookmarkGrid">
@@ -2560,6 +2607,12 @@ body.dark-mode .search-result-tile span {
 
     <input type="file" id="importInput" accept=".json,application/json,.html,.htm,text/html">
   </div>
+
+  <button id="scrollTopBtn" title="Back to top">
+    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+</button>
 
   <script>
 
@@ -5082,8 +5135,16 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
             });
         });
 
+// 1. Initial Load Check
         const saved = localStorage.getItem('bookmarksCollapsed') === 'true';
         wrapper.classList.toggle('collapsed', saved);
+        
+        // NEW: Lock or unlock scroll based on saved state on load
+        if (saved) {
+            document.body.classList.add('no-scroll');
+        } else {
+            document.body.classList.remove('no-scroll');
+        }
         
         const isInitiallyCollapsed = wrapper.classList.contains('collapsed');
         const buttonsToToggle = [addBtn, refreshBtn, tabsBtn, historyBtn];
@@ -5096,6 +5157,7 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
             toggleBtn.style.transform = 'rotate(-180deg)';
         }
 
+        // 2. The Click Event
         toggleBtn.addEventListener('click', () => {
             const isCollapsed = wrapper.classList.toggle('collapsed');
             toggleBtn.setAttribute('aria-label', isCollapsed ? 'Show bookmarks' : 'Hide bookmarks');
@@ -5105,9 +5167,17 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
                 if(btn) btn.style.display = isCollapsed ? 'none' : '';
             });
 
+            // NEW: Lock or unlock scroll when user clicks the button
+            if (isCollapsed) {
+                document.body.classList.add('no-scroll');
+            } else {
+                document.body.classList.remove('no-scroll');
+            }
+
             if (!isCollapsed) {
                 document.getElementById('searchResults').style.display = 'none';
             }
+            
             localStorage.setItem('bookmarksCollapsed', isCollapsed);
             logHistory('Setting', `${isCollapsed ? 'Collapsed' : 'Expanded'} bookmarks section`);
         });
@@ -5414,6 +5484,28 @@ document.addEventListener('DOMContentLoaded', () => {
         updateLabel('bgBrightnessValue', savedBrightness + '%');
         updateSliderColor(brightnessSlider);
     }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+    // Monitor window scrolling
+    window.addEventListener("scroll", () => {
+        // If scrolled down more than 300 pixels, show the arrow
+        if (window.scrollY > 300) {
+            scrollTopBtn.classList.add("show");
+        } else {
+            scrollTopBtn.classList.remove("show");
+        }
+    });
+
+    // When clicked, scroll back to the absolute top smoothly
+    scrollTopBtn.addEventListener("click", () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    });
 });
 
 
