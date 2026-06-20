@@ -46,9 +46,13 @@
         
       
         
-html, body { 
-            height: 100%; /* Fallback */
+        html, body { 
+            width: 100vw;
+            height: 100vh; /* Fallback */
             height: 100dvh; 
+            min-height: -webkit-fill-available;
+            margin: 0;
+            padding: 0;
         }
         .viewport { 
             height: 100%; /* Fallback */
@@ -136,13 +140,11 @@ body {
 body::before {
     content: "";
     position: fixed;
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; /* or 100vh */
-    z-index: -10; /* Behind everything */
-    
-    /* Grab the image set on body */
+    top: -10%; /* Adding negative margins ensures no gaps when overscrolling */
+    left: -10%; 
+    width: 120vw; /* Stretch beyond edges to cover safe areas completely */
+    height: 120vh;
+    z-index: -10; 
     background-image: inherit; 
     background-size: cover;
     background-position: center center;
@@ -1112,10 +1114,10 @@ body.sidebar-slider-active #settings-sidebar{
 
     #videoBg {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: -10%;
+      left: -10%;
+      width: 120vw;
+      height: 120vh;
       object-fit: cover;
       z-index: -1;
       pointer-events: none;
@@ -1518,16 +1520,17 @@ body.sidebar-slider-active #settings-sidebar{
 /* ─── Wallpaper blur & brightness layer ─── */
 #bgBlurLayer {
   position: fixed;
-  inset: 0;
-  /* By default, apply brightness but no blur */
+  top: -10%;
+  left: -10%;
+  width: 120vw;
+  height: 120vh;
   backdrop-filter: blur(0px) brightness(var(--bg-brightness, 100%));
   -webkit-backdrop-filter: blur(0px) brightness(var(--bg-brightness, 100%));
   pointer-events: none;
   z-index: 0;
-  opacity: 1; /* Always active to catch the brightness slider */
+  opacity: 1; 
   transition: backdrop-filter 0.3s ease;
 }
-
 body.bg-blur #bgBlurLayer {
   /* When the blur switch is ON, apply BOTH the blur slider and brightness slider */
   backdrop-filter: blur(var(--bg-blur-intensity, 6px)) brightness(var(--bg-brightness, 100%));
@@ -3310,9 +3313,9 @@ function setTextSafe(id, text) {
         document.body.classList.remove("bg-image-active");
         localStorage.removeItem("bgImage");
 
-        localStorage.setItem("gradientIndex", 0);
-        applyGradientBackground(0);
-        document.getElementById('gradientSlider').value = 0;
+        localStorage.setItem("gradientIndex", 16);
+        applyGradientBackground(16);
+        document.getElementById('gradientSlider').value = 16;
 
         if(showAlertMsg) {
             showToast("Wallpaper has been removed.");
@@ -4581,7 +4584,7 @@ function startVoiceSearch () {
         const bgImage = localStorage.getItem("bgImage");
         const hasVideo = localStorage.getItem("hasVideo") === "true";
         const videoUrl = localStorage.getItem("videoUrl");
-        const gradientIndex = parseInt(localStorage.getItem("gradientIndex") || "0", 10);
+        const gradientIndex = parseInt(localStorage.getItem("gradientIndex") || "16", 10);
         const videoBg = document.getElementById("videoBg");
 
         if (bgImage) {
@@ -4934,7 +4937,7 @@ if (searchInput) {
       document.getElementById('iconStyleSlider').value = savedIconStyle;
       setIconStyle(savedIconStyle);
       
-      const savedGradient = localStorage.getItem("gradientIndex") || 0;
+      const savedGradient = localStorage.getItem("gradientIndex") || 16; // 16 = Mauve
       applyGradientBackground(savedGradient);
 
       await loadBackgrounds(); 
@@ -4948,7 +4951,9 @@ if (searchInput) {
       applyRearrangeMode();
       
       enableDragAndDrop();
-      applyDarkMode(localStorage.getItem("dark-mode") === "true");
+      // Default to true (light text/dark mode) if nothing is stored
+      const storedDarkMode = localStorage.getItem("dark-mode");
+      applyDarkMode(storedDarkMode !== null ? storedDarkMode === "true" : true);
       loadBookmarks();
       
 if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
@@ -5029,13 +5034,13 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
     });
 
     window.addEventListener('DOMContentLoaded', () => {
-      const savedDark = localStorage.getItem('dark-mode') === 'true';
+      const storedDark = localStorage.getItem('dark-mode');
+      const savedDark = storedDark !== null ? storedDark === 'true' : true; // Default true
       // apply whatever you had last
       applyDarkMode(savedDark);
       // but make the toggle CLOSED when dark, OPEN when light
       document.getElementById('darkModeSwitch').checked = !savedDark;
     });
-
 
     document.getElementById('refreshBtn').addEventListener('click', () => {
       location.reload();
