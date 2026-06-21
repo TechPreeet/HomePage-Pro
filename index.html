@@ -4393,6 +4393,9 @@ function setIconStyle(value, skipLog = false) {
                 ctx.drawImage(img, 0, 0, width, height);
 
                 const dataUrl = canvas.toDataURL(file.type);
+
+                // ✅ ADD THIS LINE: Wipe gradient memory when saving a new image
+                localStorage.setItem("gradientIndex", 0);
                 
                 document.documentElement.style.setProperty('--locked-bg', `url('${dataUrl}')`);
                 document.body.classList.add("bg-image-active");
@@ -4634,6 +4637,10 @@ function startVoiceSearch () {
         const videoBg = document.getElementById("videoBg");
 
         if (bgImage) {
+
+            // ✅ ADD THIS LINE: Forcefully kill lingering gradients on load
+            localStorage.setItem("gradientIndex", 0);
+
             document.documentElement.style.setProperty('--locked-bg', `url('${bgImage}')`);
             document.body.classList.add("bg-image-active");
         } else if (hasVideo) {
