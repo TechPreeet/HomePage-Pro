@@ -3359,9 +3359,9 @@ function setTextSafe(id, text) {
         document.body.classList.remove("bg-image-active");
         localStorage.removeItem("bgImage");
 
-        localStorage.setItem("gradientIndex", 16);
-        applyGradientBackground(16);
-        document.getElementById('gradientSlider').value = 16;
+        localStorage.setItem("gradientIndex", 0);
+        applyGradientBackground(0);
+        document.getElementById('gradientSlider').value = 0;
 
         if(showAlertMsg) {
             showToast("Wallpaper has been removed.");
@@ -4630,7 +4630,7 @@ function startVoiceSearch () {
         const bgImage = localStorage.getItem("bgImage");
         const hasVideo = localStorage.getItem("hasVideo") === "true";
         const videoUrl = localStorage.getItem("videoUrl");
-        const gradientIndex = parseInt(localStorage.getItem("gradientIndex") || "16", 10);
+        const gradientIndex = parseInt(localStorage.getItem("gradientIndex") || "0", 10);
         const videoBg = document.getElementById("videoBg");
 
         if (bgImage) {
@@ -4983,7 +4983,7 @@ if (searchInput) {
       document.getElementById('iconStyleSlider').value = savedIconStyle;
       setIconStyle(savedIconStyle);
       
-      const savedGradient = localStorage.getItem("gradientIndex") || 16; // 16 = Mauve
+      const savedGradient = localStorage.getItem("gradientIndex") || 0;
       applyGradientBackground(savedGradient);
 
       await loadBackgrounds(); 
