@@ -793,14 +793,44 @@ body.dark-mode #settings-sidebar hr {
 
 
 
-.toolbar-option:hover {
+/*.toolbar-option:hover {
   background: transparent;
   box-shadow:
     0 0 0 2px var(--accent-color),
     0 0 12px var(--accent-color);
   border-radius: 40px;
-}    
+}    */
+/* =========================================
+   1. MOBILE & UNIVERSAL TAP STATE (Touch Screens)
+   ========================================= */
+/* This happens when you physically touch the screen or click */
+.toolbar-option:active {
+    /* Glowing box-shadow for touch screens */
+    box-shadow: 0 0 0 2px var(--accent-color), 0 0 12px var(--accent-color) !important;
+    background-color: transparent !important; /* Ensures it doesn't fill with solid color on mobile */
+    border-radius: 40px;
+    transition: none !important; /* Makes the tap feel instant */
+}
 
+/* =========================================
+   2. DESKTOP ONLY (Mouse & Trackpad)
+   ========================================= */
+@media (hover: hover) and (pointer: fine) {
+    
+    /* Laptop Hover: Fills the background and adds the glow */
+    .toolbar-option:hover {
+        
+        box-shadow: 0 0 15px -2px var(--accent-color);
+        border-radius: 40px;
+    }
+
+    /* Laptop Click State */
+    .toolbar-option:active {
+        background-color: var(--accent-color) !important;
+        box-shadow: none !important; /* Removes the glow to favor the fill on click */
+        color: #fff !important; /* Keeps text readable over the solid fill */
+    }
+}
 /* ===== Range‑slider track & thumb (All Sliders) ===== */
 #tileSizeSlider, #gradientSlider, #iconStyleSlider,
 #blurIntensitySlider, #bgBrightnessSlider {
