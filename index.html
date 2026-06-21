@@ -82,43 +82,38 @@ html {
 
 body {
   width: 100vw;
-  min-height: 100vh; /* Allows the page to grow and scroll naturally so mobile browsers minimize UI */
+  min-height: 100vh; 
   margin: 0;
   padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-color);
-  
-  /* Hide horizontal overflow to prevent side-to-side sway, but allow vertical scroll */
   overflow-x: hidden; 
-  
-  /* Inherits wallpaper set by JS */
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center center;
   transition: background-color 0.5s ease-in-out;
+  
+  /* ✅ ADD THIS LINE */
+  isolation: isolate; 
 }
-
 /* =========================================
-   4. The Magic Wallpaper Layer (Stretches past safe areas)
+   4. The Magic Wallpaper Layer 
    ========================================= */
 body::before {
-  content: "";
-  position: fixed; /* Locks wallpaper in place while the rest of the body scrolls */
-  top: -20px; 
-  bottom: -20px; 
-  left: -20px; 
-  right: -20px; 
-  width: auto; 
-  height: auto; 
-  z-index: -10; 
-  background-image: inherit; 
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  pointer-events: none;
+    content: "";
+    position: fixed !important; 
+    top: 0 !important; 
+    bottom: 0 !important; 
+    left: 0 !important; 
+    right: 0 !important; 
+    z-index: -10; 
+    
+    /* ✅ THE FIX: Pull directly from the JS variable */
+    background-image: var(--locked-bg) !important; 
+    
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    pointer-events: none;
 }
-
 /* =========================================
    5. Layout Containers
    ========================================= */
@@ -1106,28 +1101,26 @@ body.sidebar-slider-active #settings-sidebar{
       }
     }
 
-    #videoBg {
-  position: fixed;
-  top: -20px; 
-  bottom: -20px; 
-  left: -20px; 
-  right: -20px;
-  width: auto; 
-  height: auto;
-  object-fit: cover;
-  z-index: -1;
-  pointer-events: none;
-}
-
-    body.video-active #videoBg {
+#videoBg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       z-index: -1;
+      pointer-events: none;
     }
 
-    body.bg-image-active {
+    body.video-active #videoBg {
+      z-index: 0;
+    }
+
+   /* body.bg-image-active {
       background-size: cover;
       background-position: center;
       z-index: 1;
-    }
+    } */
 
     @keyframes spinOnce {
       0% { transform: rotate(0deg); }
@@ -1507,19 +1500,16 @@ body.sidebar-slider-active #settings-sidebar{
 /* ─── Wallpaper blur & brightness layer ─── */
 #bgBlurLayer {
   position: fixed;
-  top: -20px; 
-  bottom: -20px; 
-  left: -20px; 
-  right: -20px;
-  width: auto; 
-  height: auto;
+  inset: 0;
+  /* By default, apply brightness but no blur */
   backdrop-filter: blur(0px) brightness(var(--bg-brightness, 100%));
   -webkit-backdrop-filter: blur(0px) brightness(var(--bg-brightness, 100%));
   pointer-events: none;
   z-index: 0;
-  opacity: 1; 
+  opacity: 1; /* Always active to catch the brightness slider */
   transition: backdrop-filter 0.3s ease;
 }
+
 body.bg-blur #bgBlurLayer {
   /* When the blur switch is ON, apply BOTH the blur slider and brightness slider */
   backdrop-filter: blur(var(--bg-blur-intensity, 6px)) brightness(var(--bg-brightness, 100%));
@@ -3365,7 +3355,7 @@ function setTextSafe(id, text) {
         localStorage.removeItem("hasVideo");
         localStorage.removeItem("videoUrl");
 
-        document.body.style.backgroundImage = '';
+        document.documentElement.style.setProperty('--locked-bg', '');
         document.body.classList.remove("bg-image-active");
         localStorage.removeItem("bgImage");
 
@@ -3385,11 +3375,11 @@ function setTextSafe(id, text) {
         const label = document.getElementById('gradientLabel');
         
         if (gradient && gradient.value) {
-            document.body.style.backgroundImage = gradient.value;
+            document.documentElement.style.setProperty('--locked-bg', gradient.value);
             document.body.classList.remove("bg-image-active", "video-active");
         } else {
             if (!localStorage.getItem('bgImage') && !localStorage.getItem('hasVideo')) {
-                document.body.style.backgroundImage = '';
+                document.documentElement.style.setProperty('--locked-bg', '');
             }
         }
         
@@ -4404,7 +4394,7 @@ function setIconStyle(value, skipLog = false) {
 
                 const dataUrl = canvas.toDataURL(file.type);
                 
-                document.body.style.backgroundImage = `url('${dataUrl}')`;
+                document.documentElement.style.setProperty('--locked-bg', `url('${dataUrl}')`);
                 document.body.classList.add("bg-image-active");
                 localStorage.setItem("bgImage", dataUrl);
                 showToast("Wallpaper set!");
@@ -4644,7 +4634,7 @@ function startVoiceSearch () {
         const videoBg = document.getElementById("videoBg");
 
         if (bgImage) {
-            document.body.style.backgroundImage = `url('${bgImage}')`;
+            document.documentElement.style.setProperty('--locked-bg', `url('${bgImage}')`);
             document.body.classList.add("bg-image-active");
         } else if (hasVideo) {
             if (videoUrl) {
