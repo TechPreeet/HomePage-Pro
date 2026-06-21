@@ -3369,10 +3369,27 @@ function setTextSafe(id, text) {
         }
     }
 
-    function setGradientBackground(index) {
+function setGradientBackground(index) {
         const gradientIndex = parseInt(index, 10);
         const gradient = gradients[gradientIndex];
         const label = document.getElementById('gradientLabel');
+
+        // THE FIX: If we are applying a gradient, we MUST kill the image/video
+        if (gradientIndex > 0) {
+            localStorage.removeItem("bgImage");
+            localStorage.removeItem("hasVideo");
+            localStorage.removeItem("videoUrl");
+
+            // ✅ CRITICAL FIX: You must define videoBg before targeting it!
+            const videoBg = document.getElementById("videoBg");
+            if (videoBg) {
+                videoBg.pause();
+                videoBg.src = "";
+                videoBg.classList.add("hidden");
+            }
+
+            document.body.classList.remove("bg-image-active", "video-active");
+        }
         
         if (gradient && gradient.value) {
             document.documentElement.style.setProperty('--locked-bg', gradient.value);
@@ -3383,21 +3400,21 @@ function setTextSafe(id, text) {
             }
         }
         
-        label.textContent = `Background: ${gradient.name}`;
-        // Debounce the log: wait 3s after user stops sliding
+        label.textContent = `Background Style: ${gradient ? gradient.name : 'Default'}`;
+        
         clearTimeout(_gradLogTimer);
         _gradLogTimer = setTimeout(() => {
           if (localStorage.getItem("gradientIndex") !== String(gradientIndex)) {
-            logHistory('Setting', `Set background to gradient: ${gradient.name}`);
+            logHistory('Setting', `Set background to gradient: ${gradient ? gradient.name : 'Default'}`);
             localStorage.setItem("gradientIndex", gradientIndex);
           }
         }, 3000);
-
 
         const slider = document.getElementById('gradientSlider');
         const percentage = (gradients.length <= 1) ? 100 : (gradientIndex / (gradients.length - 1)) * 100;
         slider.style.background = `linear-gradient(to right, var(--accent-color) ${percentage}%, #ffffff ${percentage}%)`;
     }
+
 
     function applyGradientBackground(index) {
         const slider = document.getElementById('gradientSlider');
@@ -4369,9 +4386,11 @@ function setIconStyle(value, skipLog = false) {
         }
     });
 
-    function resizeAndStoreImage(file) {
-        const MAX_WIDTH = 3840;
-        const MAX_HEIGHT = 2160;
+function resizeAndStoreImage(file) {
+        // Calculate dynamic max size based on the user's actual screen
+        const screenMax = Math.max(window.screen.width, window.screen.height) * (window.devicePixelRatio || 1);
+        const MAX_DIMENSION = Math.min(screenMax, 2560); // Safely cap at 1440p equivalents
+
         const reader = new FileReader();
 
         reader.onload = function(e) {
@@ -4380,8 +4399,9 @@ function setIconStyle(value, skipLog = false) {
                 let width = img.width;
                 let height = img.height;
 
-                if (width > MAX_WIDTH || height > MAX_HEIGHT) {
-                    const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+                // Scale down if it exceeds the screen's required pixels
+                if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+                    const ratio = Math.min(MAX_DIMENSION / width, MAX_DIMENSION / height);
                     width *= ratio;
                     height *= ratio;
                 }
@@ -4390,23 +4410,35 @@ function setIconStyle(value, skipLog = false) {
                 canvas.width = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(img, 0, 0, width, height);
 
-                const dataUrl = canvas.toDataURL(file.type);
+                // ✅ CRITICAL FIX: Force JPEG output at 80% quality. 
+                // This saves massive amounts of RAM and localStorage space.
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
 
-                // ✅ ADD THIS LINE: Wipe gradient memory when saving a new image
-                localStorage.setItem("gradientIndex", 0);
-                
-                document.documentElement.style.setProperty('--locked-bg', `url('${dataUrl}')`);
-                document.body.classList.add("bg-image-active");
-                localStorage.setItem("bgImage", dataUrl);
-                showToast("Wallpaper set!");
-                logHistory('Setting', `Set image background from file: ${file.name}`);
+                try {
+                    // Forcefully reset gradient UI
+                    localStorage.setItem("gradientIndex", 0);
+                    document.getElementById('gradientSlider').value = 0;
+                    
+                    document.documentElement.style.setProperty('--locked-bg', `url('${dataUrl}')`);
+                    document.body.classList.add("bg-image-active");
+                    localStorage.setItem("bgImage", dataUrl);
+                    
+                    showToast("Wallpaper set!");
+                    logHistory('Setting', `Set image background from file: ${file.name}`);
+                } catch (error) {
+                    console.error("Storage Error:", error);
+                    showToast("Image is still too large for browser memory. Try a smaller file.");
+                }
             }
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     }
+
 
     document.getElementById("bgInput").addEventListener("change", function(event) {
       const file = event.target.files[0];
@@ -4638,8 +4670,14 @@ function startVoiceSearch () {
 
         if (bgImage) {
 
-            // ✅ ADD THIS LINE: Forcefully kill lingering gradients on load
+          // ✅ Explicitly clear video and gradient UI when booting an image
+            videoBg.classList.add("hidden");
+            videoBg.src = "";
             localStorage.setItem("gradientIndex", 0);
+            
+            // Note: If you have a slider element on the DOM at load time, sync it here:
+            const slider = document.getElementById('gradientSlider');
+            if(slider) slider.value = 0;
 
             document.documentElement.style.setProperty('--locked-bg', `url('${bgImage}')`);
             document.body.classList.add("bg-image-active");
