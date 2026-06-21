@@ -766,18 +766,19 @@ body.dark-mode #settings-sidebar hr {
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
-        width: 40px;
-        height: 25px;
+        width: 102px;
+        height: 26px;
         background-color: transparent;
-        border: none;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
         cursor: pointer;
     }
     #accentColorPicker::-webkit-color-swatch {
-        border-radius: 5px;
+        border-radius: 18px;
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
     #accentColorPicker::-moz-color-swatch {
-        border-radius: 5px;
+        border-radius: 18px;
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
@@ -792,13 +793,14 @@ body.dark-mode #settings-sidebar hr {
 
 
 
-    .toolbar-option:hover {
-  background: var(--accent-color);
-  /* transform: scale(1.02);  <-- REMOVED to prevent "frame drop" */
-  box-shadow: 0 0 15px -2px var(--accent-color);
+.toolbar-option:hover {
+  background: transparent;
+  box-shadow:
+    0 0 0 2px var(--accent-color),
+    0 0 12px var(--accent-color);
   border-radius: 40px;
-}
-    
+}    
+
 /* ===== Range‑slider track & thumb (All Sliders) ===== */
 #tileSizeSlider, #gradientSlider, #iconStyleSlider,
 #blurIntensitySlider, #bgBrightnessSlider {
@@ -806,7 +808,7 @@ body.dark-mode #settings-sidebar hr {
   margin: 5px 0;
   -webkit-appearance: none;
           appearance: none;
-  height: 8px;
+  height: 18px;
   border-radius: 50px;               
   background: #ffffff;               /* plain; JS will paint the gradient */
   outline: none;
@@ -834,19 +836,22 @@ body.dark-mode #settings-sidebar hr {
 #blurIntensitySlider::-webkit-slider-thumb, #bgBrightnessSlider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 36px;
+  height: 36px;
   background: #ffffff;
   border-radius: 50%;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: transform 0.2s ease;
-  margin-top: -4px;          
+  margin-top: -14px;          
 }
 
 #tileSizeSlider::-webkit-slider-thumb:hover, #gradientSlider::-webkit-slider-thumb:hover, #iconStyleSlider::-webkit-slider-thumb:hover,
 #blurIntensitySlider::-webkit-slider-thumb:hover, #bgBrightnessSlider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
+box-shadow:
+    0 0 0 2px var(--accent-color),
+    0 0 12px var(--accent-color);
 }
 
 #tileSizeSlider::-moz-range-thumb, #gradientSlider::-moz-range-thumb, #iconStyleSlider::-moz-range-thumb,
@@ -1400,8 +1405,8 @@ body.sidebar-slider-active #settings-sidebar{
 .switch {
   position: relative;
   display: inline-block;
-  width: 40px;
-  height: 20px;
+  width: 50px;
+  height: 26px;
 }
 .switch input {
   opacity: 0;
@@ -1422,8 +1427,8 @@ body.sidebar-slider-active #settings-sidebar{
 .switch .slider:before {
   position: absolute;
   content: "";
-  height: 14px;
-  width: 14px;
+  height: 20px;
+  width: 20px;
   left: 2px; bottom: 2px;
   background-color: white;
   transition: .2s;
@@ -1434,7 +1439,7 @@ body.sidebar-slider-active #settings-sidebar{
   background-color: var(--accent-color);
 }
 .switch input:checked + .slider:before {
-  transform: translateX(20px);
+  transform: translateX(22px);
 }
 /* Dark‑Mode switch default (off) = white */
 #darkModeSwitch + .slider {
