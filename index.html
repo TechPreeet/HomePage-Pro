@@ -440,11 +440,11 @@ body:focus {
     .floating-menu {
       position: fixed;
       background: rgba(0, 0, 0, 0.95);
-      border-radius: 8px;
+      border-radius: 12px;
       padding: 6px 0;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
       color: white;
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.4;
       z-index: 999999;
       overflow-y: auto;
@@ -968,6 +968,7 @@ body.sidebar-slider-active #settings-sidebar{
       color: white;
       padding: 20px;
       border-radius: 30px;
+      box-shadow: 0 0 15px -2px var(--accent-color);
       width: 90%;
       max-width: 400px;
       display: flex;
@@ -1537,11 +1538,11 @@ body.bg-blur #bgBlurLayer {
     backdrop-filter: blur(10px);
     padding: 20px;
     border-radius: 30px;
-    border: .5px solid var(--accent-color);
+    /*border: .5px solid var(--accent-color);*/
     max-width: 90vw;
     width: 600px; /* Wider for history */
     max-height: 80vh;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 15px -2px var(--accent-color);
     font-family: 'Georgia', serif;
     color: white;
     position: relative;
@@ -2087,11 +2088,11 @@ body.no-scroll {
     -webkit-backdrop-filter: blur(10px);
     padding: 20px;
     border-radius: 30px;
-    border: .5px solid var(--accent-color);
+   /* border: .5px solid var(--accent-color);*/
     max-width: 90vw;
     width: 600px;
     max-height: 80vh;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 15px -2px var(--accent-color);
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
     color: white;
     position: relative;
@@ -2253,6 +2254,15 @@ body.dark-mode #presets-content-box {
 
 #add-presets-btn:active {
     transform: scale(0.95);
+}
+
+/* --- Hide Desktop-Only Context Menu Options on Mobile (iOS/Android) --- */
+@media (hover: none) and (pointer: coarse), (max-width: 768px) {
+    /* Targets the last two items in the floating menu */
+    .floating-menu div:nth-last-child(1),
+    .floating-menu div:nth-last-child(2) {
+        display: none !important;
+    }
 }
 
 </style>
@@ -3146,116 +3156,162 @@ function showInstallPrompt() {
 }
 
 
-        function showMenuOptions(tile, bookmark, index) {
-      document.querySelectorAll(".floating-menu").forEach(m => m.remove());
-      const menu = document.createElement("div");
-      menu.className = "floating-menu";
-      const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab",];
-      
-      const icons = { Edit:"📝", Delete:"🗑️", Share:"🔗", "Copy URL":"📋", "Open in New Tab":"↗️", };
-      
-      actions.forEach(action => {
+function showMenuOptions(tile, bookmark, index) {
+    document.querySelectorAll(".floating-menu").forEach(m => m.remove());
+    const menu = document.createElement("div");
+    menu.className = "floating-menu";
+    
+    // Added "Open in Incognito" to the end of the array
+    const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab", "Open in New Window", "Open in Incognito"];
+    
+    // Added the incognito icon mapping
+    const icons = { 
+        Edit:"📝", 
+        Delete:"🗑️", 
+        Share:"🔗", 
+        "Copy URL":"📋", 
+        "Open in New Tab":"↗️",
+        "Open in New Window": "🪟",
+        "Open in Incognito": "🕶️"
+    };
+    
+    actions.forEach(action => {
         const opt = document.createElement("div");
-        opt.innerHTML = `${icons[action]} ${action}`;
+        opt.innerHTML = `${icons[action]} ${action}`;
         opt.tabIndex = 0;
 
         opt.onclick = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
 
-        if (action === "Delete") {
-            menu.remove();
-            showToast("Bookmark deleted");
-            logHistory('Bookmark', `Deleted bookmark: '${bookmark.name}'`);
-            bookmarks.splice(index, 1);
-            localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-            loadBookmarks();
-            return;
-        } else if (action === "Edit") {
-            const modal = document.getElementById("bookmarkModal");
-            const nameInput = document.getElementById("bookmarkName");
-            const urlInput = document.getElementById("bookmarkUrl");
-            const iconInput = document.getElementById("bookmarkIcon");
-            const modalTitle = document.getElementById("modalTitle");
-            modalTitle.textContent = "Edit Bookmark";
-            nameInput.value = bookmark.name;
-            urlInput.value = bookmark.url;
-            iconInput.value = bookmark.icon || "";
-            modal.classList.remove("hidden");
-            modal.style.display = "flex";
-            const submitBtn = modal.querySelector("button:first-of-type");
-            submitBtn.textContent = "Save";
-            submitBtn.onclick = (e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              const newName = nameInput.value.trim();
-              const newURL = urlInput.value.trim();
-              const newIcon = iconInput.value.trim();
-              if (!newName || !newURL) {
-                showToast("Please enter both a name and URL.");
+            if (action === "Delete") {
+                menu.remove();
+                showToast("Bookmark deleted");
+                logHistory('Bookmark', `Deleted bookmark: '${bookmark.name}'`);
+                bookmarks.splice(index, 1);
+                localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+                loadBookmarks();
                 return;
-              }
-              logHistory('Bookmark', `Edited bookmark: '${bookmark.name}' to '${newName}'`);
-              bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
-              localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
-              closeModal();
-              loadBookmarks();
-            };
-          } else if (action === "Share") {
-              if (navigator.share) {
-                  try {
-                      await navigator.share({
-                          title: bookmark.name,
-                          text: `Check out this link: ${bookmark.name}`,
-                          url: bookmark.url,
-                      });
-                      logHistory('Bookmark', `Shared link for '${bookmark.name}'`);
-                  } catch (err) {
-                      console.error("Share failed:", err.message);
-                  }
-              } else {
-                  showToast("Share not supported on this browser.");
-              }
-          } else if (action === "Copy URL") {
-              copyToClipboard(bookmark.url);
-              logHistory('Bookmark', `Copied URL for '${bookmark.name}'`);
-          } else if (action === "Open in New Tab") {
-              window.open(bookmark.url, '_blank');
-              logHistory('Bookmark', `Opened '${bookmark.name}' in new tab`);
-          } 
-  
-          
-          menu.remove();
+            } else if (action === "Edit") {
+                const modal = document.getElementById("bookmarkModal");
+                const nameInput = document.getElementById("bookmarkName");
+                const urlInput = document.getElementById("bookmarkUrl");
+                const iconInput = document.getElementById("bookmarkIcon");
+                const modalTitle = document.getElementById("modalTitle");
+                modalTitle.textContent = "Edit Bookmark";
+                nameInput.value = bookmark.name;
+                urlInput.value = bookmark.url;
+                iconInput.value = bookmark.icon || "";
+                modal.classList.remove("hidden");
+                modal.style.display = "flex";
+                const submitBtn = modal.querySelector("button:first-of-type");
+                submitBtn.textContent = "Save";
+                submitBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const newName = nameInput.value.trim();
+                    const newURL = urlInput.value.trim();
+                    const newIcon = iconInput.value.trim();
+                    if (!newName || !newURL) {
+                        showToast("Please enter both a name and URL.");
+                        return;
+                    }
+                    logHistory('Bookmark', `Edited bookmark: '${bookmark.name}' to '${newName}'`);
+                    bookmarks[index] = { name: newName, url: newURL, icon: newIcon };
+                    localStorage.setItem("bookmarks", JSON.stringify(bookmarks));
+                    closeModal();
+                    loadBookmarks();
+                };
+            } else if (action === "Share") {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: bookmark.name,
+                            text: `Check out this link: ${bookmark.name}`,
+                            url: bookmark.url,
+                        });
+                        logHistory('Bookmark', `Shared link for '${bookmark.name}'`);
+                    } catch (err) {
+                        console.error("Share failed:", err.message);
+                    }
+                } else {
+                    showToast("Share not supported on this browser.");
+                }
+            } else if (action === "Copy URL") {
+                copyToClipboard(bookmark.url);
+                logHistory('Bookmark', `Copied URL for '${bookmark.name}'`);
+            } else if (action === "Open in New Tab") {
+                window.open(bookmark.url, '_blank');
+                logHistory('Bookmark', `Opened '${bookmark.name}' in new tab`);
+            } else if (action === "Open in New Window") {
+                const width = 1000;
+                const height = 700;
+                const left = (screen.width - width) / 2;
+                const top = (screen.height - height) / 2;
+                
+                const features = `width=${width},height=${height},top=${top},left=${left},noopener,noreferrer,menubar=no,toolbar=no`;
+                
+                window.open(bookmark.url, '_blank', features);
+                logHistory('Bookmark', `Opened '${bookmark.name}' in a new window`);
+            } else if (action === "Open in Incognito") {
+                // --- INCOGNITO EXTENSION LOGIC ---
+                // Checks if the Chrome Extension environment is active
+                if (typeof chrome !== "undefined" && chrome.windows) {
+                    chrome.windows.create({ url: bookmark.url, incognito: true });
+                    logHistory('Bookmark', `Opened '${bookmark.name}' in incognito`);
+                } else {
+                    // Fallback for local HTML testing
+                    showToast("Incognito requires the Chrome Extension version.");
+                }
+            }
+    
+            menu.remove();
         };
         menu.appendChild(opt);
-      });
+    });
 
-      const rect = tile.getBoundingClientRect();
-      const menuWidth = 140; 
-      const menuHeight = 200;
+    const rect = tile.getBoundingClientRect();
+    
+    const menuWidth = 140; 
+    const menuHeight = 280; // Increased to 280px to fit the 7th row
 
-      const spaceRight = window.innerWidth - rect.right;
-      const spaceLeft = rect.left;
-      const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceRight = window.innerWidth - rect.right;
+    const spaceLeft = rect.left;
+    const spaceBelow = window.innerHeight - rect.bottom;
 
-      menu.style.left = spaceRight >= menuWidth || spaceRight >= spaceLeft 
-        ? `${rect.right}px` 
-        : `${rect.left - menuWidth}px`;
+    menu.style.left = spaceRight >= menuWidth || spaceRight >= spaceLeft 
+      ? `${rect.right}px` 
+      : `${rect.left - menuWidth}px`;
 
-      menu.style.top = spaceBelow >= menuHeight
-        ? `${rect.bottom}px`
-        : `${rect.top - menuHeight}px`;
+    menu.style.top = spaceBelow >= menuHeight
+      ? `${rect.bottom}px`
+      : `${rect.top - menuHeight}px`;
 
-      document.body.appendChild(menu);
+    document.body.appendChild(menu);
 
-      setTimeout(() => {
-        document.addEventListener("click", function handler(e) {
-          if (!menu.contains(e.target)) {
-            menu.remove();
-          }
-        }, { once: true });
-      }, 0);
-    }
+    setTimeout(() => {
+      document.addEventListener("click", function handler(e) {
+        if (!menu.contains(e.target)) {
+          menu.remove();
+        }
+      }, { once: true });
+    }, 0);
+}
+
+// Clean JS Alternative (Optional)
+let actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab"];
+
+// Check if device is mobile
+const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+// Only add desktop features and increase height if NOT on mobile
+let menuHeight = 200;
+if (!isMobile) {
+    actions.push("Open in New Window", "Open in Incognito");
+    menuHeight = 280;
+}
+
+
 
     function toggleRearrangeMode() {
       rearrangeMode = !rearrangeMode;
@@ -3334,7 +3390,7 @@ function setTextSafe(id, text) {
 
 
     let confirmationToastTimeout;
-    function showConfirmationToast(message, onConfirm) {
+    function showConfirmationToast(message, onConfirm, confirmText = 'Yes, Confirm') { // Added confirmText parameter
         const toast = document.getElementById('toast-notification');
         toast.innerHTML = ''; // Clear previous content
 
@@ -5161,6 +5217,21 @@ if (searchInput) {
     }
 
 
+function openInNewWindow(url) {
+    // Passing width and height forces the browser to create a new window 
+    // rather than opening it as a standard tab.
+    const width = 1000;
+    const height = 700;
+    const left = (screen.width - width) / 2;
+    const top = (screen.height - height) / 2;
+    
+    // The features string controls the new window's appearance
+    const features = `width=${width},height=${height},top=${top},left=${left},noopener,noreferrer,menubar=no,toolbar=no`;
+    
+    window.open(url, '_blank', features);
+}
+
+
 // --- Presets Catalog Processing Code ---
 let selectedPresets = [];
 
@@ -5337,12 +5408,17 @@ function addSelectedPresets() {
     }
 
     function clearHistory() {
-        if (confirm("Are you sure you want to clear all history? This cannot be undone.")) {
+    showConfirmationToast(
+        "Are you sure you want to clear all history? This cannot be undone.",
+        () => {
+            // This is the onConfirm callback that runs if they click Yes
             localStorage.removeItem('historyLog');
-            renderHistory(); // Re-render to show it's empty
+            renderHistory(); 
             showToast("History cleared.");
-        }
-    }
+        },
+        "Yes, Clear" // This changes the red button text specifically for this action
+    );
+}
 
         function updateSandboxPermissions() {
       const blockPopups = document.getElementById('blockPopupsSwitch').checked;
