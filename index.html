@@ -2322,6 +2322,19 @@ body.rearrange-active .tile .menu {
     100% { transform: translate(-10vw, -10vh) scale(0.9); }
 }
 
+/* --- Fix Edge-to-Edge Modals on Smartphones --- */
+@media (max-width: 480px) {
+    /* Target the inner content box of both modals */
+    #bookmarkModal > div,
+    #coinFlipModal > div {
+        width: 90vw !important;
+        max-width: 90vw !important;
+        box-sizing: border-box;
+        border-radius: 16px; /* Keeps the corners looking nice and soft */
+        margin: 0 auto; /* Ensures it stays perfectly centered */
+    }
+}
+
 </style>
 </head>
 <body class="preload" tabindex="-1">
@@ -3230,6 +3243,13 @@ function showInstallPrompt() {
 
 
 function showMenuOptions(tile, bookmark, index) {
+  
+  // --- NEW: Block the menu from opening during rearrange mode ---
+    if (document.body.classList.contains('rearrange-active')) {
+        return; // Exits the function immediately without opening the menu
+    }
+    // --------------------------------------------------------------
+
     document.querySelectorAll(".floating-menu").forEach(m => m.remove());
     const menu = document.createElement("div");
     menu.className = "floating-menu";
@@ -3783,21 +3803,32 @@ function toggleAnimatedBg() {
     const isAnimated = toggle.checked;
     const bgContainer = document.getElementById('animated-bg-container');
     
-    // Grab the slider elements to disable/enable them
     const sliderContainer = document.getElementById('gradientSliderContainer');
     const slider = document.getElementById('gradientSlider');
+
+    // USING YOUR EXACT ID FROM gem_2Brows_2.html
+    const videoBgElement = document.getElementById('videoBg'); 
     
     if (isAnimated) {
-        // 1. Show blobs and clear standard background
+        // 1. Show blobs
         bgContainer.classList.remove('hidden');
-        document.body.style.background = 'transparent'; 
         
-        // 2. Gray out and lock the gradient slider
+        // 2. Hide Video Element
+        if (videoBgElement) videoBgElement.style.display = 'none';
+
+        // 3. Temporarily save and clear body background image/color
+        // (This handles both your gradients and your uploaded image wallpapers)
+        if (document.body.style.backgroundImage) {
+            document.body.setAttribute('data-saved-bg', document.body.style.backgroundImage);
+        }
+        document.body.style.background = 'transparent'; 
+        document.body.style.backgroundImage = 'none'; 
+        
+        // 4. Gray out the slider
         if (sliderContainer && slider) {
             slider.disabled = true;
-            sliderContainer.style.opacity = '0.4'; // Dims the entire slider row
-            sliderContainer.style.pointerEvents = 'none'; // Blocks mouse clicks
-            sliderContainer.style.transition = 'opacity 0.3s ease';
+            sliderContainer.style.opacity = '0.4';
+            sliderContainer.style.pointerEvents = 'none';
         }
         
         localStorage.setItem('useAnimatedBg', 'true');
@@ -3807,16 +3838,27 @@ function toggleAnimatedBg() {
         // 1. Hide the blobs
         bgContainer.classList.add('hidden');
         
-        // 2. Unlock and restore the gradient slider
+        // 2. Restore Video Element
+        if (videoBgElement) videoBgElement.style.display = ''; 
+
+        // 3. Unlock the gradient slider
         if (sliderContainer && slider) {
             slider.disabled = false;
             sliderContainer.style.opacity = '1';
             sliderContainer.style.pointerEvents = 'auto';
         }
         
-        // 3. Re-apply the gradient based on where the slider currently is
-        const currentGradientIndex = slider ? slider.value : 0;
-        setGradientBackground(currentGradientIndex);
+        // 4. Restore the previous background
+        const savedBgImage = document.body.getAttribute('data-saved-bg');
+        if (savedBgImage) {
+            // Restore the static wallpaper image if one existed
+            document.body.style.backgroundImage = savedBgImage;
+            document.body.removeAttribute('data-saved-bg');
+        } else {
+            // Otherwise, re-apply the gradient based on the slider
+            const currentGradientIndex = slider ? slider.value : 0;
+            setGradientBackground(currentGradientIndex);
+        }
         
         localStorage.setItem('useAnimatedBg', 'false');
         logHistory('Setting', 'Turned OFF Animated Background');
