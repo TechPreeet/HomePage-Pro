@@ -440,7 +440,7 @@ body:focus {
     .floating-menu {
       position: fixed;
       background: rgba(0, 0, 0, 0.95);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 6px 0;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
       color: white;
@@ -2256,18 +2256,81 @@ body.dark-mode #presets-content-box {
     transform: scale(0.95);
 }
 
-/* --- Hide Desktop-Only Context Menu Options on Mobile (iOS/Android) --- */
-@media (hover: none) and (pointer: coarse), (max-width: 768px) {
-    /* Targets the last two items in the floating menu */
-    .floating-menu div:nth-last-child(1),
-    .floating-menu div:nth-last-child(2) {
-        display: none !important;
-    }
+/* --- High-Performance Apple Hybrid Menu Effect --- */
+
+/* 1. When menu is open, smoothly dim and push back all tiles */
+body.context-menu-active .tile {
+    opacity: 0.3 !important; 
+    filter: grayscale(40%) !important; 
+    transform: scale(0.98) !important; /* Slightly pushes background tiles away */
+    pointer-events: none !important; 
+    transition: opacity 0.3s ease, transform 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* 2. Except the active tile, which stays bright and pops forward (iOS style) */
+body.context-menu-active .tile.tile-active-focus {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: scale(1.08) !important; /* Pops it slightly larger */
+    z-index: 9999 !important; /* Guarantees it sits above everything */
+    pointer-events: auto !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important; /* Adds depth shadow */
+}
+
+/* --- Hide Three Dots in Rearrange Mode --- */
+body.rearrange-active .tile .menu {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+/* --- Animated Blob Background --- */
+#animated-bg-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -2; /* Sits completely behind your wallpaper/gradients */
+    overflow: hidden;
+    background-color: #0f172a; /* Deep space base color */
+    pointer-events: none;
+}
+
+#animated-bg-container:not(.hidden) {
+    display: block;
+}
+
+/* The massive blur is what blends them together like a gradient */
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px); 
+    opacity: 0.7;
+    /* The animation duration is long so it feels relaxing, not distracting */
+    animation: floatBlob 20s infinite alternate ease-in-out;
+}
+
+/* Base colors for the blobs (Pink, Purple, Cyan) */
+.blob-1 { width: 50vw; height: 50vw; background: #ec4899; top: -10%; left: -10%; animation-delay: 0s; }
+.blob-2 { width: 60vw; height: 60vw; background: #6366f1; bottom: -20%; right: -10%; animation-delay: -5s; }
+.blob-3 { width: 45vw; height: 45vw; background: #06b6d4; top: 30%; left: 30%; animation-delay: -10s; }
+
+/* Hardware-accelerated movement */
+@keyframes floatBlob {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(15vw, 15vh) scale(1.1); }
+    100% { transform: translate(-10vw, -10vh) scale(0.9); }
 }
 
 </style>
 </head>
 <body class="preload" tabindex="-1">
+
+<div id="animated-bg-container" class="hidden">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+  </div>
 
 <div class="top-blend"></div>
 
@@ -2662,6 +2725,16 @@ body.dark-mode #presets-content-box {
     <div class="toolbar-option" aria-label="Remove Wallpaper" onclick="removeWallpaper()" tabindex="0">🚫 Remove Wallpaper</div>
     <input type="file" id="bgInput" accept="image/*,.heic,.heif,.webp,.avif" />
     <input type="file" id="videoInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,.mov,.hevc">
+
+    <div class="toolbar-option">
+            <span>✨ Animated Aurora</span>
+            <label class="switch">
+                <input type="checkbox" id="animatedBgToggle" onchange="toggleAnimatedBg()">
+                <span class="slider round"></span>
+            </label>
+        </div>
+
+
     <!-- Gradient -->
     <div id="gradientSliderContainer" class="slider-container">
   <div class="toolbar-option" id="gradientLabel">Background Color</div>
@@ -3095,28 +3168,28 @@ async function fetchQuote() {
 
 
 
-    const gradients = [
-        { name: 'Default', value: '' },
-        { name: 'Cosmic', value: 'linear-gradient(to right, #1d2b64, #f8cdda)' },
-        { name: 'Twilight', value: 'linear-gradient(to right, #ee0979, #ff6a00)' },
-        { name: 'Emerald', value: 'linear-gradient(to right, #00c9ff, #92fe9d)' },
-        { name: 'Sunrise', value: 'linear-gradient(to right, #ff9966, #ff5e62)' },
-        { name: 'Ocean', value: 'linear-gradient(to right, #43cea2, #185a9d)' },
-        { name: 'Grapefruit', value: 'linear-gradient(to right, #ffafbd, #ffc3a0)' },
-        { name: 'Deep Space', value: 'linear-gradient(to right, #000000, #434343)' },
-        { name: 'Mojito', value: 'linear-gradient(to right, #1d976c, #93f9b9)' },
-        { name: 'Amethyst', value: 'linear-gradient(to right, #9d50bb, #6e48aa)' },
-        { name: 'Midnight', value: 'linear-gradient(to right, #2c3e50, #4ca1af)' },
-        { name: 'Pastel', value: 'linear-gradient(to right, #a1c4fd, #c2e9fb)' },
-        { name: 'Volcano', value: 'linear-gradient(to right, #f12711, #f5af19)' },
-        { name: 'Cloudy Sky', value: 'linear-gradient(to right, #d7d2cc, #304352)' },
-        { name: 'Lush', value: 'linear-gradient(to right, #56ab2f, #a8e063)' },
-        { name: 'Royal', value: 'linear-gradient(to right, #141e30, #243b55)' },
-        { name: 'Mauve', value: 'linear-gradient(to right, #42275a, #734b6d)' },
-        { name: 'Cherry', value: 'linear-gradient(to right, #eb3349, #f45c43)' },
-        { name: 'Serenity', value: 'linear-gradient(to right, #2980b9, #6dd5fa, #ffffff)' },
-        { name: 'App theme', value: 'linear-gradient(to right, #050f26, #050f26, #050f26)' },
-     ];
+const gradients = [
+{ name: 'Default', value: '' },
+{ name: 'Cosmic', value: 'radial-gradient(circle at 15% 20%, rgba(99,102,241,.40), transparent 35%), radial-gradient(circle at 85% 25%, rgba(168,85,247,.35), transparent 40%), radial-gradient(circle at 55% 85%, rgba(244,114,182,.20), transparent 45%), linear-gradient(135deg,#030712,#1e1b4b)' },
+{ name: 'Twilight', value: 'radial-gradient(circle at 20% 15%, rgba(236,72,153,.40), transparent 35%), radial-gradient(circle at 85% 35%, rgba(249,115,22,.35), transparent 40%), radial-gradient(circle at 35% 85%, rgba(251,191,36,.20), transparent 45%), linear-gradient(135deg,#3b0764,#7c2d12)' },
+{ name: 'Emerald', value: 'radial-gradient(circle at 20% 20%, rgba(16,185,129,.40), transparent 35%), radial-gradient(circle at 80% 20%, rgba(34,197,94,.30), transparent 40%), radial-gradient(circle at 50% 85%, rgba(167,243,208,.18), transparent 45%), linear-gradient(135deg,#022c22,#064e3b)' },
+{ name: 'Sunrise', value: 'radial-gradient(circle at 10% 25%, rgba(251,146,60,.40), transparent 35%), radial-gradient(circle at 90% 20%, rgba(244,114,182,.30), transparent 40%), radial-gradient(circle at 60% 90%, rgba(253,224,71,.25), transparent 45%), linear-gradient(135deg,#431407,#9a3412)' },
+{ name: 'Ocean', value: 'radial-gradient(circle at 10% 70%, rgba(6,182,212,.40), transparent 35%), radial-gradient(circle at 85% 15%, rgba(59,130,246,.35), transparent 40%), radial-gradient(circle at 65% 35%, rgba(191,219,254,.18), transparent 45%), linear-gradient(135deg,#082f49,#0c4a6e)' },
+{ name: 'Grapefruit', value: 'radial-gradient(circle at 20% 25%, rgba(244,114,182,.40), transparent 35%), radial-gradient(circle at 85% 20%, rgba(251,113,133,.35), transparent 40%), radial-gradient(circle at 45% 85%, rgba(254,215,170,.18), transparent 45%), linear-gradient(135deg,#4c0519,#9f1239)' },
+{ name: 'Deep Space', value: 'radial-gradient(circle at 20% 20%, rgba(30,41,59,.35), transparent 35%), radial-gradient(circle at 80% 25%, rgba(71,85,105,.25), transparent 40%), radial-gradient(circle at 50% 85%, rgba(148,163,184,.10), transparent 45%), linear-gradient(135deg,#000000,#020617)' },
+{ name: 'Mojito', value: 'radial-gradient(circle at 15% 15%, rgba(52,211,153,.40), transparent 35%), radial-gradient(circle at 85% 30%, rgba(163,230,53,.35), transparent 40%), radial-gradient(circle at 35% 85%, rgba(220,252,231,.18), transparent 45%), linear-gradient(135deg,#052e16,#166534)' },
+{ name: 'Amethyst', value: 'radial-gradient(circle at 25% 20%, rgba(168,85,247,.40), transparent 35%), radial-gradient(circle at 80% 25%, rgba(139,92,246,.35), transparent 40%), radial-gradient(circle at 60% 80%, rgba(233,213,255,.18), transparent 45%), linear-gradient(135deg,#2e1065,#581c87)' },
+{ name: 'Midnight', value: 'radial-gradient(circle at 50% 15%, rgba(37,99,235,.25), transparent 35%), radial-gradient(circle at 15% 85%, rgba(34,211,238,.20), transparent 40%), radial-gradient(circle at 90% 75%, rgba(125,211,252,.15), transparent 45%), linear-gradient(135deg,#020617,#0f172a)' },
+{ name: 'Pastel', value: 'radial-gradient(circle at 15% 20%, rgba(191,219,254,.45), transparent 35%), radial-gradient(circle at 85% 25%, rgba(221,214,254,.40), transparent 40%), radial-gradient(circle at 50% 80%, rgba(255,255,255,.25), transparent 45%), linear-gradient(135deg,#dbeafe,#f8fafc)' },
+{ name: 'Volcano', value: 'radial-gradient(circle at 50% 20%, rgba(239,68,68,.40), transparent 35%), radial-gradient(circle at 20% 80%, rgba(249,115,22,.35), transparent 40%), radial-gradient(circle at 90% 70%, rgba(251,191,36,.25), transparent 45%), linear-gradient(135deg,#450a0a,#991b1b)' },
+{ name: 'Cloudy Sky', value: 'radial-gradient(circle at 20% 20%, rgba(226,232,240,.25), transparent 35%), radial-gradient(circle at 80% 35%, rgba(148,163,184,.20), transparent 40%), radial-gradient(circle at 55% 80%, rgba(248,250,252,.15), transparent 45%), linear-gradient(135deg,#475569,#64748b)' },
+{ name: 'Lush', value: 'radial-gradient(circle at 20% 15%, rgba(132,204,22,.40), transparent 35%), radial-gradient(circle at 85% 30%, rgba(34,197,94,.35), transparent 40%), radial-gradient(circle at 50% 90%, rgba(236,252,203,.18), transparent 45%), linear-gradient(135deg,#14532d,#3f6212)' },
+{ name: 'Royal', value: 'radial-gradient(circle at 15% 15%, rgba(250,204,21,.30), transparent 35%), radial-gradient(circle at 85% 20%, rgba(99,102,241,.35), transparent 40%), radial-gradient(circle at 50% 85%, rgba(165,180,252,.18), transparent 45%), linear-gradient(135deg,#111827,#312e81)' },
+{ name: 'Mauve', value: 'radial-gradient(circle at 20% 20%, rgba(192,132,252,.35), transparent 35%), radial-gradient(circle at 85% 30%, rgba(217,70,239,.30), transparent 40%), radial-gradient(circle at 40% 85%, rgba(233,213,255,.18), transparent 45%), linear-gradient(135deg,#2d1b3d,#5b3b6f)' },
+{ name: 'Cherry', value: 'radial-gradient(circle at 15% 20%, rgba(244,63,94,.40), transparent 35%), radial-gradient(circle at 85% 25%, rgba(251,113,133,.30), transparent 40%), radial-gradient(circle at 55% 85%, rgba(254,205,211,.18), transparent 45%), linear-gradient(135deg,#4c0519,#be123c)' },
+{ name: 'Serenity', value: 'radial-gradient(circle at 20% 15%, rgba(96,165,250,.35), transparent 35%), radial-gradient(circle at 85% 20%, rgba(125,211,252,.30), transparent 40%), radial-gradient(circle at 50% 85%, rgba(255,255,255,.25), transparent 45%), linear-gradient(135deg,#1e3a8a,#0ea5e9)' },
+{ name: 'Aurora', value: 'radial-gradient(circle at 20% 20%, rgba(124,58,237,.35), transparent 40%), radial-gradient(circle at 80% 30%, rgba(6,182,212,.30), transparent 40%), radial-gradient(circle at 50% 80%, rgba(59,130,246,.25), transparent 40%), linear-gradient(135deg,#050f26,#0f172a)' }
+];
 
     const searchEngines = {
         'Google': {
@@ -3161,18 +3234,31 @@ function showMenuOptions(tile, bookmark, index) {
     const menu = document.createElement("div");
     menu.className = "floating-menu";
     
-    // Added "Open in Incognito" to the end of the array
-    const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab", "Open in New Window", "Open in Incognito"];
+    // 1. Detect if the actual device is a mobile OS
+    const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
     
-    // Added the incognito icon mapping
+    // 2. Base actions for all devices
+    const actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab"];
+    
+    // 3. Only add desktop-specific window features if NOT on a mobile device
+    if (!isMobile) {
+        actions.push("Open in New Window", "Open in Incognito");
+    }
+    
     const icons = { 
-        Edit:"📝", 
-        Delete:"🗑️", 
-        Share:"🔗", 
-        "Copy URL":"📋", 
-        "Open in New Tab":"↗️",
-        "Open in New Window": "🪟",
-        "Open in Incognito": "🕶️"
+        Edit:"📝", Delete:"🗑️", Share:"🔗", "Copy URL":"📋", 
+        "Open in New Tab":"↗️", "Open in New Window": "🪟", "Open in Incognito": "🕶️"
+    };
+
+    // --- NEW SMOOTH CLOSE ---
+    const closeMenuSmoothly = () => {
+        menu.style.opacity = '0';
+        
+        // Remove the Apple hybrid effects
+        document.body.classList.remove('context-menu-active');
+        tile.classList.remove('tile-active-focus');
+        
+        setTimeout(() => { menu.remove(); }, 250); 
     };
     
     actions.forEach(action => {
@@ -3185,7 +3271,7 @@ function showMenuOptions(tile, bookmark, index) {
             e.stopPropagation();
 
             if (action === "Delete") {
-                menu.remove();
+                closeMenuSmoothly();
                 showToast("Bookmark deleted");
                 logHistory('Bookmark', `Deleted bookmark: '${bookmark.name}'`);
                 bookmarks.splice(index, 1);
@@ -3231,12 +3317,8 @@ function showMenuOptions(tile, bookmark, index) {
                             url: bookmark.url,
                         });
                         logHistory('Bookmark', `Shared link for '${bookmark.name}'`);
-                    } catch (err) {
-                        console.error("Share failed:", err.message);
-                    }
-                } else {
-                    showToast("Share not supported on this browser.");
-                }
+                    } catch (err) { console.error("Share failed:", err.message); }
+                } else { showToast("Share not supported on this browser."); }
             } else if (action === "Copy URL") {
                 copyToClipboard(bookmark.url);
                 logHistory('Bookmark', `Copied URL for '${bookmark.name}'`);
@@ -3244,73 +3326,70 @@ function showMenuOptions(tile, bookmark, index) {
                 window.open(bookmark.url, '_blank');
                 logHistory('Bookmark', `Opened '${bookmark.name}' in new tab`);
             } else if (action === "Open in New Window") {
-                const width = 1000;
-                const height = 700;
-                const left = (screen.width - width) / 2;
-                const top = (screen.height - height) / 2;
-                
+                const width = 1000; const height = 700;
+                const left = (screen.width - width) / 2; const top = (screen.height - height) / 2;
                 const features = `width=${width},height=${height},top=${top},left=${left},noopener,noreferrer,menubar=no,toolbar=no`;
-                
                 window.open(bookmark.url, '_blank', features);
                 logHistory('Bookmark', `Opened '${bookmark.name}' in a new window`);
             } else if (action === "Open in Incognito") {
-                // --- INCOGNITO EXTENSION LOGIC ---
-                // Checks if the Chrome Extension environment is active
                 if (typeof chrome !== "undefined" && chrome.windows) {
                     chrome.windows.create({ url: bookmark.url, incognito: true });
                     logHistory('Bookmark', `Opened '${bookmark.name}' in incognito`);
-                } else {
-                    // Fallback for local HTML testing
-                    showToast("Incognito requires the Chrome Extension version.");
-                }
+                } else { showToast("Incognito requires the Chrome Extension version."); }
             }
-    
-            menu.remove();
+            closeMenuSmoothly();
         };
         menu.appendChild(opt);
     });
 
     const rect = tile.getBoundingClientRect();
-    
-    const menuWidth = 140; 
-    const menuHeight = 280; // Increased to 280px to fit the 7th row
+    menu.style.visibility = 'hidden';
+    document.body.appendChild(menu);
 
-    const spaceRight = window.innerWidth - rect.right;
-    const spaceLeft = rect.left;
+    const actualWidth = menu.offsetWidth || 140; 
+    const actualHeight = menu.offsetHeight; 
+    // --- VISUAL BALANCE GAPS ---
+    // The bottom gap is set smaller (e.g., 0px or 1px) to compensate for the 
+    // invisible line-height spacing underneath the tile's text label.
+    const gapBelow = -10; 
+    const gapAbove = 5; 
+
     const spaceBelow = window.innerHeight - rect.bottom;
 
-    menu.style.left = spaceRight >= menuWidth || spaceRight >= spaceLeft 
-      ? `${rect.right}px` 
-      : `${rect.left - menuWidth}px`;
+    // Determine if opening below or above based on the specific gap logic
+    if (spaceBelow >= actualHeight + gapBelow) {
+        menu.style.top = `${rect.bottom + gapBelow}px`; 
+    } else {
+        menu.style.top = `${rect.top - actualHeight - gapAbove}px`; 
+    }
 
-    menu.style.top = spaceBelow >= menuHeight
-      ? `${rect.bottom}px`
-      : `${rect.top - menuHeight}px`;
+    let calcLeft = rect.left + (rect.width / 2) - (actualWidth / 2);
+    const screenPadding = 15;
+    if (calcLeft < screenPadding) {
+        calcLeft = screenPadding; 
+    } else if (calcLeft + actualWidth > window.innerWidth - screenPadding) {
+        calcLeft = window.innerWidth - actualWidth - screenPadding; 
+    }
 
-    document.body.appendChild(menu);
+    menu.style.left = `${calcLeft}px`;
+
+    // --- APPLY THE APPLE HYBRID EFFECT ---
+    document.body.classList.add('context-menu-active');
+    tile.classList.add('tile-active-focus');
+    
+    requestAnimationFrame(() => {
+        menu.style.visibility = 'visible';
+        menu.style.opacity = '1';
+    });
 
     setTimeout(() => {
       document.addEventListener("click", function handler(e) {
         if (!menu.contains(e.target)) {
-          menu.remove();
+            closeMenuSmoothly();
         }
       }, { once: true });
     }, 0);
 }
-
-// Clean JS Alternative (Optional)
-let actions = ["Edit", "Delete", "Share", "Copy URL", "Open in New Tab"];
-
-// Check if device is mobile
-const isMobile = /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-// Only add desktop features and increase height if NOT on mobile
-let menuHeight = 200;
-if (!isMobile) {
-    actions.push("Open in New Window", "Open in Incognito");
-    menuHeight = 280;
-}
-
 
 
     function toggleRearrangeMode() {
@@ -3320,7 +3399,9 @@ if (!isMobile) {
       toggleSidebar();
       updateRearrangeToggleUI();
       applyRearrangeMode();
-    }
+      // ADD THIS LINE to sync the CSS
+      document.body.classList.toggle('rearrange-active', rearrangeMode);
+      }
 
     document.addEventListener("click", function (e) {
       const isTileOrSettings = e.target.closest(".tile, .settings-panel, .toolbar-option");
@@ -3334,6 +3415,9 @@ if (!isMobile) {
         localStorage.setItem("rearrangeMode", rearrangeMode);
         updateRearrangeToggleUI();
         applyRearrangeMode();
+
+        // ADD THIS LINE to turn the dots back on
+        document.body.classList.remove('rearrange-active');
       }
     });
 
@@ -3690,6 +3774,55 @@ function setGradientBackground(index) {
         setGradientBackground(index);
     }
     
+
+// --- Animated Background Logic ---
+function toggleAnimatedBg() {
+    const toggle = document.getElementById('animatedBgToggle');
+    if (!toggle) return; 
+    
+    const isAnimated = toggle.checked;
+    const bgContainer = document.getElementById('animated-bg-container');
+    
+    // Grab the slider elements to disable/enable them
+    const sliderContainer = document.getElementById('gradientSliderContainer');
+    const slider = document.getElementById('gradientSlider');
+    
+    if (isAnimated) {
+        // 1. Show blobs and clear standard background
+        bgContainer.classList.remove('hidden');
+        document.body.style.background = 'transparent'; 
+        
+        // 2. Gray out and lock the gradient slider
+        if (sliderContainer && slider) {
+            slider.disabled = true;
+            sliderContainer.style.opacity = '0.4'; // Dims the entire slider row
+            sliderContainer.style.pointerEvents = 'none'; // Blocks mouse clicks
+            sliderContainer.style.transition = 'opacity 0.3s ease';
+        }
+        
+        localStorage.setItem('useAnimatedBg', 'true');
+        logHistory('Setting', 'Turned ON Animated Background');
+        
+    } else {
+        // 1. Hide the blobs
+        bgContainer.classList.add('hidden');
+        
+        // 2. Unlock and restore the gradient slider
+        if (sliderContainer && slider) {
+            slider.disabled = false;
+            sliderContainer.style.opacity = '1';
+            sliderContainer.style.pointerEvents = 'auto';
+        }
+        
+        // 3. Re-apply the gradient based on where the slider currently is
+        const currentGradientIndex = slider ? slider.value : 0;
+        setGradientBackground(currentGradientIndex);
+        
+        localStorage.setItem('useAnimatedBg', 'false');
+        logHistory('Setting', 'Turned OFF Animated Background');
+    }
+}
+
     // This function provides the live preview without logging.
     function previewAccentColor(color) {
         document.documentElement.style.setProperty('--accent-color', color);
@@ -4740,6 +4873,18 @@ function resizeAndStoreImage(file) {
             logHistory('Search', `Searched for: '${query}'`);
         }
 
+        // --- NEW: Explicitly hide the suggestions box and clear results BEFORE switching tabs ---
+    const suggestionsBox = document.getElementById('searchSuggestionsBox');
+    if (suggestionsBox) {
+        suggestionsBox.style.display = 'none';
+        suggestionsBox.innerHTML = '';
+    }
+    const searchResultsContainer = document.getElementById('searchResults');
+    if (searchResultsContainer) {
+        searchResultsContainer.style.display = 'none';
+    }
+    // ---------------------------------------------------------------------------------------
+
         const isFullURL = /^(https?:\/\/)/i.test(query);
         const isDomainURL = /^[^\s]+\.[^\s]{2,}(\/.*)?$/i.test(query);
 
@@ -4748,6 +4893,10 @@ function resizeAndStoreImage(file) {
             : searchEngines[localStorage.getItem('searchEngine') || 'Google'].url + encodeURIComponent(query);
         
         const title = (isFullURL || isDomainURL) ? dest : `Search: ${query}`;
+
+        // Clear the search bar immediately so it's empty when you return
+          searchInput.value = "";
+          handleSearchInput(); // Resets the mic/cross icons
 
         if (useInAppBrowser) {
             openInAppTab(dest, title);
@@ -5294,9 +5443,9 @@ function renderPresetsContent(category) {
         const isAlreadySelected = selectedPresets.some(p => p.url === preset.url);
         if (isAlreadySelected) card.classList.add('selected');
         
-        // Build crisp Favicon routing strings explicitly matching standard structures
-        let faviconUrl = `https://www.google.com/s2/favicons?sz=128&domain=${new URL(preset.url).hostname}`;
-        
+        // Uses the high-quality preset icon if available, otherwise falls back to standard fetcher
+        let faviconUrl = preset.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(preset.url).hostname}`;   
+
         card.innerHTML = `
             <img src="${faviconUrl}" alt="${preset.name} Icon" onerror="this.src='https://www.google.com/s2/favicons?sz=128&domain=example.com'">
             <span>${preset.name}</span>
@@ -5338,7 +5487,7 @@ function addSelectedPresets() {
         // Enforce basic URL uniqueness deduplication mapping layers dynamically
         const exists = activeBookmarks.some(b => b.url.toLowerCase().trim() === preset.url.toLowerCase().trim());
         if (!exists) {
-            let faviconUrl = `https://www.google.com/s2/favicons?sz=128&domain=${new URL(preset.url).hostname}`;
+            let faviconUrl = preset.icon || `https://www.google.com/s2/favicons?sz=128&domain=${new URL(preset.url).hostname}`;
             activeBookmarks.push({
                 name: preset.name,
                 url: preset.url,
@@ -5946,6 +6095,21 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSliderColor(brightnessSlider);
     }
 });
+
+
+// --- Initialize Animated Background on Page Load ---
+// Add this near the bottom of your script, or inside your existing window.onload / DOMContentLoaded function
+document.addEventListener('DOMContentLoaded', () => {
+    const savedAnimatedBg = localStorage.getItem('useAnimatedBg') === 'true';
+    if (savedAnimatedBg) {
+        const toggle = document.getElementById('animatedBgToggle');
+        if (toggle) {
+            toggle.checked = true;
+            toggleAnimatedBg(); // Triggers the blobs to show up immediately
+        }
+    }
+});
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const scrollTopBtn = document.getElementById("scrollTopBtn");
