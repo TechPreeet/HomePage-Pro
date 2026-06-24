@@ -1188,39 +1188,136 @@ body.sidebar-slider-active #settings-sidebar{
       -webkit-user-select: text;
     }
   
-      .coin {
-      width: 100px;
-      height: 100px;
-      position: relative;
-      margin: 20px auto;
-      transform-style: preserve-3d;
-      cursor: pointer;
-      transform: rotateY(0deg);
-      transition: transform 2s ease-in-out;
-    }
+/* --- Premium 3D Interactive Gold Coin --- */
 
-    .coin div {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      position: absolute;
-      backface-visibility: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: bold;
-      color: #8b5a2b;
-      background: linear-gradient(45deg, #fce5a3, #f3c66b);
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    }
+/* The camera perspective for the 3D tilt */
+/* Update your coin-wrapper to prevent mobile scrolling while dragging */
+.coin-wrapper {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    margin: 40px auto 50px auto; 
+    perspective: 800px; 
+    cursor: grab;
+    touch-action: none; /* VERY IMPORTANT: Stops mobile scrolling during drag */
+}
 
-    .coin .heads {
-      transform: rotateY(0deg) translateZ(1px);
-    }
-    .coin .tails {
-      transform: rotateY(180deg) translateZ(1px);
-    }
+.coin-wrapper:active {
+    cursor: grabbing;
+}
+
+.coin {
+    width: 100%; 
+    height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+    transform-style: preserve-3d;
+    border-radius: 50%;
+}
+
+/* The Floor Shadow */
+.coin-shadow {
+    position: absolute;
+    width: 110px;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    bottom: -25px; /* Sits completely below the coin */
+    left: 50%;
+    margin-left: -55px;
+    filter: blur(8px);
+    opacity: 0.6;
+    z-index: -1;
+}
+
+/* The Faces (Heads & Tails) */
+.coin-face {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: absolute;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #fbd043 0%, #ffeb9b 25%, #d4af37 50%, #fbd043 75%, #a67c00 100%);
+    box-shadow: 
+        inset 0 0 0 4px #ffd966,
+        inset 0 0 0 8px #c59b27,
+        inset 0 0 15px 10px rgba(139, 90, 0, 0.4);
+}
+
+/* Push the faces outward to create a 20px thick coin */
+.coin-face.heads { transform: rotateY(0deg) translateZ(10px); }
+.coin-face.tails { transform: rotateY(180deg) translateZ(10px); }
+
+/* --- The 3D Thick Edge (The Milled Texture) --- */
+.coin-edge {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: absolute;
+    top: 0; left: 0;
+    /* This repeating gradient creates the ridges/texture around the side */
+    background: repeating-conic-gradient(
+        #a67c00 0deg,
+        #fbd043 2deg,
+        #a67c00 4deg
+    );
+}
+
+/* The Ambient Lighting */
+.coin-shine {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 60%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* The New Center Glow behind the letter */
+.center-glow {
+    position: absolute;
+    width: 60%;
+    height: 60%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 70%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Center Lettering */
+.center-letter {
+    font-size: 56px;
+    font-weight: 900;
+    color: #a67c00;
+    font-family: Georgia, serif;
+    text-shadow: 
+        -1px -1px 1px rgba(255,255,255,0.6),
+        1px 1px 2px rgba(0,0,0,0.4);
+    z-index: 3;
+}
+
+/* The Curved Edge Text */
+.coin-edge-text {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1;
+}
+
+/* Update the text slightly to make it bigger and crisper */
+.coin-edge-text text {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 11px; /* Looks much clearer now! */
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 800;
+    fill: rgba(139, 90, 0, 0.85);
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.5);
+}
+
 
     body, html, .container {
       user-select: none;
@@ -2234,10 +2331,28 @@ body.dark-mode #presets-content-box {
 
 #presets-footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between; /* Spreads the two buttons apart */
+    align-items: center;
     padding-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
+}
+
+#select-all-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#select-all-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 #add-presets-btn {
@@ -2444,6 +2559,7 @@ body.rearrange-active .tile .menu {
         </div>
         
         <div id="presets-footer">
+            <button id="select-all-btn" onclick="toggleSelectAllPresets()">Select All</button>
             <button id="add-presets-btn" onclick="addSelectedPresets()">Add Selected (0)</button>
         </div>
     </div>
@@ -4990,41 +5106,198 @@ function resizeAndStoreImage(file) {
 
 
 
-      function flipCoin(isReflip = false) {
-        const modal         = document.getElementById('coinFlipModal');
-        const resultText    = document.getElementById('coinFlipResult');
-        const coinContainer = document.getElementById('coinContainer');
+function flipCoin(isReflip = false) {
+    const modal         = document.getElementById('coinFlipModal');
+    const resultText    = document.getElementById('coinFlipResult');
+    const coinContainer = document.getElementById('coinContainer');
+    
+    if (!isReflip) {
+        modal.classList.remove('hidden');
+        logHistory('Setting', 'Used coin flip tool');
+    }
+    
+    coinContainer.innerHTML = '';
+    resultText.textContent   = 'Flipping...';
+    
+    const coinWrapper = document.createElement('div');
+    coinWrapper.className = 'coin-wrapper';
+    
+    const shadow = document.createElement('div');
+    shadow.className = 'coin-shadow';
+    
+    const coin = document.createElement('div');
+    coin.className = 'coin';
+    
+    // --- Minting Engine (AURORA TAB vs BY TECHPREEET) ---
+    const createFace = (type, letter) => {
+        const face = document.createElement('div');
+        face.className = `coin-face ${type}`;
+        
+        let topText = type === 'heads' ? "HOME PAGE PRO" : "BY TECHPREEET";
+        let bottomText = "★ ★ ★ ★ ★";
+        
+        face.innerHTML = `
+            <div class="coin-shine"></div>
+            <div class="center-glow"></div>
+            <svg viewBox="0 0 100 100" class="coin-edge-text">
+                <defs>
+                    <path id="top-path-${type}" d="M 12, 50 A 38,38 0 0,1 88,50" />
+                    <path id="bottom-path-${type}" d="M 12, 50 A 38,38 0 0,0 88,50" />
+                </defs>
+                <text>
+                    <textPath href="#top-path-${type}" startOffset="50%" text-anchor="middle">
+                        ${topText}
+                    </textPath>
+                </text>
+                <text>
+                    <textPath href="#bottom-path-${type}" startOffset="50%" text-anchor="middle" dominant-baseline="hanging">
+                        ${bottomText}
+                    </textPath>
+                </text>
+            </svg>
+            <span class="center-letter">${letter}</span>
+        `;
+        return face;
+    };
 
-        if (!isReflip) {
-            modal.classList.remove('hidden');
-            logHistory('Setting', 'Used coin flip tool');
+    const heads = createFace('heads', 'H');
+    const tails = createFace('tails', 'T');
+    
+    // 1. Append the faces first
+    coin.append(heads, tails);
+
+    // 2. NEW: Generate the 3D rim layers!
+    // We create 18 layers spaced 1px apart (from -9px to +9px)
+    for (let i = -9; i <= 9; i++) {
+        const edgeLayer = document.createElement('div');
+        edgeLayer.className = 'coin-edge';
+        
+        // This is what stacks them to create the solid volume
+        edgeLayer.style.transform = `translateZ(${i}px)`;
+        
+        // Optional: Make the innermost layers slightly darker to simulate real metal shadowing
+        if (Math.abs(i) < 4) {
+            edgeLayer.style.filter = 'brightness(0.8)';
         }
-        coinContainer.innerHTML = '';
-        resultText.textContent   = 'Flipping...';
+        
+        coin.appendChild(edgeLayer);
+    }
+    
+    // 3. Append the finished thick coin to the wrapper
+    coinWrapper.append(shadow, coin);
+    coinContainer.appendChild(coinWrapper);
+    
+    let currentBaseRotationY = 0;
+    let isFlipping = false;
 
-        const coin = document.createElement('div');
-        coin.className = 'coin';
-        const heads = document.createElement('div');
-        heads.className   = 'heads';
-        heads.textContent = 'H';
-        const tails = document.createElement('div');
-        tails.className   = 'tails';
-        tails.textContent = 'T';
-        coin.append(heads, tails);
-        coinContainer.appendChild(coin);
+    // --- Interactive Drag Engine ---
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let dragRotX = 0, dragRotY = 0;
+    let dragStartTime = 0;
 
-        requestAnimationFrame(() => {
-          const result        = Math.random() < 0.5 ? 'Heads' : 'Tails';
-          const finalRotation = result === 'Heads' ? 1800 : 1980;
-          coin.style.transform = `rotateY(${finalRotation}deg)`;
+    coinWrapper.addEventListener('pointerdown', (e) => {
+        if (isFlipping) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        dragStartTime = Date.now();
+        
+        coinWrapper.setPointerCapture(e.pointerId); 
+        coinWrapper.style.cursor = 'grabbing';
+        
+        coin.style.transition = 'none'; 
+        shadow.style.transition = 'none';
+    });
 
-          setTimeout(() => {
+    coinWrapper.addEventListener('pointermove', (e) => {
+        if (!isDragging || isFlipping) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+
+        dragRotY = deltaX * 0.8;
+        dragRotX = -deltaY * 0.8;
+
+        coin.style.transform = `rotateY(${currentBaseRotationY + dragRotY}deg) rotateX(${dragRotX}deg)`;
+        shadow.style.transform = `translate(${deltaX * 0.15}px, ${deltaY * 0.15}px) scale(1.05)`;
+    });
+
+    const handlePointerEnd = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        coinWrapper.releasePointerCapture(e.pointerId);
+        coinWrapper.style.cursor = 'grab';
+
+        const timeElapsed = Date.now() - dragStartTime;
+        const isClick = Math.abs(dragRotX) < 5 && Math.abs(dragRotY) < 5 && timeElapsed < 300;
+
+        if (isClick) {
+            dragRotX = 0; dragRotY = 0;
+            shadow.style.transform = `translate(0px, 0px) scale(1)`;
+            triggerFlip();
+        } else {
+            // Commit drag angle to base memory
+            currentBaseRotationY += dragRotY;
+            dragRotX = 0; 
+            dragRotY = 0;
+            
+            // Trigger flip instantly from the air
+            triggerFlip();
+        }
+    };
+
+    coinWrapper.addEventListener('pointerup', handlePointerEnd);
+    coinWrapper.addEventListener('pointercancel', handlePointerEnd);
+
+    // --- The Zero-Lag Physics Flip Logic ---
+    const triggerFlip = () => {
+        if (isFlipping) return;
+        isFlipping = true;
+
+        const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
+        
+        let nearestRestingY = Math.round(currentBaseRotationY / 180) * 180;
+        let targetRotationY = nearestRestingY + 1800; 
+        
+        let isTargetHeads = (Math.abs(targetRotationY) / 180) % 2 === 0;
+        if (result === 'Heads' && !isTargetHeads) {
+            targetRotationY += 180;
+        } else if (result === 'Tails' && isTargetHeads) {
+            targetRotationY += 180;
+        }
+
+        currentBaseRotationY = targetRotationY;
+
+        // 1. Setup the animation timing
+        coin.style.transition = 'transform 2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        
+        // 2. THE MAGIC FIX: Force the browser to render the transition property immediately
+        void coin.offsetWidth; 
+        
+        // 3. Apply the rotation. It will now fire instantly without the 1-frame stutter!
+        coin.style.transform = `rotateY(${currentBaseRotationY}deg) rotateX(0deg)`;
+
+        shadow.style.transition = 'transform 1s ease-in, opacity 1s ease-in';
+        shadow.style.transform = 'translate(0px, 0px) scale(0.4)';
+        shadow.style.opacity = '0.2';
+
+        setTimeout(() => {
+            shadow.style.transition = 'transform 1s ease-out, opacity 1s ease-out';
+            shadow.style.transform = 'translate(0px, 0px) scale(1)';
+            shadow.style.opacity = '0.6';
+        }, 1000);
+
+        setTimeout(() => {
             resultText.textContent = `It's ${result}!`;
-          }, 2000);
-        });
-      }
+            isFlipping = false;
+        }, 2050);
+    };
 
-
+    requestAnimationFrame(() => {
+        triggerFlip();
+    });
+}
 
 /* ------------------------------------------------------------- */
 /* Voice Search – fires performSearch() once with final text    */
@@ -5510,13 +5783,31 @@ function renderPresetsContent(category) {
 }
 
 function updatePresetsFooterButton() {
-    const btn = document.getElementById('add-presets-btn');
-    if (btn) {
-        btn.textContent = `Add Selected (${selectedPresets.length})`;
-        btn.style.opacity = selectedPresets.length > 0 ? '1' : '0.5';
-        btn.style.pointerEvents = selectedPresets.length > 0 ? 'auto' : 'none';
+    // Update the Add button
+    const addBtn = document.getElementById('add-presets-btn');
+    if (addBtn) {
+        addBtn.textContent = `Add Selected (${selectedPresets.length})`;
+        addBtn.style.opacity = selectedPresets.length > 0 ? '1' : '0.5';
+        addBtn.style.pointerEvents = selectedPresets.length > 0 ? 'auto' : 'none';
+    }
+    
+    // Update the Select All button text contextually
+    const selectAllBtn = document.getElementById('select-all-btn');
+    if (selectAllBtn) {
+        const activeTab = document.querySelector('.presets-tab.active');
+        const category = activeTab ? activeTab.getAttribute('data-filter') : 'All';
+        const visiblePresets = PRESET_BOOKMARKS.filter(item => category === 'All' || item.category === category);
+        
+        if (visiblePresets.length === 0) return;
+        
+        const allSelected = visiblePresets.every(preset => 
+            selectedPresets.some(p => p.url === preset.url)
+        );
+        
+        selectAllBtn.textContent = allSelected ? "Deselect All" : "Select All";
     }
 }
+
 
 function addSelectedPresets() {
     if (selectedPresets.length === 0) return;
@@ -5549,6 +5840,39 @@ function addSelectedPresets() {
     }
     
     closePresetsModal();
+}
+
+// --- Bulk Selection Logic ---
+function toggleSelectAllPresets() {
+    // 1. Figure out which tab the user is currently looking at
+    const activeTab = document.querySelector('.presets-tab.active');
+    const category = activeTab ? activeTab.getAttribute('data-filter') : 'All';
+
+    // 2. Filter the master list to only the visible items
+    const visiblePresets = PRESET_BOOKMARKS.filter(item => category === 'All' || item.category === category);
+
+    // 3. Check if every single visible item is currently selected
+    const allSelected = visiblePresets.every(preset => 
+        selectedPresets.some(p => p.url === preset.url)
+    );
+
+    if (allSelected) {
+        // If all are selected, clicking the button should DESELECT them
+        visiblePresets.forEach(preset => {
+            const index = selectedPresets.findIndex(p => p.url === preset.url);
+            if (index > -1) selectedPresets.splice(index, 1);
+        });
+    } else {
+        // Otherwise, SELECT all of them
+        visiblePresets.forEach(preset => {
+            const isSelected = selectedPresets.some(p => p.url === preset.url);
+            if (!isSelected) selectedPresets.push(preset);
+        });
+    }
+
+    // 4. Repaint the grid to show the new checkmarks and update the buttons
+    renderPresetsContent(category);
+    updatePresetsFooterButton();
 }
 
 
