@@ -440,7 +440,7 @@ body:focus {
     .floating-menu {
       position: fixed;
       background: rgba(0, 0, 0, 0.95);
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 6px 0;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
       color: white;
@@ -454,13 +454,19 @@ body:focus {
 
     .floating-menu div {
       padding: 6px 10px;
+      margin: 0 6px; /* 0px top/bottom, 6px left/right */
       cursor: pointer;
       white-space: nowrap;
+      border-radius: 999px; 
+      transition: box-shadow 0.2s ease, transform 0.15s ease; /* Smooth transition for glow and scale */
     }
 
     .floating-menu div:hover {
-      background: var(--accent-color);
+      /* Insets a subtle glow inside, and projects a clean glow outside using your accent color */
+      box-shadow: 0 0 8px var(--accent-color), inset 0 0 4px var(--accent-color);
+      transform: scale(1.02); /* Tiny premium pop-out effect */
     }
+
     .tile {
       position: relative;
       overflow: visible !important;
@@ -5302,82 +5308,97 @@ function flipCoin(isReflip = false) {
 /* ------------------------------------------------------------- */
 /* Voice Search – fires performSearch() once with final text    */
 /* ------------------------------------------------------------- */
-let recognition = null;           // keep your existing globals
-let handleCancelClick = null;     //           "
+/* ------------------------------------------------------------- */
+/* Voice Search – Upgraded with Privacy Browser Support          */
+/* ------------------------------------------------------------- */
+let recognition = null;           
+let handleCancelClick = null;     
 
-function startVoiceSearch () {
-  if (!('webkitSpeechRecognition' in window)) {
-    showToast("Voice search isn’t supported on this device.");
-    document.getElementById("searchInput").focus();
-    return;
-  }
+function startVoiceSearch() {
+    const searchInput = document.getElementById("searchInput");
+    const micIcon = document.getElementById("micIcon");
+    const container = document.querySelector(".container");
 
-  if (recognition && recognition._isStarted) {   // tap mic again to cancel
-    recognition.stop();
-    return;
-  }
-
-  recognition = new webkitSpeechRecognition();
-  recognition.lang           = "en-US";
-  recognition.interimResults = true;
-  recognition.continuous     = false;            // auto-stop after pause
-
-  const searchInput = document.getElementById("searchInput");
-  const micIcon     = document.getElementById("micIcon");
-  const container   = document.querySelector(".container");
-
-  let finalText = "";
-
-  /* ── UI feedback ─────────────────────────────────── */
-  handleCancelClick = (e) => {
-    if (!e.target.closest('a, button, input, .menu, .toolbar-option'))
-      recognition.stop();
-  };
-
-  recognition.onstart = () => {
-    recognition._isStarted  = true;
-    searchInput.placeholder = "Listening…";
-    micIcon.style.color     = "red";
-    container.addEventListener('click', handleCancelClick);
-  };
-
-  /* ── Collect text ────────────────────────────────── */
-  recognition.onresult = (e) => {
-    let interim = "";
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      (e.results[i].isFinal) ? finalText += t : interim += t;
+    // 1. Check if the browser supports the API at all
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        showToast("Voice search isn’t supported on this device.");
+        searchInput.focus();
+        return;
     }
-    searchInput.value = finalText + interim;
-    handleSearchInput();
 
-    // No manual stop here — we wait for onend
-  };
-
-  recognition.onerror = ({ error }) => {
-    if (error !== "aborted" && error !== "no-speech")
-      showToast("Voice recognition error: " + error);
-  };
-
-  /* ── Finish: restore UI & run search once ────────── */
-  recognition.onend = () => {
-    recognition._isStarted = false;
-    container.removeEventListener('click', handleCancelClick);
-
-    searchInput.placeholder =
-      `Search with ${localStorage.getItem('searchEngine') || 'Google'}…`;
-    micIcon.style.color = "";
-
-    const q = searchInput.value.trim();
-    if (q) {
-      logHistory('Voice', `Voice search: "${q}"`);
-      setTimeout(() => performSearch(true), 50);   // small iOS delay
+    if (recognition && recognition._isStarted) {
+        recognition.stop();
+        return;
     }
-  };
 
-  recognition.start();
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+    let finalText = "";
+
+    handleCancelClick = (e) => {
+        if (!e.target.closest('a, button, input, .menu, .toolbar-option')) {
+            recognition.stop();
+        }
+    };
+
+    recognition.onstart = function() {
+        recognition._isStarted = true;
+        searchInput.placeholder = "Listening...";
+        if (micIcon) micIcon.style.color = "red";
+        if (container) container.addEventListener('click', handleCancelClick);
+    };
+
+    recognition.onresult = function(e) {
+        let interim = "";
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+            const t = e.results[i][0].transcript;
+            (e.results[i].isFinal) ? finalText += t : interim += t;
+        }
+        searchInput.value = finalText + interim;
+        handleSearchInput();
+    };
+
+    recognition.onerror = function(event) {
+        console.error("Speech recognition error: ", event.error);
+        
+        // 2. Handle specific Brave/Helium network blocks gracefully
+        if (event.error === 'network' || event.error === 'not-allowed') {
+            showToast("Voice search blocked by browser privacy settings.");
+            searchInput.placeholder =
+    `Search with ${localStorage.getItem('searchEngine') || 'Google'}…`;
+        } else if (event.error !== "aborted" && event.error !== "no-speech") {
+            showToast("Voice recognition error: " + event.error);
+        }
+        
+        if (micIcon) micIcon.style.color = "";
+    };
+
+    recognition.onend = function() {
+        recognition._isStarted = false;
+        if (container) container.removeEventListener('click', handleCancelClick);
+        
+        if (micIcon) micIcon.style.color = "";
+
+        const q = searchInput.value.trim();
+        if (q) {
+            logHistory('Voice', `Voice search: "${q}"`);
+            setTimeout(() => performSearch(true), 50);
+        } else {
+            searchInput.placeholder =
+    `Search with ${localStorage.getItem('searchEngine') || 'Google'}…`;
+        }
+    };
+
+    try {
+        recognition.start();
+    } catch (e) {
+        console.error("Could not start speech recognition:", e);
+        showToast("Voice search unavailable.");
+    }
 }
-
 
     function exportBookmarks() {
       try {
@@ -6499,6 +6520,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+
+// =====================================================================
+// 👻 GHOST UI CLEANUP (Runs when returning to the tab)
+// =====================================================================
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        const searchInput = document.getElementById("searchInput");
+        const suggestionsBox = document.getElementById('searchSuggestionsBox');
+        
+        if (searchInput) {
+            // 1. Always guarantee the placeholder is normal when returning
+            searchInput.placeholder =
+    `Search with ${localStorage.getItem('searchEngine') || 'Google'}…`;
+
+            // 2. If the search bar is empty, guarantee the suggestions are hidden
+            if (searchInput.value.trim() === "") {
+                if (suggestionsBox) {
+                    suggestionsBox.style.display = 'none';
+                    suggestionsBox.innerHTML = '';
+                }
+            }
+        }
+    }
+});
 
 
    // Register SW only when served from http/https (not file://)
