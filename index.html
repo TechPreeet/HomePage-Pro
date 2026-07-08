@@ -18,7 +18,8 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="theme-color" content="#000000" />
+
+
 
 
 
@@ -2455,6 +2456,8 @@ body.rearrange-active .tile .menu {
         margin: 0 auto; /* Ensures it stays perfectly centered */
     }
 }
+
+
 
 </style>
 </head>
@@ -6540,6 +6543,46 @@ document.addEventListener('visibilitychange', () => {
                     suggestionsBox.style.display = 'none';
                     suggestionsBox.innerHTML = '';
                 }
+            }
+        }
+    }
+});
+
+// =====================================================================
+// 🎙️ BROWSER DETECTION (Hide Mic on Non-Chrome Browsers)
+// =====================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Identify if the browser is exactly Google Chrome
+    const isChromium = window.chrome;
+    const vendorName = window.navigator.vendor;
+    const isOpera = typeof window.opr !== "undefined" || navigator.userAgent.includes("OPR");
+    const isEdge = navigator.userAgent.indexOf("Edg") > -1;
+    const isBrave = typeof navigator.brave !== "undefined";
+
+    // True ONLY if it's Chrome (Not Edge, Not Brave, Not Opera, Not Safari)
+    const isPureChrome = 
+        isChromium !== null && 
+        typeof isChromium !== "undefined" && 
+        vendorName === "Google Inc." && 
+        !isOpera && 
+        !isEdge && 
+        !isBrave;
+
+    // 2. If it is NOT pure Chrome, delete the UI elements entirely
+    if (!isPureChrome) {
+        // Find and delete the Mic Icon
+        const micIcon = document.getElementById("micIcon");
+        if (micIcon) {
+            micIcon.remove(); 
+        }
+
+        // Find and delete the Mic Toggle Switch in Settings
+        const micSwitch = document.getElementById("micToggleSwitch");
+        if (micSwitch) {
+            // Find the parent container (.toolbar-option) so the whole row disappears
+            const parentOption = micSwitch.closest('.toolbar-option');
+            if (parentOption) {
+                parentOption.remove();
             }
         }
     }
