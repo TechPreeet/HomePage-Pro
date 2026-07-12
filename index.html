@@ -1366,9 +1366,11 @@ body.sidebar-slider-active #settings-sidebar{
       position: relative;
     }
     
+    /* Add .toggle-search to the base list */
     .toggle-arrow,
     .toggle-add,
-    .toggle-refresh {
+    .toggle-refresh,
+    .toggle-search { 
       position: relative;
       width: 1.75rem;
       height: 1.75rem;
@@ -1382,7 +1384,7 @@ body.sidebar-slider-active #settings-sidebar{
       border-radius: 40%;
       cursor: pointer;
       color: currentColor;
-      font-size: 1rem;
+      font-size: 1rem; /* It will now use this exact size to match the other arrow! */
       line-height: 1;
       transition: all 0.2s ease;
       z-index: 20;
@@ -1397,22 +1399,23 @@ body.sidebar-slider-active #settings-sidebar{
         font-weight: 700;
     }
 
-    /* Hover only on desktops (pointer: fine) */
+    /* Add .toggle-search to the hover effects */
     @media (pointer: fine) {
       .toggle-arrow:hover,
       .toggle-add:hover,
-      .toggle-refresh:hover {
+      .toggle-refresh:hover,
+      .toggle-search:hover {
         opacity: 1;
         background-color: var(--accent-color);
         transform: scale(1.15);
       }
     }
 
-    /* Remove any touch :active styling so nothing sticks on touch */
+    /* Add .toggle-search to the active touch rules */
     .toggle-arrow:active,
     .toggle-add:active,
-    .toggle-refresh:active {
-      /* override to no effect on touch */
+    .toggle-refresh:active,
+    .toggle-search:active {
       background-color: transparent !important;
       opacity: 1 !important;
       transform: none !important;
@@ -2457,6 +2460,55 @@ body.rearrange-active .tile .menu {
     }
 }
 
+/* =========================================
+   Search Bar Toggle Animations (Smooth Layout Shift)
+   ========================================= */
+
+#searchForm { 
+    /* Animate the physical height and margins so bookmarks slide up/down */
+    transition: max-height 0.35s ease, margin 0.35s ease, opacity 0.25s ease;
+    
+    max-height: 100px; /* Gives enough room for the bar */
+    opacity: 1;
+    
+    /* overflow MUST be visible normally so your suggestions dropdown isn't cut off */
+    overflow: visible; 
+}
+
+#searchForm.hidden-search {
+    max-height: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    opacity: 0;
+    
+    /* Hide contents strictly when collapsed so nothing pokes out */
+    overflow: hidden; 
+    pointer-events: none;
+    border: none;
+}
+
+/* Ensure suggestions immediately disappear if hidden while typing */
+#searchForm.hidden-search #searchSuggestionsBox,
+#searchForm.hidden-search #searchResults {
+    display: none !important;
+}
+
+/* The arrow rotation animation strictly for the search button */
+#toggleSearchBtn {
+    transition: transform 0.3s ease;
+}
+
+/* Use a unique class name so it never conflicts with the bookmarks arrow */
+#toggleSearchBtn.search-flipped {
+    transform: rotate(180deg);
+}
+
+/* hide icognito button */
+.floating-menu div:last-child {
+    display: none !important;
+}
 
 
 </style>
@@ -2609,7 +2661,7 @@ body.rearrange-active .tile .menu {
           <input
             type="search"
             id="searchInput"
-            placeholder="Search the web..."
+            placeholder=" "
             autocomplete="off"
             spellcheck="false"
             autocorrect="off"
@@ -2635,6 +2687,9 @@ body.rearrange-active .tile .menu {
         <div id="bookmarkControls">
             <button id="toggleTabsBtn" class="toggle-refresh" aria-label="Show tabs">❐</button>
             <button id="addBookmarkBtn" class="toggle-add" aria-label="Add bookmark">＋</button>
+            <!-- ✅ NEW BUTTON: Defaults to pointing UP (Search is visible) -->
+            <!-- Set the default arrow to face DOWN -->
+            <button id="toggleSearchBtn" class="toggle-search" aria-label="Toggle search">▲</button>
             <button id="toggleBookmarks" class="toggle-arrow" aria-label="Hide bookmarks">▼</button>
             <button id="toggleHistoryBtn" class="toggle-refresh" aria-label="Show history">
                 <svg width="32" height="32" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -2996,15 +3051,11 @@ body.rearrange-active .tile .menu {
 <label class="toolbar-option">
   🔗 Open Links in New Tab
   <div class="switch">
-    <input
-      type="checkbox"
-      id="newTabLinksSwitch"
-      onchange="toggleNewTabLinks()"
-    />
+    <!-- ✅ Added the word 'checked' here -->
+    <input type="checkbox" id="newTabLinksSwitch" checked />
     <span class="slider"></span>
   </div>
 </label>
-
 
 
 
@@ -6233,9 +6284,29 @@ if (typeof initSearchEngineSelector === 'function') initSearchEngineSelector();
         document.body.classList.remove('hide-labels');
       }
 
-      // 🔗 Open Links in New Tab
-      const newTab = localStorage.getItem('newTabLinks') === 'true';
-      document.getElementById('newTabLinksSwitch').checked = newTab;
+                  // 🔗 Open Links in New Tab
+      const savedNewTab = localStorage.getItem('newTabLinks');
+      
+      // If null (new user), default to true. Otherwise, read their saved preference.
+      // Make sure you update your global variable (newTabLinks) here!
+      newTabLinks = (savedNewTab === null) ? true : (savedNewTab === 'true');
+      
+      const newTabSwitch = document.getElementById('newTabLinksSwitch');
+      if (newTabSwitch) {
+          newTabSwitch.checked = newTabLinks;
+          
+          // Ensure your event listener updates the global variable and saves it
+          newTabSwitch.addEventListener('change', (e) => {
+              newTabLinks = e.target.checked;
+              localStorage.setItem('newTabLinks', newTabLinks);
+              
+              // Call your existing log function if needed
+              if (typeof logHistory === 'function') {
+                  logHistory('Setting', `Set 'Open Links in New Tab' to ${newTabLinks}`);
+              }
+          });
+      }
+
       
     });
 
@@ -6551,40 +6622,102 @@ document.addEventListener('visibilitychange', () => {
 // =====================================================================
 // 🎙️ BROWSER DETECTION (Hide Mic on Non-Chrome Browsers)
 // =====================================================================
+// =====================================================================
+// 🎙️ MICROPHONE INIT: Browser Detection & State Toggle
+// =====================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Identify if the browser is exactly Google Chrome
+    // 1. Setup Browser Detection Variables
     const isChromium = window.chrome;
-    const vendorName = window.navigator.vendor;
-    const isOpera = typeof window.opr !== "undefined" || navigator.userAgent.includes("OPR");
-    const isEdge = navigator.userAgent.indexOf("Edg") > -1;
-    const isBrave = typeof navigator.brave !== "undefined";
+    const vendorName = window.navigator.vendor || "";
+    const ua = navigator.userAgent;
 
-    // True ONLY if it's Chrome (Not Edge, Not Brave, Not Opera, Not Safari)
+    const isOpera = typeof window.opr !== "undefined" || ua.includes("OPR");
+    const isEdge = ua.indexOf("Edg") > -1;
+    const isBrave = typeof navigator.brave !== "undefined";
+    const isOrion = ua.includes("Orion");
+    const isHelium = ua.includes("Helium");
+    const isFirefox = ua.includes("Firefox");
+    const isSafari = ua.includes("Safari") && !ua.includes("Chrome");
+
+    // True ONLY if it's strictly Google Chrome
     const isPureChrome = 
         isChromium !== null && 
         typeof isChromium !== "undefined" && 
         vendorName === "Google Inc." && 
         !isOpera && 
         !isEdge && 
-        !isBrave;
+        !isBrave &&
+        !isOrion &&
+        !isHelium &&
+        !isFirefox &&
+        !isSafari;
 
-    // 2. If it is NOT pure Chrome, delete the UI elements entirely
+    // 2. Grab Elements
+    const micIcon = document.getElementById("micIcon");
+    const micSwitch = document.getElementById("micToggleSwitch");
+
+    // 3. Apply Logic
     if (!isPureChrome) {
-        // Find and delete the Mic Icon
-        const micIcon = document.getElementById("micIcon");
+        // 🚫 NON-CHROME: Completely remove elements from the DOM
         if (micIcon) {
             micIcon.remove(); 
         }
-
-        // Find and delete the Mic Toggle Switch in Settings
-        const micSwitch = document.getElementById("micToggleSwitch");
+        
         if (micSwitch) {
-            // Find the parent container (.toolbar-option) so the whole row disappears
-            const parentOption = micSwitch.closest('.toolbar-option');
+            // Look for the toolbar-option wrapper, fallback to generic parent
+            const parentOption = micSwitch.closest('.toolbar-option') || micSwitch.parentElement;
             if (parentOption) {
                 parentOption.remove();
+            } else {
+                micSwitch.remove();
             }
         }
+    } else {
+        // ✅ PURE CHROME: Apply user's custom toggle preferences
+        const isMicEnabled = localStorage.getItem('micEnabled') === 'true'; 
+
+        if (micIcon) {
+            micIcon.style.display = isMicEnabled ? 'block' : 'none';
+        }
+        
+        if (micSwitch) {
+            micSwitch.checked = isMicEnabled;
+
+            micSwitch.addEventListener('change', (e) => {
+                const isChecked = e.target.checked;
+                localStorage.setItem('micEnabled', isChecked);
+                if (micIcon) {
+                    micIcon.style.display = isChecked ? 'block' : 'none';
+                }
+            });
+        }
+    }
+});
+
+// =====================================================================
+// 🔍 DYNAMIC SEARCH BAR TOGGLE
+// =====================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleSearchBtn = document.getElementById('toggleSearchBtn');
+    const searchForm = document.getElementById('searchForm'); 
+
+    if (toggleSearchBtn && searchForm) {
+        // 1. Check if the user previously hid the search bar
+        const isSearchHidden = localStorage.getItem('hideSearchBar') === 'true';
+        
+        if (isSearchHidden) {
+            searchForm.classList.add('hidden-search');
+            toggleSearchBtn.classList.add('search-flipped'); // <-- Updated!
+        }
+
+        // 2. Listen for clicks to trigger the animation independently
+        toggleSearchBtn.addEventListener('click', () => {
+            const isNowHidden = searchForm.classList.toggle('hidden-search');
+            toggleSearchBtn.classList.toggle('search-flipped'); // <-- Updated!
+            
+            // Save their preference
+            localStorage.setItem('hideSearchBar', isNowHidden);
+        });
     }
 });
 
