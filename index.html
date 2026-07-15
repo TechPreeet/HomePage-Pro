@@ -4322,20 +4322,6 @@ function toggleAnimatedBg() {
       });
     }
 
-    // ==========================================
-// ⌨️ HIDE MOBILE KEYBOARD WITHOUT LOSING SUGGESTIONS
-// ==========================================
-function hideKeyboard(event) {
-    if (event) {
-        event.preventDefault();  // Stops the tap from messing with form focus
-        event.stopPropagation(); // Stops the tap from triggering document click listeners
-    }
-    
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.blur(); // This is the magic command that closes the keyboard!
-    }
-}
 
 function handleSearchInput() {
     const input = document.getElementById("searchInput");
