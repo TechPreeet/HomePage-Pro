@@ -2509,7 +2509,45 @@ body.rearrange-active .tile .menu {
 .floating-menu div:last-child {
     display: none !important;
 }
+/* =========================================
+   Search Suggestion "Fill" Arrow (Mobile)
+   ========================================= */
 
+/* Ensure the wrapper holding the suggestion text and arrow flexes correctly */
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Pushes text left, arrow right */
+    /* Your existing suggestion item styles (padding, hover, etc.) stay here */
+}
+
+/* The liquid glass arrow button */
+.fill-suggestion-btn {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: currentColor;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0; /* Prevents long suggestions from squishing the button */
+    z-index: 10;
+}
+
+/* Active touch state for tactile feedback */
+.fill-suggestion-btn:active {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(0.95);
+}
 
 </style>
 </head>
@@ -2673,6 +2711,14 @@ body.rearrange-active .tile .menu {
             xmlns="http://www.w3.org/2000/svg"
             height="24" width="24" fill="currentColor">
             <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
+          </svg>
+          <!-- Mobile Hide Keyboard Arrow (Visible only on touch devices during focus) -->
+          <svg id="hideKeyboardIcon" onpointerdown="hideKeyboard(event)" title="Hide Keyboard"
+            xmlns="http://www.w3.org/2000/svg"
+            height="24" width="24" fill="currentColor"
+            style="position: absolute; right: 45px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
+            <!-- Google Material Symbols Down Arrow -->
+            <path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"/>
           </svg>
           <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
             xmlns="http://www.w3.org/2000/svg"
@@ -4252,6 +4298,21 @@ function toggleAnimatedBg() {
       });
     }
 
+    // ==========================================
+// ⌨️ HIDE MOBILE KEYBOARD WITHOUT LOSING SUGGESTIONS
+// ==========================================
+function hideKeyboard(event) {
+    if (event) {
+        event.preventDefault();  // Stops the tap from messing with form focus
+        event.stopPropagation(); // Stops the tap from triggering document click listeners
+    }
+    
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.blur(); // This is the magic command that closes the keyboard!
+    }
+}
+
 function handleSearchInput() {
     const input = document.getElementById("searchInput");
     const micIcon = document.getElementById("micIcon");
@@ -4316,6 +4377,30 @@ function handleSearchInput() {
                 item.className = 'search-result-tile'; // Hooks into our new CSS
                 item.tabIndex = 0;
                 if (typeof newTabLinks !== 'undefined' && newTabLinks) item.target = "_blank";
+
+                // ==========================================
+                // 🧹 NEW: CLEAN UP SEARCH AFTER CLICKING THIS TILE
+                // ==========================================
+                item.addEventListener('click', () => {
+                    const searchInput = document.getElementById('searchInput');
+                    if (searchInput && searchInput.value.trim() !== '') {
+                        // Wait 100ms to let the new tab open successfully before destroying the search
+                        setTimeout(() => {
+                            searchInput.value = ''; 
+                            
+                            // Force the live-filter to reset
+                            searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            
+                            // Hide the suggestions box
+                            const suggestionsBox = document.getElementById('searchSuggestionsBox');
+                            if (suggestionsBox) suggestionsBox.style.display = 'none';
+                            
+                            // Close mobile keyboard
+                            searchInput.blur(); 
+                        }, 100);
+                    }
+                });
+                // ==========================================
 
                 // Create the icon image
                 const img = document.createElement("img");
@@ -5546,6 +5631,30 @@ function startVoiceSearch() {
     }
 
 
+
+// Hide keyboard on Arrow
+    document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const hideKbIcon = document.getElementById('hideKeyboardIcon');
+
+    // Only run this logic if they are on a touch device
+    if (searchInput && hideKbIcon && isTouchDevice()) {
+        
+        // When they tap the search bar (keyboard opens), show the arrow
+        searchInput.addEventListener('focus', () => {
+            hideKbIcon.style.display = 'block';
+        });
+
+        // When the keyboard closes (blur), hide the arrow
+        searchInput.addEventListener('blur', () => {
+            // A tiny delay ensures the user's tap registers before the button vanishes
+            setTimeout(() => {
+                hideKbIcon.style.display = 'none';
+            }, 150);
+        });
+    }
+});
+
 // Toggle Mic Icon Visibility
 function toggleMicIcon() {
     const micIcon = document.getElementById('micIcon');
@@ -5638,23 +5747,65 @@ function renderSuggestions(suggestions) {
         return;
     }
 
+    // Touch device detection function
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+
     suggestions.forEach(text => {
         const div = document.createElement('div');
         div.className = 'suggestion-item';
-        div.textContent = text;
         
-        // CLICK SUPPORT: Fill input and search instantly
-        div.onclick = () => {
+        // Create a wrapper for the text so it can still handle standard clicks cleanly
+        const textSpan = document.createElement('span');
+        textSpan.textContent = text;
+        textSpan.style.flexGrow = '1';
+        
+        // CLICK SUPPORT: Fill input and search instantly when tapping the text
+        textSpan.onclick = () => {
             document.getElementById('searchInput').value = text;
             suggestionBox.style.display = 'none'; // Hide the box
             performSearch(); // Trigger your existing search logic
         };
+        
+        div.appendChild(textSpan);
+
+        // ✅ NEW: If it's a touch device, inject the Liquid Glass fill arrow
+        if (isTouch) {
+            const fillBtn = document.createElement('div');
+            fillBtn.className = 'fill-suggestion-btn';
+            fillBtn.innerHTML = '↖'; // Diagonal left-top facing arrow
+            
+            // Call the helper function and pass the click event to prevent search submission
+            fillBtn.onclick = (e) => fillSearchBar(text, e);
+            
+            div.appendChild(fillBtn);
+        }
         
         suggestionBox.appendChild(div);
     });
 
     // Show the box with a smooth fade
     suggestionBox.style.display = 'block';
+}
+
+// ✅ NEW HELPER FUNCTION: Fills the input bar on touch without submitting
+function fillSearchBar(text, event) {
+    // Crucial: Stops the click from bubbling up to the suggestion item row
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        // Place the text inside the bar with a trailing space for more typing
+        searchInput.value = text + ' ';
+        
+        // Force focus the input so the keyboard stays up on smartphones/iPads
+        searchInput.focus();
+        
+        // Hide the box momentarily, or dispatch an input event to refresh suggestions
+        // searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
 }
 
 // 3. Connect to your Search Bar with Debounce
@@ -5672,7 +5823,11 @@ if (searchInput) {
 
     // Premium UI Touch: Hide suggestions if user clicks somewhere else
     document.addEventListener('click', (e) => {
-        if (e.target !== searchInput && e.target.className !== 'suggestion-item') {
+        // ✅ NEW: We added the hideKeyboardIcon to the exclusion list!
+        if (e.target !== searchInput && 
+            !e.target.closest('.suggestion-item') && 
+            !e.target.closest('#hideKeyboardIcon')) {
+            
             const box = document.getElementById('searchSuggestionsBox');
             if (box) box.style.display = 'none';
         }
