@@ -2080,8 +2080,6 @@ body.dark-mode #searchSuggestionsBox {
     /* ✅ NEW: Keeps padding perfectly inside the box */
     box-sizing: border-box;
     
-padding-top: calc(env(safe-area-inset-top) + 20px);
-
     display: none; 
     grid-template-columns: repeat(5, 1fr);
     gap: 12px;
@@ -2553,6 +2551,18 @@ body.rearrange-active .tile .menu {
     background: rgba(255, 255, 255, 0.25);
     transform: scale(0.95);
 }
+/* Hide Sidebar Toggle up to iPad size (1024px) */
+@media (max-width: 1024px) {
+    /* Replace with your exact class AND id to be safe */
+    body.search-is-active .sidebar-toggle-btn,
+    body.search-is-active #sidebar-toggle-btn{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+}
+
 
 </style>
 </head>
@@ -2717,6 +2727,13 @@ body.rearrange-active .tile .menu {
             height="24" width="24" fill="currentColor">
             <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
           </svg>
+<!-- Mobile Hide Keyboard Arrow -->
+<svg id="hideKeyboardIcon" onpointerdown="hideKeyboard(event)" title="Hide Keyboard"
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24" height="24" width="24" fill="currentColor"
+  style="position: absolute; right: 45px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; z-index: 10;">
+  <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+</svg>
           <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
             xmlns="http://www.w3.org/2000/svg"
             height="24" width="24" fill="currentColor"
@@ -3802,6 +3819,9 @@ function clearSearch() {
         if (suggestionsBox) {
             suggestionsBox.style.display = 'none';
         }
+
+        // Add this line to bring the sidebar button back immediately!
+        updateMobileSearchUI();
         
         // 4. THE MAGIC: Remove focus to instantly close the mobile keyboard
         searchInput.blur();
@@ -5732,7 +5752,7 @@ function renderSuggestions(suggestions) {
     // Touch device detection function
     const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
 
-    suggestions.forEach(text => {
+suggestions.forEach(text => {
         const div = document.createElement('div');
         div.className = 'suggestion-item';
         
@@ -5743,9 +5763,24 @@ function renderSuggestions(suggestions) {
         
         // CLICK SUPPORT: Fill input and search instantly when tapping the text
         textSpan.onclick = () => {
-            document.getElementById('searchInput').value = text;
+            const searchInput = document.getElementById('searchInput');
+            
+            // Set the value so the search executes correctly
+            searchInput.value = text;
             suggestionBox.style.display = 'none'; // Hide the box
             performSearch(); // Trigger your existing search logic
+            
+            // ✅ NEW: Clean up the UI after the new tab successfully opens
+            setTimeout(() => {
+                searchInput.value = ''; // Clear the text
+                searchInput.dispatchEvent(new Event('input', { bubbles: true })); // Reset grids
+                searchInput.blur(); // Drop focus
+                
+                // Explicitly tell the sidebar toggle button to come back!
+                if (typeof updateMobileSearchUI === 'function') {
+                    updateMobileSearchUI();
+                }
+            }, 100);
         };
         
         div.appendChild(textSpan);
@@ -5763,7 +5798,8 @@ function renderSuggestions(suggestions) {
         }
         
         suggestionBox.appendChild(div);
-    });
+      
+      });
 
     // Show the box with a smooth fade
     suggestionBox.style.display = 'block';
@@ -5787,6 +5823,9 @@ function fillSearchBar(text, event) {
         
         // Hide the box momentarily, or dispatch an input event to refresh suggestions
         // searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+        // ✅ IMPORTANT: This forces the search bar to fetch the next batch of suggestions
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
 }
 
@@ -5805,9 +5844,15 @@ if (searchInput) {
 
     // Premium UI Touch: Hide suggestions if user clicks somewhere else
     document.addEventListener('click', (e) => {
-        if (e.target !== searchInput && !e.target.closest('.suggestion-item')) {
+        if (e.target !== searchInput && 
+            !e.target.closest('.suggestion-item') && 
+            !e.target.closest('#hideKeyboardIcon')) { // <-- Keep this protection!
+            
             const box = document.getElementById('searchSuggestionsBox');
             if (box) box.style.display = 'none';
+            
+            // Update UI state since we closed the box
+            setTimeout(updateMobileSearchUI, 50);
         }
     });
 
@@ -5887,6 +5932,33 @@ if (searchInput) {
             showToast("All in-app tabs closed.");
         }
     }
+
+    // ==========================================
+// ⌨️ HIDE MOBILE KEYBOARD
+// ==========================================
+function hideKeyboard(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation(); 
+    }
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.blur(); // Drops the keyboard
+}
+
+function updateMobileSearchUI() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+
+    // Check if keyboard is open OR if there's text (tiles/suggestions visible)
+    const isFocused = document.activeElement === searchInput;
+    const hasText = searchInput.value.trim() !== '';
+
+    if (isFocused || hasText) {
+        document.body.classList.add('search-is-active');
+    } else {
+        document.body.classList.remove('search-is-active');
+    }
+}
 
 
 function openInNewWindow(url) {
@@ -6727,6 +6799,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const hideKbIcon = document.getElementById('hideKeyboardIcon');
+    let hideKbTimeout; 
+
+    // ✅ NEW: Modern hardware check. Returns TRUE for fingers (phones/tablets), FALSE for mice/trackpads (MacBooks)
+    const isTouchScreen = window.matchMedia("(pointer: coarse)").matches || 
+                         (('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.innerWidth <= 1024);
+
+    if (searchInput) {
+        updateMobileSearchUI();
+        searchInput.addEventListener('input', updateMobileSearchUI);
+
+        // When search bar is tapped
+        searchInput.addEventListener('focus', () => {
+            updateMobileSearchUI(); 
+            
+            // ✅ NEW: Only show the arrow if it's actually a touch device
+            if (hideKbIcon && isTouchScreen) {
+                clearTimeout(hideKbTimeout); 
+                hideKbIcon.style.display = 'block';
+                
+                setTimeout(() => {
+                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+                }, 50);
+            }
+        });
+
+        // When search bar loses focus
+        searchInput.addEventListener('blur', () => {
+            updateMobileSearchUI(); 
+            
+            if (hideKbIcon) {
+                hideKbTimeout = setTimeout(() => { 
+                    hideKbIcon.style.display = 'none'; 
+                }, 150);
+            }
+        });
+    }
+});
 
 // =====================================================================
 // 👻 GHOST UI CLEANUP (Runs when returning to the tab)
