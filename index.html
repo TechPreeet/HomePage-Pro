@@ -2066,7 +2066,7 @@ body.dark-mode #searchSuggestionsBox {
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    width: 90%; 
+    width: 100%; 
     margin-bottom: 10px; 
     
     /* EXACT Match to Search Bar Light Mode */
@@ -2076,7 +2076,12 @@ body.dark-mode #searchSuggestionsBox {
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 24px; /* Matched to Search Bar */
     padding: 15px;
+
+    /* ✅ NEW: Keeps padding perfectly inside the box */
+    box-sizing: border-box;
     
+padding-top: calc(env(safe-area-inset-top) + 20px);
+
     display: none; 
     grid-template-columns: repeat(5, 1fr);
     gap: 12px;
@@ -2090,7 +2095,7 @@ body.dark-mode #searchSuggestionsBox {
 
 /* Adjust for smaller mobile touch screens */
 @media (max-width: 600px) {
-    #searchResults { grid-template-columns: repeat(4, 1fr); }
+    #searchResults { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 400px) {
     #searchResults { grid-template-columns: repeat(3, 1fr); }
@@ -2711,14 +2716,6 @@ body.rearrange-active .tile .menu {
             xmlns="http://www.w3.org/2000/svg"
             height="24" width="24" fill="currentColor">
             <path d="M12 15q-1.25 0-2.125-.875T9 12V6q0-1.25.875-2.125T12 3q1.25 0 2.125.875T15 6v6q0 1.25-.875 2.125T12 15Zm-1 6v-3.1q-2.875-.35-4.438-2.563Q5 13.125 5 10.25h2q0 2.3 1.55 3.875T12 15.7q1.9 0 3.45-1.575Q17 12.55 17 10.25h2q0 2.875-1.562 5.087Q15.875 17.55 13 17.9V21Z"/>
-          </svg>
-          <!-- Mobile Hide Keyboard Arrow (Visible only on touch devices during focus) -->
-          <svg id="hideKeyboardIcon" onpointerdown="hideKeyboard(event)" title="Hide Keyboard"
-            xmlns="http://www.w3.org/2000/svg"
-            height="24" width="24" fill="currentColor"
-            style="position: absolute; right: 45px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none;">
-            <!-- Google Material Symbols Down Arrow -->
-            <path d="M480-344 240-584l56-56 184 184 184-184 56 56-240 240Z"/>
           </svg>
           <svg id="clearIcon" onclick="clearSearch()" title="Clear Search"
             xmlns="http://www.w3.org/2000/svg"
@@ -3788,20 +3785,27 @@ function setTextSafe(id, text) {
       }
     });
 
-    function clearSearch() {
-    const input = document.getElementById("searchInput");
-    input.value = ""; 
-    input.focus(); // Keep the cursor in the box
-
-    // Close the new search suggestions dropdown if it's open
-    const suggestionBox = document.getElementById('searchSuggestionsBox');
-    if (suggestionBox) {
-        suggestionBox.innerHTML = '';
-        suggestionBox.style.display = 'none';
+// ==========================================
+// ❌ CLEAR SEARCH & CLOSE KEYBOARD
+// ==========================================
+function clearSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        // 1. Clear the text
+        searchInput.value = '';
+        
+        // 2. Trigger the input event to reset your live bookmarks grid
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        
+        // 3. Hide the search suggestions box
+        const suggestionsBox = document.getElementById('searchSuggestionsBox');
+        if (suggestionsBox) {
+            suggestionsBox.style.display = 'none';
+        }
+        
+        // 4. THE MAGIC: Remove focus to instantly close the mobile keyboard
+        searchInput.blur();
     }
-
-    // Trigger the input handler to reset the icons and un-filter the bookmarks
-    handleSearchInput();
 }
 
 
@@ -5632,28 +5636,6 @@ function startVoiceSearch() {
 
 
 
-// Hide keyboard on Arrow
-    document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('searchInput');
-    const hideKbIcon = document.getElementById('hideKeyboardIcon');
-
-    // Only run this logic if they are on a touch device
-    if (searchInput && hideKbIcon && isTouchDevice()) {
-        
-        // When they tap the search bar (keyboard opens), show the arrow
-        searchInput.addEventListener('focus', () => {
-            hideKbIcon.style.display = 'block';
-        });
-
-        // When the keyboard closes (blur), hide the arrow
-        searchInput.addEventListener('blur', () => {
-            // A tiny delay ensures the user's tap registers before the button vanishes
-            setTimeout(() => {
-                hideKbIcon.style.display = 'none';
-            }, 150);
-        });
-    }
-});
 
 // Toggle Mic Icon Visibility
 function toggleMicIcon() {
@@ -5823,11 +5805,7 @@ if (searchInput) {
 
     // Premium UI Touch: Hide suggestions if user clicks somewhere else
     document.addEventListener('click', (e) => {
-        // ✅ NEW: We added the hideKeyboardIcon to the exclusion list!
-        if (e.target !== searchInput && 
-            !e.target.closest('.suggestion-item') && 
-            !e.target.closest('#hideKeyboardIcon')) {
-            
+        if (e.target !== searchInput && !e.target.closest('.suggestion-item')) {
             const box = document.getElementById('searchSuggestionsBox');
             if (box) box.style.display = 'none';
         }
